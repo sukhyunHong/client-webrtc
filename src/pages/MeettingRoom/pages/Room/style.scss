@@ -1,0 +1,23 @@
+.room{
+    width: 100%;
+    height: 100vh;
+    background: #ccc;
+    display: flex;
+    .room-content{
+        width: 80%;
+        display: flex;
+        flex-direction: column;
+
+        &__tasks{
+            height: 10%;
+            background: red;
+        }
+        &__videos{
+            height: 90%;
+            background: blue;
+        }
+    }
+    .room-chat{
+        width: 20%;
+    }
+}

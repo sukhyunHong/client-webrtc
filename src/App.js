@@ -1,23 +1,23 @@
-import logo from './logo.svg';
-import './App.css';
+import { Suspense } from "react";
+import { BrowserRouter, Redirect, Route, Switch} from 'react-router-dom'
+import './index.scss'
+
+import Loading from './components/Loading';
+import MeettingRoom from "./pages/MeettingRoom";
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="web-rtc">
+      <Suspense fallback={<Loading type={'bars'} color={'white'} />}>
+        <BrowserRouter>
+          <Switch>
+            <Route exact path = "/">
+                <Redirect to="/meetting"/> 
+            </Route>
+            <Route path = "/meetting"  component = {MeettingRoom}/>
+          </Switch>
+          </BrowserRouter>
+      </Suspense>
     </div>
   );
 }
