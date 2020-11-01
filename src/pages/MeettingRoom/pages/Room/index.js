@@ -44,7 +44,9 @@ class Room extends Component {
 
 
       localVideoMute: false,
-      localMicMute: false
+      localMicMute: false,
+
+      isMainRoom: false
     }
     this.socket = null
   }
@@ -106,7 +108,7 @@ class Room extends Component {
   createPeerConnection = (socketID, callback) => {
     try {
       let pc = new RTCPeerConnection(this.state.pc_config)
-      console.log(pc)
+
       // add pc to peerConnections object
       const peerConnections = { ...this.state.peerConnections, [socketID]: pc }
       this.setState({
@@ -133,12 +135,12 @@ class Room extends Component {
 
       }
 
-      console.log(pc)
       pc.ontrack = (e) => {
 
         let _remoteStream = null
         let remoteStreams = this.state.remoteStreams
         let remoteVideo = {}
+
 
 
         // 1. check if stream already exists in remoteStreams
@@ -182,7 +184,9 @@ class Room extends Component {
           const remoteStream = prevState.remoteStreams.length > 0 ? {} : { remoteStream: _remoteStream }
 
           // get currently selected video
-          let selectedVideo = prevState.remoteStreams.filter(stream => stream.id === prevState.selectedVideo.id)
+          // let selectedVideo = prevState.remoteStreams.filter(stream => stream.id === prevState.selectedVideo.id)
+          let selectedVideo = prevState.remoteStreams[0] ?  prevState.remoteStreams[0] : []
+
           // if the video is still in the list, then do nothing, otherwise set to new video stream
           selectedVideo = selectedVideo.length ? {} : { selectedVideo: remoteVideo }
 
@@ -239,6 +243,7 @@ class Room extends Component {
 
       this.setState({
         status: status,
+        isMainRoom: data.peerCount === 1 ? true : false,
         messages: data.messages
       })
     })
@@ -295,8 +300,7 @@ class Room extends Component {
       this.createPeerConnection(socketID, pc => {
         // 2. Create Offer
         if (pc) {
-
-          // Send Channel
+          // Send Channel 
           const handleSendChannelStatusChange = (event) => {
             console.log('send channel status: ' + this.state.sendChannels[0].readyState)
           }
@@ -342,7 +346,6 @@ class Room extends Component {
           pc.createOffer(this.state.sdpConstraints)
             .then(sdp => {
               pc.setLocalDescription(sdp)
-
               this.sendToPeer('offer', sdp, {
                 local: this.socket.id,
                 remote: socketID
@@ -515,9 +518,9 @@ class Room extends Component {
       peerConnections,
       remoteStreams,
       localMicMute,
-      localVideoMute
+      localVideoMute,
+      isMainRoom
     } = this.state
-    console.log(localMicMute, localVideoMute)
     if (disconnected) {
       // disconnect socket
       this.socket.close()
@@ -536,12 +539,12 @@ class Room extends Component {
     const statusText = <div style={{ color: 'yellow', padding: 5 }}>{status}</div>
 
     return (
-      <div style={{
-        display: "flex",
-        flexDirection: "row"
-
-      }}>
-
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+        }}
+      >
         <div
           style={{
             display: "flex",
@@ -551,43 +554,126 @@ class Room extends Component {
             width: "85%",
           }}
         >
-          <div style={{
-            height: '10%',
-            background: 'black',
-            display: "flex",
-            justifyContent: 'space-between',
-            padding: "0 20px",
-            alignItems: 'center',
-          }}>
-            <div 
+          <div
+            style={{
+              height: "10%",
+              background: "black",
+              display: "flex",
+              justifyContent: "space-between",
+              padding: "0 20px",
+              alignItems: "center",
+            }}
+          >
+            <div
               style={{
                 display: "flex",
-                alignItems: "center"
+                alignItems: "center",
               }}
             >
-                <div style={{
-                            // margin: 10,
-                            backgroundColor: '#cdc4ff4f',
-                            padding: 10,
-                            borderRadius: 5,
-                            // background: 'blue',
-                            textAlign: 'center'
-                }}><i onClick={(e) => { this.setState({ disconnected: true }) }} style={{ cursor: 'pointer', color: 'red' }} class='material-icons'>highlight_off</i>{statusText}</div>
-                <i  style={{ cursor: 'pointer', outline: 'none', padding: 15, fontSize: 25, color:  'white' || 'red' }} class='material-icons'>{true && 'input' || 'input'}</i>
-                <i  style={{ cursor: 'pointer', padding: 15, fontSize: 25, color:  'white' || 'red' }} class='material-icons'>{true && 'crop_free' || 'crop_free'}</i>
+              <div
+                style={{
+                  // margin: 10,
+                  backgroundColor: "#cdc4ff4f",
+                  padding: 10,
+                  borderRadius: 5,
+                  // background: 'blue',
+                  textAlign: "center",
+                }}
+              >
+                <i
+                  onClick={(e) => {
+                    this.setState({ disconnected: true });
+                  }}
+                  style={{ cursor: "pointer", color: "red" }}
+                  className="material-icons"
+                >
+                  highlight_off
+                </i>
+                {statusText}
+              </div>
+              <i
+                style={{
+                  cursor: "pointer",
+                  outline: "none",
+                  padding: 15,
+                  fontSize: 25,
+                  color: "white" || "red",
+                }}
+                className="material-icons"
+              >
+                {(true && "input") || "input"}
+              </i>
+              <i
+                style={{
+                  cursor: "pointer",
+                  padding: 15,
+                  fontSize: 25,
+                  color: "white" || "red",
+                }}
+                className="material-icons"
+              >
+                {(true && "crop_free") || "crop_free"}
+              </i>
             </div>
             <div>
-                <i  style={{ cursor: 'pointer', outline: 'none', padding: 15, fontSize: 25, color:  'white' || 'red' }} class='material-icons'>{true && 'campaign' || 'campaign'}</i>
-                <i onClick={() => this.handleMuteMic()} style={{ cursor: 'pointer', outline: 'none', padding: 15, fontSize: 25, color:  'white' || 'red' }} class='material-icons'>{!localMicMute && 'mic' || 'mic_off'}</i>
-                <i onClick={() => this.handleMuteVideo()} style={{ cursor: 'pointer', outline: 'none', padding: 15, fontSize: 25, color:  'white' || 'red' }} class='material-icons'>{!localVideoMute && 'videocam' || 'videocam_off'}</i>
+              <i
+                style={{
+                  cursor: "pointer",
+                  outline: "none",
+                  padding: 15,
+                  fontSize: 25,
+                  color: "white" || "red",
+                }}
+                className="material-icons"
+              >
+                {(true && "campaign") || "campaign"}
+              </i>
+              <i
+                onClick={() => this.handleMuteMic()}
+                style={{
+                  cursor: "pointer",
+                  outline: "none",
+                  padding: 15,
+                  fontSize: 25,
+                  color: "white" || "red",
+                }}
+                className="material-icons"
+              >
+                {(!localMicMute && "mic") || "mic_off"}
+              </i>
+              <i
+                onClick={() => this.handleMuteVideo()}
+                style={{
+                  cursor: "pointer",
+                  outline: "none",
+                  padding: 15,
+                  fontSize: 25,
+                  color: "white" || "red",
+                }}
+                className="material-icons"
+              >
+                {(!localVideoMute && "videocam") || "videocam_off"}
+              </i>
             </div>
             <div>
-                <i  style={{ cursor: 'pointer', padding: 15, fontSize: 25, color:  'white' || 'red' }} class='material-icons'>{true && 'laptop' || 'laptop'}</i>
+              <i
+                style={{
+                  cursor: "pointer",
+                  padding: 15,
+                  fontSize: 25,
+                  color: "white" || "red",
+                }}
+                className="material-icons"
+              >
+                {(true && "laptop") || "laptop"}
+              </i>
             </div>
           </div>
-          <div style={{
-            height: "90%",
-          }}>
+          <div
+            style={{
+              height: "90%",
+            }}
+          >
             {/* <Draggable style={{
                     zIndex: 101,
                     position: 'absolute',
@@ -633,7 +719,8 @@ class Room extends Component {
             <Videos
               switchVideo={this.switchVideo}
               remoteStreams={remoteStreams}
-            // videoStream={this.state.selectedVideo && this.state.selectedVideo.stream}
+              isMainRoom={isMainRoom}
+              // videoStream={this.state.selectedVideo && this.state.selectedVideo.stream}
             ></Videos>
 
             {/* <Chat
@@ -656,66 +743,72 @@ class Room extends Component {
         <div
           style={{
             width: "15%",
-            minWidth: '300px'
+            minWidth: "300px",
           }}
         >
-          <div style={{height: '20%'}}>
-          <Draggable style={{
+          <div style={{ height: "20%" }}>
+            <Draggable
+              style={{
                 zIndex: 101,
-                height: '100%',
+                height: "100%",
                 // position: 'absolute',
                 // right: 0,
-                cursor: 'move',
-            }}>
-                <Video
-                    videoType='localVideo'
-                    videoStyles={{
-                        // zIndex:2,
-                        // position: 'absolute',
-                        // right:0,
-                        width: '100%',
-                        height: '100%',
-                        // margin: 5,
-                        // backgroundColor: 'black'
-                    }}
-                    frameStyle={{
-                        // width: 200,
-                        // margin: 5,
-                        height: '100%',
-                        borderRadius: 5,
-                        backgroundColor: 'black',
-                    }}
-                    showMuteControls={false}
-                    localMicMute = {localMicMute}
-                    localVideoMute = {localVideoMute}
-                    // ref={this.localVideoref}
-                    videoStream={localStream}
-                    autoPlay muted>
-                </Video>
+                cursor: "move",
+              }}
+            >
+              <Video
+                videoType="localVideo"
+                videoStyles={{
+                  // zIndex:2,
+                  // position: 'absolute',
+                  // right:0,
+                  width: "100%",
+                  height: "100%",
+                  // margin: 5,
+                  // backgroundColor: 'black'
+                }}
+                frameStyle={{
+                  // width: 200,
+                  // margin: 5,
+                  height: "100%",
+                  borderRadius: 5,
+                  backgroundColor: "black",
+                }}
+                showMuteControls={false}
+                localMicMute={localMicMute}
+                localVideoMute={localVideoMute}
+                // ref={this.localVideoref}
+                videoStream={localStream}
+                autoPlay
+                muted
+              ></Video>
             </Draggable>
           </div>
           <Chat
             user={{
-                uid: this.socket && this.socket.id || ''
+              uid: (this.socket && this.socket.id) || "",
             }}
             messages={messages}
             sendMessage={(message) => {
-                this.setState(prevState => {
-                    return { messages: [...prevState.messages, message] }
-                })
-                const { username } = this.socket.query
-                message.message.sender.username = username
-                // send channels
-                this.state.sendChannels.map(sendChannel => {
-                    sendChannel.readyState === 'open' && sendChannel.send(JSON.stringify(message))
-                })
-                // message.sender.username = username;
-                this.sendToPeer('new-message', JSON.stringify(message), { local: this.socket.id })
+              this.setState((prevState) => {
+                return { messages: [...prevState.messages, message] };
+              });
+              const { username } = this.socket.query;
+              message.message.sender.username = username;
+              // send channels
+              this.state.sendChannels.map((sendChannel) => {
+                sendChannel.readyState === "open" &&
+                  sendChannel.send(JSON.stringify(message));
+              });
+              // message.sender.username = username;
+              this.sendToPeer("new-message", JSON.stringify(message), {
+                local: this.socket.id,
+              });
             }}
-        />
+          />
         </div>
       </div>
-    )
+    );
   }
 }
 

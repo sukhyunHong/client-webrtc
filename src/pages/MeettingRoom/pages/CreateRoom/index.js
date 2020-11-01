@@ -13,23 +13,22 @@ function CreateARoom(props) {
     const [roomsByUsername, setRoomsByUserName] = useState([]);
     const handleCreateRoom = () => {
         try {
-            console.log(process.env.REACT_APP_SERVER_API)
-            axios({
-                method: 'post',
-                url: `${process.env.REACT_APP_SERVER_API}/room/createroom`,
-                data: {
-                    roomname, username
-                }
-            }).then(res => {
-                const { data } = res;
-                const { result, message } = data
-                if(result){
-                    const { roomname : room } = data.data[0];
-                    props.history.push(`/meetting/open?room=${room}&user=${username}`)
-                }else{
-                    alert(message)
-                }
-            }).catch(error => console.log(error))
+            // axios({
+            //     method: 'post',
+            //     url: `${process.env.REACT_APP_SERVER_API}/room/createroom`,
+            //     data: {
+            //         roomname, username
+            //     }
+            // }).then(res => {
+            //     const { data } = res;
+            //     const { result, message } = data
+            //     if(result){
+            //         const { roomname : room } = data.data[0];
+            //     }else{
+            //         alert(message)
+            //     }
+            // }).catch(error => console.log(error))
+            props.history.push(`/meetting/open?room=${roomname}&user=${username}`)
         } catch (error) {
             console.log(error)            
         }
