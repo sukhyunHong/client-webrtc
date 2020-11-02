@@ -218,7 +218,6 @@ class Room extends Component {
 
   componentDidMount = () => {
     const { room, user } = qs.parse(window.location.search);
-    console.log(room)
     this.socket = io.connect(
       `${process.env.REACT_APP_SERVER_API}/room`,
       {
