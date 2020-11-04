@@ -99,7 +99,7 @@ class Video extends Component {
         {/* <audio id={this.props.id} muted={this.props.muted} ref={ (ref) => {this.video = ref }}></audio> */}
         <video
           id={this.props.id}
-          muted={this.props.muted}
+          muted={true}
           autoPlay
           style={{
             visibility: this.state.videoVisible && 'visible' || 'hidden',

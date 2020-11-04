@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import Video from '../Video'
-
+import qs from 'query-string'
+import Axios from 'axios'
 class Videos extends Component {
   constructor(props) {
     super(props)
@@ -17,66 +18,79 @@ class Videos extends Component {
     if (this.props.remoteStreams !== nextProps.remoteStreams) {
 
       const NoOfRemoteStreams = nextProps.remoteStreams.length
-
       let selectedVideo = {}
 
+      let roomname = qs.parse(window.location.search).room
+      let username = qs.parse(window.location.search).user
 
-      selectedVideo = { selectedVideo: nextProps.remoteStreams[0] };
 
-      //2명
-      if (NoOfRemoteStreams === 1)
-        selectedVideo = { selectedVideo: nextProps.remoteStreams[0] }
-      else {
-        //n명에 있는 경우에는 점에 사람이 있는 경우에는
-        console.log(nextProps.remoteStreams);
-        selectedVideo = this.state.selectedVideo && nextProps.remoteStreams.filter(stream => stream.id === this.state.selectedVideo.id) || []
-        selectedVideo = selectedVideo.length ? {} : { selectedVideo: nextProps.remoteStreams[NoOfRemoteStreams - 1] }
-      }
+      let hostSocketId
+      //n명에 있는 경우에는 점에 사람이 있는 경우에는
+      Axios({
+        method: 'get',
+        url: `${process.env.REACT_APP_SERVER_API}/room/gethostroom`,
+        params: {
+          roomname, username
+        }
+      }).then(res => {
+        const { data } = res;
+        hostSocketId = data.data
+        //!안됨
+        //2명
+        if (NoOfRemoteStreams === 1)
+          selectedVideo = { selectedVideo: nextProps.remoteStreams[0] }
+        else {
+          selectedVideo = this.state.selectedVideo && nextProps.remoteStreams.filter(stream => stream.id === hostSocketId) || []
+          selectedVideo = selectedVideo.length ? selectedVideo[0] : { selectedVideo: nextProps.remoteStreams[NoOfRemoteStreams - 1] }
+        }
 
-      let _rVideos = nextProps.remoteStreams.map((rVideo, index) => {
-        const _videoTrack = rVideo.stream.getTracks().filter(track => track.kind === 'video')
-        // if (_videoTrack.length)
-        //   _videoTrack[0].onmute = () => {
-        //     alert('muted')
-        //   }
-        let video = _videoTrack && (
-          <Video
-            videoMuted={this.videoMuted}
-            videoType='remoteVideo'
-            videoStream={rVideo.stream}
-            frameStyle={{
-              backgroundColor: '#ffffff12',
-              maxWidth: 250, maxHeight: 220,
-              borderRadius: 5,
-              float: 'left', margin: '0 3px'
-            }}
-            videoStyles={{
-              objectFit: 'cover',
-              borderRadius: 5,
-              width: 250, height: 220,
-              maxWidth: 250, maxHeight: 200,
-            }}
-          />
-        ) || <div></div>
+        let _rVideos = nextProps.remoteStreams.map((rVideo, index) => {
+          const _videoTrack = rVideo.stream.getTracks().filter(track => track.kind === 'video')
+          // if (_videoTrack.length)
+          //   _videoTrack[0].onmute = () => {
+          //     alert('muted')
+          //   }
+          let video = _videoTrack && (
+            <Video
+              videoMuted={this.videoMuted}
+              videoType='remoteVideo'
+              videoStream={rVideo.stream}
+              frameStyle={{
+                backgroundColor: '#ffffff12',
+                maxWidth: 250, maxHeight: 220,
+                borderRadius: 5,
+                float: 'left', margin: '0 3px'
+              }}
+              videoStyles={{
+                objectFit: 'cover',
+                borderRadius: 5,
+                width: 250, height: 220,
+                maxWidth: 250, maxHeight: 200,
+              }}
+            />
+          ) || <div></div>
 
-        return (
-          <div
-            id={rVideo.name}
-            onClick={() => this.switchVideo(rVideo)}
-            style={{
-              cursor: 'pointer', display: 'inline-block'
-            }}
-            key={index}
-          >
-            {video}
-          </div>
-        )
+          return (
+            <div
+              id={rVideo.name}
+              onClick={() => this.switchVideo(rVideo)}
+              style={{
+                cursor: 'pointer', display: 'inline-block'
+              }}
+              key={index}
+            >
+              {video}
+            </div>
+          )
+        })
+        this.setState({
+          remoteStreams: nextProps.remoteStreams,
+          rVideos: _rVideos,
+          ...selectedVideo,
+        })
+
       })
-      this.setState({
-        remoteStreams: nextProps.remoteStreams,
-        rVideos: _rVideos,
-        ...selectedVideo,
-      })
+
     }
   }
 
@@ -99,7 +113,6 @@ class Videos extends Component {
   }
 
   render() {
-    console.log(this.props.isMainRoom)
     return (
       <div
         style={{
@@ -144,26 +157,26 @@ class Videos extends Component {
           // }}
           >
             {
-              this.props.isMainRoom ?  this.state.rVideos :
-              <Video
-                videoType="previewVideo"
-                // frameStyle={{
-                //   zIndex: 1,
-                //   position: 'fixed',
-                //   bottom: 0,
-                //   minWidth: '100%', minHeight: '100%',
-                //   backgroundColor: 'black'
-                // }}
-                videoStyles={{
-                  minWidth: "70%",
-                  minHeight: "70%",
-                  // visibility: (this.state.videoVisible && "visible") || "hidden",
-                  visibility: "visible",
-                }}
-                videoStream={
-                  this.state.selectedVideo && this.state.selectedVideo.stream
-                }
-              />
+              this.props.isMainRoom ? this.state.rVideos :
+                <Video
+                  videoType="previewVideo"
+                  // frameStyle={{
+                  //   zIndex: 1,
+                  //   position: 'fixed',
+                  //   bottom: 0,
+                  //   minWidth: '100%', minHeight: '100%',
+                  //   backgroundColor: 'black'
+                  // }}
+                  videoStyles={{
+                    minWidth: "70%",
+                    minHeight: "70%",
+                    // visibility: (this.state.videoVisible && "visible") || "hidden",
+                    visibility: "visible",
+                  }}
+                  videoStream={
+                    this.state.selectedVideo && this.state.selectedVideo.stream
+                  }
+                />
             }
           </div>
         )}
