@@ -20,22 +20,25 @@ class Videos extends Component {
 
       let selectedVideo = {}
 
+
+      selectedVideo = { selectedVideo: nextProps.remoteStreams[0] };
+
+      //2명
       if (NoOfRemoteStreams === 1)
         selectedVideo = { selectedVideo: nextProps.remoteStreams[0] }
       else {
+        //n명에 있는 경우에는 점에 사람이 있는 경우에는
+        console.log(nextProps.remoteStreams);
         selectedVideo = this.state.selectedVideo && nextProps.remoteStreams.filter(stream => stream.id === this.state.selectedVideo.id) || []
-
         selectedVideo = selectedVideo.length ? {} : { selectedVideo: nextProps.remoteStreams[NoOfRemoteStreams - 1] }
       }
 
       let _rVideos = nextProps.remoteStreams.map((rVideo, index) => {
-
         const _videoTrack = rVideo.stream.getTracks().filter(track => track.kind === 'video')
         // if (_videoTrack.length)
         //   _videoTrack[0].onmute = () => {
         //     alert('muted')
         //   }
-
         let video = _videoTrack && (
           <Video
             videoMuted={this.videoMuted}
@@ -69,7 +72,6 @@ class Videos extends Component {
           </div>
         )
       })
-
       this.setState({
         remoteStreams: nextProps.remoteStreams,
         rVideos: _rVideos,
@@ -97,49 +99,76 @@ class Videos extends Component {
   }
 
   render() {
+    console.log(this.props.isMainRoom)
     return (
-      <div style = {{
-        width: '100%',
-        height: '100%',
-        display: 'grid',
-      }}>
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "grid",
+        }}
+      >
         {/* <Video
-          videoType='previewVideo'
-          frameStyle={{
-            zIndex: 1,
-            position: 'fixed',
-            bottom: 0,
-            minWidth: '100%', minHeight: '100%',
-            backgroundColor: 'black'
-          }}
+          videoType="previewVideo"
+          // frameStyle={{
+          //   zIndex: 1,
+          //   position: 'fixed',
+          //   bottom: 0,
+          //   minWidth: '100%', minHeight: '100%',
+          //   backgroundColor: 'black'
+          // }}
           videoStyles={{
-            minWidth: '100%', minHeight: '100%',
-            visibility: this.state.videoVisible && 'visible' || 'hidden',
+            minWidth: "70%",
+            minHeight: "70%",
+            // visibility: (this.state.videoVisible && "visible") || "hidden",
+            visibility: "visible",
           }}
-          videoStream={this.state.selectedVideo && this.state.selectedVideo.stream}
+          videoStream={
+            this.state.selectedVideo && this.state.selectedVideo.stream
+          }
         /> */}
-        {
-          this.state.rVideos.length !== 0 &&
+        {this.state.rVideos.length !== 0 && (
           <div
-            // style={{
-            //   zIndex: 3,
-            //   // position: 'fixed',
-            //   padding: '6px 3px',
-            //   backgroundColor: 'rgba(0,0,0,0.3)',
-            //   maxHeight: 120,
-            //   top: 'auto',
-            //   right: 10,
-            //   left: 10,
-            //   bottom: 10,
-            //   // overflowX: 'scroll',
-            //   whiteSpace: 'nowrap'
-            // }}
+          // style={{
+          //   zIndex: 3,
+          //   // position: 'fixed',
+          //   padding: '6px 3px',
+          //   backgroundColor: 'rgba(0,0,0,0.3)',
+          //   maxHeight: 120,
+          //   top: 'auto',
+          //   right: 10,
+          //   left: 10,
+          //   bottom: 10,
+          //   // overflowX: 'scroll',
+          //   whiteSpace: 'nowrap'
+          // }}
           >
-            {this.state.rVideos}
+            {
+              this.props.isMainRoom ?  this.state.rVideos :
+              <Video
+                videoType="previewVideo"
+                // frameStyle={{
+                //   zIndex: 1,
+                //   position: 'fixed',
+                //   bottom: 0,
+                //   minWidth: '100%', minHeight: '100%',
+                //   backgroundColor: 'black'
+                // }}
+                videoStyles={{
+                  minWidth: "70%",
+                  minHeight: "70%",
+                  // visibility: (this.state.videoVisible && "visible") || "hidden",
+                  visibility: "visible",
+                }}
+                videoStream={
+                  this.state.selectedVideo && this.state.selectedVideo.stream
+                }
+              />
+            }
           </div>
-        }
+        )}
       </div>
-    )
+    );
   }
 
 }
