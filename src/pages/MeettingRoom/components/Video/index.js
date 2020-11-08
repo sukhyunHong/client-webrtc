@@ -4,7 +4,7 @@ class Video extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      mic: true,
+      mic: false,
       camera: true,
       // currentStream: new MediaStream(),
       // videoTrack: false,

@@ -112,6 +112,13 @@ class Videos extends Component {
     })
   }
 
+  handleRequestQuestion = () =>{
+    alert('aa')
+  }
+
+  handleRequestGoOut = () => {
+    alert("aa")
+  }
   render() {
     return (
       <div
@@ -158,25 +165,60 @@ class Videos extends Component {
           >
             {
               this.props.isMainRoom ? this.state.rVideos :
-                <Video
-                  videoType="previewVideo"
-                  // frameStyle={{
-                  //   zIndex: 1,
-                  //   position: 'fixed',
-                  //   bottom: 0,
-                  //   minWidth: '100%', minHeight: '100%',
-                  //   backgroundColor: 'black'
-                  // }}
-                  videoStyles={{
-                    minWidth: "70%",
-                    minHeight: "70%",
-                    // visibility: (this.state.videoVisible && "visible") || "hidden",
-                    visibility: "visible",
-                  }}
-                  videoStream={
-                    this.state.selectedVideo && this.state.selectedVideo.stream
-                  }
-                />
+                <>
+                  <Video
+                    videoType="previewVideo"
+                    // frameStyle={{
+                    //   zIndex: 1,
+                    //   position: 'fixed',
+                    //   bottom: 0,
+                    //   minWidth: '100%', minHeight: '100%',
+                    //   backgroundColor: 'black'
+                    // }}
+                    videoStyles={{
+                      minWidth: "70%",
+                      minHeight: "70%",
+                      // visibility: (this.state.videoVisible && "visible") || "hidden",
+                      visibility: "visible",
+                    }}
+                    videoStream={
+                      this.state.selectedVideo && this.state.selectedVideo.stream
+                    }
+                  />
+                  <div style={{
+                    textAlign: 'center',
+                    background: 'black',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignContent: 'center',
+                    padding: '0 30px'
+                  }}>
+                    <i
+                      style={{
+                        cursor: "pointer",
+                        outline: "none",
+                        padding: 15,
+                        fontSize: 25,
+                        color: "white" || "red",
+                        transform: "rotate(180deg)",
+                      }}
+                      className="material-icons"
+                      onClick={() => {
+                        // this.setState({
+                        //   disconnected: true,
+                        // });
+                        this.props.history.push("/meetting");
+                      }}
+                    >
+                      input{" "}
+                    </i>
+                    <div>
+                    <button onClick={() => this.handleRequestQuestion()} style={{padding: '10px'}}>음성 질문 요청</button>
+                    <button onClick={() => this.handleRequestGoOut()} style={{padding: '10px'}}>자리 비움 요청</button>
+                    </div>
+                    <p>수학</p>
+                  </div>
+                </>
             }
           </div>
         )}

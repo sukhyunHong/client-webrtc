@@ -5,14 +5,13 @@ import Video from "../../components/Video";
 import Videos from "../../components/Videos";
 import Chat from "../../components/Chat";
 import Draggable from "../../components/Draggable";
+import './style.scss'
 
 import qs from "query-string";
 class Room extends Component {
   constructor(props) {
     super(props);
 
-
-    
     this.videoRef = React.createRef();
 
     this.state = {
@@ -51,7 +50,7 @@ class Room extends Component {
       fullScream: false,
 
       shareScream: false,
-
+      allMuted: true,
     };
     this.socket = null;
   }
@@ -59,45 +58,85 @@ class Room extends Component {
   getLocalStream = () => {
     // called when getUserMedia() successfully returns - see below
     // getUserMedia() returns a MediaStream object (https://developer.mozilla.org/en-US/docs/Web/API/MediaStream)
-    const success = (stream) => {
-      window.localStream = stream;
-      // this.localVideoref.current.srcObject = stream
-      // this.pc.addStream(stream);
+    // const success = (stream) => {
+    // const video = document.querySelector('video');
+    // const videoTracks = stream.getVideoTracks();
+    // console.log('Got stream with constraints:', constraints);
+    // console.log(`Using video device: ${videoTracks[0].label}`);
+    // window.stream = stream; // make variable available to browser console
+    // video.srcObject = stream;
+
+    //   window.stream  = stream;
+    //   // this.localVideoref.current.srcObject = stream
+    //   // this.pc.addStream(stream);
+    //   this.setState({
+    //     localStream: stream,
+    //   });
+
+    //   this.whoisOnline();
+    // };
+
+    // // https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
+    // // see the above link for more constraint options
+    // const constraints =  window.constraints = {
+    //   audio: true,
+    //   video: true,
+    //   // video: {
+    //   //   width: 1280,
+    //   //   height: 720
+    //   // },
+    //   // video: {
+    //   //   width: { min: 1280 },
+    //   // }
+    //   // options: {
+    //   //   mirror: true,
+    //   // },
+    // };
+
+    const constraints = (window.constraints = {
+      audio: false,
+      video: true,
+    });
+
+    const handleSuccess = (stream) => {
+      const video = document.querySelector("video");
+      const videoTracks = stream.getVideoTracks();
+      console.log("Got stream with constraints:", constraints);
+      console.log(`Using video device: ${videoTracks[0].label}`);
+
       this.setState({
         localStream: stream,
       });
-
       this.whoisOnline();
+      window.stream = stream; // make variable available to browser console
+      video.srcObject = stream;
     };
 
-    // called when getUserMedia() fails - see below
-    const failure = (e) => {
-      console.log("getUserMedia Error: ", e);
+    const handleError = (error) => {
+      if (error.name === "ConstraintNotSatisfiedError") {
+        const v = constraints.video;
+        console.log(
+          `The resolution ${v.width.exact}x${v.height.exact} px is not supported by your device.`
+        );
+      } else if (error.name === "PermissionDeniedError") {
+        console.log(
+          "Permissions have not been granted to use your camera and " +
+          "microphone, you need to allow the page access to your devices in " +
+          "order for the demo to work."
+        );
+      }
+      console.log(`getUserMedia error: ${error.name}`, error);
     };
 
-    // https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
-    // see the above link for more constraint options
-    const constraints = {
-      audio: true,
-      video: true,
-      // video: {
-      //   width: 1280,
-      //   height: 720
-      // },
-      // video: {
-      //   width: { min: 1280 },
-      // }
-      options: {
-        mirror: true,
-      },
-    };
-    
-
-    // https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
-    navigator.mediaDevices
-      .getUserMedia(constraints)
-      .then(success)
-      .catch(failure);
+    async function init(e) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        handleSuccess(stream);
+      } catch (e) {
+        handleError(e);
+      }
+    }
+    init();
   };
 
   whoisOnline = () => {
@@ -191,8 +230,8 @@ class Room extends Component {
             prevState.remoteStreams.length > 0
               ? {}
               : {
-                  remoteStream: _remoteStream,
-                };
+                remoteStream: _remoteStream,
+              };
 
           // get currently selected video
           // let selectedVideo = prevState.remoteStreams.filter(stream => stream.id === prevState.selectedVideo.id)
@@ -204,8 +243,8 @@ class Room extends Component {
           selectedVideo = selectedVideo.length
             ? {}
             : {
-                selectedVideo: remoteVideo,
-              };
+              selectedVideo: remoteVideo,
+            };
 
           return {
             ...selectedVideo,
@@ -221,7 +260,6 @@ class Room extends Component {
 
       if (this.state.localStream)
         // pc.addStream(this.state.localStream)
-
         this.state.localStream.getTracks().forEach((track) => {
           pc.addTrack(track, this.state.localStream);
         });
@@ -243,6 +281,9 @@ class Room extends Component {
         username: user,
       },
     });
+    window.onunload = window.onbeforeunload = function () {
+      this.socket.close();
+    };
 
     this.socket.on("connection-success", (data) => {
       this.getLocalStream();
@@ -291,8 +332,8 @@ class Room extends Component {
         const selectedVideo =
           prevState.selectedVideo.id === data.socketID && remoteStreams.length
             ? {
-                selectedVideo: remoteStreams[0],
-              }
+              selectedVideo: remoteStreams[0],
+            }
             : null;
 
         return {
@@ -355,7 +396,7 @@ class Room extends Component {
             if (this.receiveChannel) {
               console.log(
                 "receive channel's status has changed to " +
-                  this.receiveChannel.readyState
+                this.receiveChannel.readyState
               );
             }
           };
@@ -414,7 +455,7 @@ class Room extends Component {
           if (this.receiveChannel) {
             console.log(
               "receive channel's status has changed to " +
-                this.receiveChannel.readyState
+              this.receiveChannel.readyState
             );
           }
         };
@@ -450,7 +491,7 @@ class Room extends Component {
       // console.log(data.sdp)
       pc.setRemoteDescription(
         new RTCSessionDescription(data.sdp)
-      ).then(() => {});
+      ).then(() => { });
     });
 
     this.socket.on("candidate", (data) => {
@@ -543,25 +584,34 @@ class Room extends Component {
     });
   };
 
-
-
   handleShareDisplayMedia = async () => {
-      try {
-          navigator.mediaDevices.getDisplayMedia({ video: {
-            cursor: "always"
+    try {
+      navigator.mediaDevices
+        .getDisplayMedia({
+          video: {
+            cursor: "always",
           },
-          audio: false }).then(stream => {
-            this.videoRef.current.srcObject = stream
-            // console.log(screenTrack)
-            // senders.current.find(sender => sender.track.kind === 'video').replaceTrack(screenTrack);
-            // screenTrack.onended = function() {
-            //     senders.current.find(sender => sender.track.kind === "video").replaceTrack(userStream.current.getTracks()[1]);
-            // }
+          audio: false,
         })
-      } catch(err) {
-        console.error("Error: " + err);
-      }
-  }
+        .then((stream) => {
+          this.setState({
+            localStream: stream,
+          });
+
+          const { peerConnections } = this.state;
+          let videoTrack = stream.getVideoTracks()[0];
+          Object.values(peerConnections).forEach((pc) => {
+            var sender = pc.getSenders().find(function (s) {
+              return s.track.kind == videoTrack.kind;
+            });
+            console.log('found sender:', sender);
+            sender.replaceTrack(videoTrack);
+          })
+        });
+    } catch (err) {
+      console.error("Error: " + err);
+    }
+  };
 
   render() {
     const {
@@ -575,7 +625,8 @@ class Room extends Component {
       localVideoMute,
       isMainRoom,
       fullScream,
-      shareScream
+      allMuted,
+      shareScream,
     } = this.state;
     if (disconnected) {
       // disconnect socket
@@ -593,376 +644,111 @@ class Room extends Component {
       return <div> You have successfully Disconnected </div>;
     }
 
-    const statusText = (
-      <div
-        style={{
-          color: "yellow",
-          padding: 5,
-        }}
-      >
-        {" "}
-        {status}{" "}
-      </div>
-    );
-
     const fullSize = !fullScream ? "85%" : "100%";
 
     return (
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "row",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            minHeight: "100vh",
-            height: "100vh",
-            width: fullSize,
-          }}
-        >
-          {!fullScream ? (
-            <div
-              style={{
-                height: "10%",
-                background: "black",
-                display: "flex",
-                justifyContent: "space-between",
-                padding: "0 20px",
-                alignItems: "center",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
-                <i
-                  style={{
-                    cursor: "pointer",
-                    outline: "none",
-                    padding: 15,
-                    fontSize: 25,
-                    color: "white" || "red",
-                    transform: "rotate(180deg)",
-                  }}
-                  className="material-icons"
-                  onClick={() => {
+      <div className="room-page">
+        <div className="room-page__left" style={{width: fullSize}}>
+          {
+            //Default scream
+          !fullScream ? (
+            <div className="left-top__defaultSize">
+              <div className="out-full-btn">
+                <i className="material-icons out-btn" onClick={() => {
                     this.setState({
                       disconnected: true,
                     });
                     this.props.history.push("/meetting");
                   }}
                 >
-                  input{" "}
-                </i>{" "}
-                <i
-                  style={{
-                    cursor: "pointer",
-                    padding: 15,
-                    fontSize: 25,
-                    color: "white" || "red",
-                  }}
-                  className="material-icons"
-                  onClick={() =>
+                  input
+                </i>
+                <i className="material-icons" onClick={() =>
                     this.setState({
                       fullScream: !this.state.fullScream,
                     })
                   }
                 >
-                  {fullScream ? "fullscreen_exit" : "fullscreen"}{" "}
-                </i>{" "}
-              </div>{" "}
-              <div>
-                <i
-                  style={{
-                    cursor: "pointer",
-                    outline: "none",
-                    padding: 15,
-                    fontSize: 25,
-                    color: "white" || "red",
-                  }}
-                  className="material-icons"
-                >
-                  {(true && "campaign") || "campaign"}{" "}
-                </i>{" "}
-                <i
-                  onClick={() => this.handleMuteMic()}
-                  style={{
-                    cursor: "pointer",
-                    outline: "none",
-                    padding: 15,
-                    fontSize: 25,
-                    color: "white" || "red",
-                  }}
-                  className="material-icons"
-                >
-                  {(!localMicMute && "mic") || "mic_off"}{" "}
-                </i>{" "}
-                <i
-                  onClick={() => this.handleMuteVideo()}
-                  style={{
-                    cursor: "pointer",
-                    outline: "none",
-                    padding: 15,
-                    fontSize: 25,
-                    color: "white" || "red",
-                  }}
-                  className="material-icons"
-                >
-                  {(!localVideoMute && "videocam") || "videocam_off"}{" "}
-                </i>{" "}
-              </div>{" "}
-              <div>
-                <i
-                  style={{
-                    cursor: "pointer",
-                    padding: 15,
-                    fontSize: 25,
-                    color: "white" || "red",
-                  }}
-                  className="material-icons"
-                  onClick={() => this.handleShareDisplayMedia()}
-                >
-                  {(true && "laptop") || "laptop"}{" "}
-                </i>{" "}
-              </div>{" "}
+                  {fullScream ? "fullscreen_exit" : "fullscreen"}
+                </i>
+              </div>
+              <div className="video-task-btn">
+                <i className="material-icons"> {allMuted ? "volume_up" : "volume_off"} </i>
+                <i  className="material-icons" onClick={() => this.handleMuteMic()}>
+                  {!localMicMute ? "mic" : "mic_off"}
+                </i>
+                <i className="material-icons" onClick={() => this.handleMuteVideo()}>
+                  {(!localVideoMute && "videocam") || "videocam_off"}
+                </i>
+              </div>
+              <div className="point-btn">
+                <i className="material-icons" onClick={() => this.handleShareDisplayMedia()}>
+                  laptop
+                </i>
+              </div>
             </div>
           ) : (
-            //FULLL SCREAM////////////////////////
-            <div
-              style={{
-                // height: "10%",
-                width: "30%",
-                position: "fixed",
-                right: "50%",
-                transform: "translateX(50%)",
-                top: "20px",
-                display: "flex",
-                justifyContent: "space-between",
-                background: "rgba(0,0,0,0.3)",
-                padding: "0 20px",
-                alignItems: "center",
-                zIndex: 10,
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
-                <i
-                  style={{
-                    cursor: "pointer",
-                    outline: "none",
-                    padding: 15,
-                    fontSize: 25,
-                    color: "white" || "red",
-                    transform: "rotate(180deg)",
-                  }}
-                  className="material-icons"
-                  onClick={() => {
-                    this.setState({
-                      disconnected: true,
-                    });
-                    this.props.history.push("/meetting");
-                  }}
-                >
-                  input{" "}
-                </i>{" "}
-                <i
-                  style={{
-                    cursor: "pointer",
-                    padding: 15,
-                    fontSize: 25,
-                    color: "white" || "red",
-                  }}
-                  class="material-icons"
-                  onClick={() =>
-                    this.setState({
-                      fullScream: !this.state.fullScream,
-                    })
-                  }
-                >
-                  {fullScream ? "fullscreen_exit" : "fullscreen"}{" "}
-                </i>{" "}
-              </div>{" "}
-              <div>
-                <i
-                  style={{
-                    cursor: "pointer",
-                    outline: "none",
-                    padding: 15,
-                    fontSize: 25,
-                    color: "white" || "red",
-                  }}
-                  className="material-icons"
-                >
-                  {(true && "campaign") || "campaign"}{" "}
-                </i>{" "}
-                <i
-                  onClick={() => this.handleMuteMic()}
-                  style={{
-                    cursor: "pointer",
-                    outline: "none",
-                    padding: 15,
-                    fontSize: 25,
-                    color: "white" || "red",
-                  }}
-                  className="material-icons"
-                >
-                  {(!localMicMute && "mic") || "mic_off"}{" "}
-                </i>{" "}
-                <i
-                  onClick={() => this.handleMuteVideo()}
-                  style={{
-                    cursor: "pointer",
-                    outline: "none",
-                    padding: 15,
-                    fontSize: 25,
-                    color: "white" || "red",
-                  }}
-                  className="material-icons"
-                >
-                  {(!localVideoMute && "videocam") || "videocam_off"}{" "}
-                </i>{" "}
-              </div>{" "}
-              <div>
-                <i
-                  style={{
-                    cursor: "pointer",
-                    padding: 15,
-                    fontSize: 25,
-                    color: "white" || "red",
-                  }}
-                  className="material-icons"
-                >
-                  {(true && "laptop") || "laptop"}{" "}
-                </i>{" "}
-              </div>{" "}
-            </div>
-          )}
-          <div
-            style={{
-              height: "100%",
-            }}
-          >
-            {/* <Draggable style={{
-                            zIndex: 101,
-                            position: 'absolute',
-                            right: 0,
-                            cursor: 'move',
-                        }}>
-                            <Video
-                                videoType='localVideo'
-                                videoStyles={{
-                                    // zIndex:2,
-                                    // position: 'absolute',
-                                    // right:0,
-                                    width: 200,
-                                    // height: 200,
-                                    // margin: 5,
-                                    // backgroundColor: 'black'
-                                }}
-                                frameStyle={{
-                                    width: 200,
-                                    margin: 5,
-                                    borderRadius: 5,
-                                    backgroundColor: 'black',
-                                }}
-                                showMuteControls={true}
-                                // ref={this.localVideoref}
-                                videoStream={localStream}
-                                autoPlay muted>
-                            </Video>
-                        </Draggable> */}{" "}
-            {/* <div style={{
-                            zIndex: 3,
-                            position: 'absolute',
-                        }}>
-                            <i onClick={(e) => { this.setState({ disconnected: true }) }} style={{ cursor: 'pointer', paddingLeft: 15, color: 'red' }} class='material-icons'>highlight_off</i>
-                            <div style={{
-                                margin: 10,
-                                backgroundColor: '#cdc4ff4f',
-                                padding: 10,
-                                borderRadius: 5,
-                                background: 'blue'
-                            }}>{statusText}</div>
-                        </div> */}{" "}
-              {
-                // !shareScream ?
-                // <Videos
-                //   switchVideo={this.switchVideo}
-                //   remoteStreams={remoteStreams}
-                //   isMainRoom={isMainRoom}
-                //   // videoStream={this.state.selectedVideo && this.state.selectedVideo.stream}
-                // ></Videos> :
-                <video
-                id="video" 
-                autoPlay
-                style={{
-                  background: 'red'
-                }}
-                ref={ this.videoRef }
-                >
-                </video>
-              }
-            {/* <Chat
-                            user={{
-                                uid: this.socket && this.socket.id || ''
-                            }}
-                            messages={messages}
-                            sendMessage={(message) => {
-                                this.setState(prevState => {
-                                    return { messages: [...prevState.messages, message] }
-                                })
-                                this.state.sendChannels.map(sendChannel => {
-                                    sendChannel.readyState === 'open' && sendChannel.send(JSON.stringify(message))
-                                })
-                                this.sendToPeer('new-message', JSON.stringify(message), { local: this.socket.id })
-                            }}
-                        /> */}{" "}
-          </div>{" "}
-        </div>{" "}
-        {!fullScream && (
-          <div
-            style={{
-              width: "15%",
-              minWidth: "300px",
-            }}
-          >
-            <div
-              style={{
-                height: "20%",
-              }}
-            >
-              <Draggable
-                style={{
-                  zIndex: 101,
-                  height: "100%",
-                  // position: 'absolute',
-                  // right: 0,
-                  cursor: "move",
-                }}
-              >
+              //Full scream
+            <div className="left-top__fulSize">
+                <div className="out-full-btn">
+                  <i className="material-icons" onClick={() => {
+                      this.setState({
+                        disconnected: true,
+                      });
+                      this.props.history.push("/meetting");
+                    }}
+                  >
+                    input
+                  </i>
+                  <i class="material-icons" onClick={() =>
+                      this.setState({
+                        fullScream: !this.state.fullScream,
+                      })
+                    }
+                  >
+                    {fullScream ? "fullscreen_exit" : "fullscreen"}
+                  </i>
+                </div>
+                <div className="video-task-btn">
+                  <i className="material-icons"> {allMuted ? "volume_up" : "volume_off"} </i>
+                  <i className="material-icons" onClick={() => this.handleMuteMic()}>
+                    {!localMicMute ? "mic" : "mic_off"}
+                  </i>
+                  <i className="material-icons" onClick={() => this.handleMuteVideo()}>
+                    {!localVideoMute ? "videocam" : "videocam_off"}
+                  </i>
+                </div>
+                <div>
+                  <i className="material-icons" onClick={() => this.handleShareDisplayMedia()} >
+                    laptop
+                  </i>
+                </div>
+              </div>
+            )}
+          <div className="left-content">
+              <Videos
+                switchVideo={this.switchVideo}
+                remoteStreams={remoteStreams}
+                isMainRoom={isMainRoom}
+                allMuted={allMuted}
+              // videoStream={this.state.selectedVideo && this.state.selectedVideo.stream}
+              ></Videos>
+          </div>
+        </div>
+
+
+
+        {
+        !fullScream && (
+          <div className="room-page__right">
+            <div className="wrapper-localVideo">
                 <Video
                   videoType="localVideo"
                   videoStyles={{
-                    // zIndex:2,
-                    // position: 'absolute',
-                    // right:0,
                     width: "100%",
                     height: "100%",
-                    // margin: 5,
-                    // backgroundColor: 'black'
                   }}
                   frameStyle={{
-                    // width: 200,
-                    // margin: 5,
                     height: "100%",
                     borderRadius: 5,
                     backgroundColor: "black",
@@ -970,39 +756,39 @@ class Room extends Component {
                   showMuteControls={false}
                   localMicMute={localMicMute}
                   localVideoMute={localVideoMute}
-                  // ref={this.localVideoref}
                   videoStream={localStream}
                   autoPlay
                   muted={false}
-                ></Video>{" "}
-              </Draggable>{" "}
-            </div>{" "}
-            <Chat
-              user={{
-                uid: (this.socket && this.socket.id) || "",
-              }}
-              messages={messages}
-              sendMessage={(message) => {
-                this.setState((prevState) => {
-                  return {
-                    messages: [...prevState.messages, message],
-                  };
-                });
-                const { username } = this.socket.query;
-                message.message.sender.username = username;
-                // send channels
-                this.state.sendChannels.map((sendChannel) => {
-                  sendChannel.readyState === "open" &&
-                    sendChannel.send(JSON.stringify(message));
-                });
-                // message.sender.username = username;
-                this.sendToPeer("new-message", JSON.stringify(message), {
-                  local: this.socket.id,
-                });
-              }}
-            />{" "}
+                ></Video>
+            </div>
+            <div className="wrapper-localChatting">
+              <Chat
+                user={{
+                  uid: (this.socket && this.socket.id) || "",
+                }}
+                messages={messages}
+                sendMessage={(message) => {
+                  this.setState((prevState) => {
+                    return {
+                      messages: [...prevState.messages, message],
+                    };
+                  });
+                  const { username } = this.socket.query;
+                  message.message.sender.username = username;
+                  // send channels
+                  this.state.sendChannels.map((sendChannel) => {
+                    sendChannel.readyState === "open" &&
+                      sendChannel.send(JSON.stringify(message));
+                  });
+                  // message.sender.username = username;
+                  this.sendToPeer("new-message", JSON.stringify(message), {
+                    local: this.socket.id,
+                  });
+                }}
+              />
+            </div>
           </div>
-        )}{" "}
+        )}
       </div>
     );
   }
