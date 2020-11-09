@@ -3,7 +3,7 @@ import './style.scss'
 import qs from 'query-string'
 import io from 'socket.io-client'
 import Video from '../../components/Video'
-import Videos from '../../components/Videos'
+import Videos from '../../components/LeftContentContainer'
 import Chat from '../../components/Chat'
 import Draggable from '../../components/Draggable'
 

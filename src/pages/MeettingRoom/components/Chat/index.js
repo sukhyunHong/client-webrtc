@@ -85,7 +85,7 @@ const Chat = props => {
 
   return (
     <div style={{
-      height: '80%',
+      height: '100%',
       // background: 'red',
       position: 'relative'
     }}>

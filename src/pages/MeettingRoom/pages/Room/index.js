@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import io from "socket.io-client";
 
 import Video from "../../components/Video";
-import Videos from "../../components/Videos";
+import LeftContentContainer from "../../components/LeftContentContainer";
 import Chat from "../../components/Chat";
 import Draggable from "../../components/Draggable";
 import './style.scss'
@@ -41,16 +41,17 @@ class Room extends Component {
 
       messages: [],
       sendChannels: [],
+      requestUser: [],
       disconnected: false,
 
       localVideoMute: false,
-      localMicMute: false,
+      localMicMute: true,
 
       isMainRoom: false,
       fullScream: false,
 
       shareScream: false,
-      allMuted: true,
+      allMuted: false,
     };
     this.socket = null;
   }
@@ -501,6 +502,25 @@ class Room extends Component {
       if (pc) pc.addIceCandidate(new RTCIceCandidate(data.candidate));
     });
 
+    this.socket.on("request_mic_mute", (data) => {
+        this.setState({localMicMute : this.state.localMicMute})
+      // get remote's peerConnection
+    });
+
+    this.socket.on("request_question", (data) => {
+      const requestSocketId = data;
+      this.setState({
+        requestUser: [...this.state.requestUser, requestSocketId]
+      })
+    // get remote's peerConnection
+    });
+
+    this.socket.on("request_out", (data) => {
+      const requestSocketId = data;
+    // get remote's peerConnection
+    });
+
+
     // const pc_config = null
 
     // const pc_config = {
@@ -612,7 +632,23 @@ class Room extends Component {
       console.error("Error: " + err);
     }
   };
+  handleAllMuteMic = async () => {
+    this.sendToPeer("allmute", null, {
+      local: this.socket.id,
+    });
+  }
 
+  handleRequestQuestion = async () => {
+    this.sendToPeer("request_question", null, {
+      local: this.socket.id,
+    });
+  }
+
+  handleRequestGoOut = async () => {
+    this.sendToPeer("request_out", null, {
+      local: this.socket.id,
+    });
+  }
   render() {
     const {
       status,
@@ -626,7 +662,7 @@ class Room extends Component {
       isMainRoom,
       fullScream,
       allMuted,
-      shareScream,
+      requestUser,
     } = this.state;
     if (disconnected) {
       // disconnect socket
@@ -648,100 +684,96 @@ class Room extends Component {
 
     return (
       <div className="room-page">
-        <div className="room-page__left" style={{width: fullSize}}>
+        <div className="room-page__left" style={{ width: fullSize }}>
           {
+            isMainRoom ?
+            (
             //Default scream
-          !fullScream ? (
-            <div className="left-top__defaultSize">
-              <div className="out-full-btn">
-                <i className="material-icons out-btn" onClick={() => {
+            !fullScream ? (
+              <div className="left-top__defaultSize">
+                <div className="out-full-btn">
+                  <i className="material-icons out-btn" onClick={() => {
                     this.setState({
                       disconnected: true,
                     });
                     this.props.history.push("/meetting");
                   }}
-                >
-                  input
+                  >
+                    input
                 </i>
-                <i className="material-icons" onClick={() =>
-                    this.setState({
-                      fullScream: !this.state.fullScream,
-                    })
-                  }
-                >
-                  {fullScream ? "fullscreen_exit" : "fullscreen"}
+                  <i className="material-icons" onClick={() => this.setState({ fullScream: !this.state.fullScream })}>
+                    {fullScream ? "fullscreen_exit" : "fullscreen"}
+                  </i>
+                </div>
+                <div className="video-task-btn">
+                  <i className="material-icons" onClick={() => this.handleAllMuteMic()} style={allMuted ? { color: "red" } : {}}> {allMuted ? "volume_off" : "volume_up"} </i>
+                  <i className="material-icons" onClick={() => this.handleMuteMic()} style={localMicMute ? { color: "red" } : {}}>
+                    {!localMicMute ? "mic" : "mic_off"}
+                  </i>
+                  <i className="material-icons" onClick={() => this.handleMuteVideo()} style={localVideoMute ? { color: "red" } : {}}>
+                    {(!localVideoMute && "videocam") || "videocam_off"}
+                  </i>
+                </div>
+                <div className="point-btn">
+                  <i className="material-icons" onClick={() => this.handleShareDisplayMedia()}>
+                    laptop
                 </i>
+                </div>
               </div>
-              <div className="video-task-btn">
-                <i className="material-icons"> {allMuted ? "volume_up" : "volume_off"} </i>
-                <i  className="material-icons" onClick={() => this.handleMuteMic()}>
-                  {!localMicMute ? "mic" : "mic_off"}
-                </i>
-                <i className="material-icons" onClick={() => this.handleMuteVideo()}>
-                  {(!localVideoMute && "videocam") || "videocam_off"}
-                </i>
-              </div>
-              <div className="point-btn">
-                <i className="material-icons" onClick={() => this.handleShareDisplayMedia()}>
-                  laptop
-                </i>
-              </div>
-            </div>
-          ) : (
-              //Full scream
-            <div className="left-top__fulSize">
-                <div className="out-full-btn">
-                  <i className="material-icons" onClick={() => {
+            ) : (
+                //Full scream
+                <div className="left-top__fulSize">
+                  <div className="out-full-btn">
+                    <i className="material-icons" onClick={() => {
                       this.setState({
                         disconnected: true,
                       });
                       this.props.history.push("/meetting");
                     }}
-                  >
-                    input
+                    >
+                      input
                   </i>
-                  <i class="material-icons" onClick={() =>
-                      this.setState({
-                        fullScream: !this.state.fullScream,
-                      })
-                    }
-                  >
-                    {fullScream ? "fullscreen_exit" : "fullscreen"}
+                    <i class="material-icons" onClick={() => this.setState({ fullScream: !this.state.fullScream })} >
+                      {fullScream ? "fullscreen_exit" : "fullscreen"}
+                    </i>
+                  </div>
+                  <div className="video-task-btn">
+                    <i className="material-icons" onClick={() => this.handleAllMuteMic()} style={allMuted ? { color: "red" } : {}}> {allMuted ? "volume_off" : "volume_up"} </i>
+                    <i className="material-icons" onClick={() => this.handleMuteMic()}>
+                      {!localMicMute ? "mic" : "mic_off"}
+                    </i>
+                    <i className="material-icons" onClick={() => this.handleMuteVideo()}>
+                      {!localVideoMute ? "videocam" : "videocam_off"}
+                    </i>
+                  </div>
+                  <div>
+                    <i className="material-icons" onClick={() => this.handleShareDisplayMedia()} >
+                      laptop
                   </i>
+                  </div>
                 </div>
-                <div className="video-task-btn">
-                  <i className="material-icons"> {allMuted ? "volume_up" : "volume_off"} </i>
-                  <i className="material-icons" onClick={() => this.handleMuteMic()}>
-                    {!localMicMute ? "mic" : "mic_off"}
-                  </i>
-                  <i className="material-icons" onClick={() => this.handleMuteVideo()}>
-                    {!localVideoMute ? "videocam" : "videocam_off"}
-                  </i>
-                </div>
-                <div>
-                  <i className="material-icons" onClick={() => this.handleShareDisplayMedia()} >
-                    laptop
-                  </i>
-                </div>
-              </div>
-            )}
+                )
+              ) :
+              <div style={{height: "15%", background: 'black'}}></div>
+            }
           <div className="left-content">
-              <Videos
-                switchVideo={this.switchVideo}
-                remoteStreams={remoteStreams}
-                isMainRoom={isMainRoom}
-                allMuted={allMuted}
-              // videoStream={this.state.selectedVideo && this.state.selectedVideo.stream}
-              ></Videos>
+            <LeftContentContainer
+              switchVideo={this.switchVideo}
+              remoteStreams={remoteStreams}
+              isMainRoom={isMainRoom}
+
+              requestUser={requestUser}
+              handleRequestQuestion={this.handleRequestQuestion}
+              handleRequestGoOut={this.handleRequestGoOut}
+              videoStream={this.state.selectedVideo && this.state.selectedVideo.stream}
+            ></LeftContentContainer>
           </div>
         </div>
 
-
-
         {
-        !fullScream && (
-          <div className="room-page__right">
-            <div className="wrapper-localVideo">
+          !fullScream && (
+            <div className="room-page__right">
+              <div className="wrapper-localVideo">
                 <Video
                   videoType="localVideo"
                   videoStyles={{
@@ -753,42 +785,41 @@ class Room extends Component {
                     borderRadius: 5,
                     backgroundColor: "black",
                   }}
-                  showMuteControls={false}
                   localMicMute={localMicMute}
                   localVideoMute={localVideoMute}
                   videoStream={localStream}
                   autoPlay
-                  muted={false}
+                  muted={localMicMute}
                 ></Video>
+              </div>
+              <div className="wrapper-localChatting">
+                <Chat
+                  user={{
+                    uid: (this.socket && this.socket.id) || "",
+                  }}
+                  messages={messages}
+                  sendMessage={(message) => {
+                    this.setState((prevState) => {
+                      return {
+                        messages: [...prevState.messages, message],
+                      };
+                    });
+                    const { username } = this.socket.query;
+                    message.message.sender.username = username;
+                    // send channels
+                    this.state.sendChannels.map((sendChannel) => {
+                      sendChannel.readyState === "open" &&
+                        sendChannel.send(JSON.stringify(message));
+                    });
+                    // message.sender.username = username;
+                    this.sendToPeer("new-message", JSON.stringify(message), {
+                      local: this.socket.id,
+                    });
+                  }}
+                />
+              </div>
             </div>
-            <div className="wrapper-localChatting">
-              <Chat
-                user={{
-                  uid: (this.socket && this.socket.id) || "",
-                }}
-                messages={messages}
-                sendMessage={(message) => {
-                  this.setState((prevState) => {
-                    return {
-                      messages: [...prevState.messages, message],
-                    };
-                  });
-                  const { username } = this.socket.query;
-                  message.message.sender.username = username;
-                  // send channels
-                  this.state.sendChannels.map((sendChannel) => {
-                    sendChannel.readyState === "open" &&
-                      sendChannel.send(JSON.stringify(message));
-                  });
-                  // message.sender.username = username;
-                  this.sendToPeer("new-message", JSON.stringify(message), {
-                    local: this.socket.id,
-                  });
-                }}
-              />
-            </div>
-          </div>
-        )}
+          )}
       </div>
     );
   }
