@@ -68,6 +68,7 @@ class Video extends Component {
 
   mutemic = (e) => {
     const stream = this.video.srcObject.getTracks().filter(track => track.kind === 'audio')
+    console.log(stream[0].enabled )
     this.setState(prevState => {
       if (stream) stream[0].enabled = !prevState.mic
       return {mic: !prevState.mic}
@@ -82,15 +83,8 @@ class Video extends Component {
     })
   }
   
-
   render() {
-    // const muteControls = this.props.showMuteControls && (
-    //   <div>
-    //     <i onClick={this.mutemic} style={{ cursor: 'pointer', padding: 5, fontSize: 20, color: this.state.mic && 'white' || 'red' }} class='material-icons'>{this.state.mic && 'mic' || 'mic_off'}</i>
-    //     <i onClick={this.mutecamera} style={{ cursor: 'pointer', padding: 5, fontSize: 20, color: this.state.camera && 'white' || 'red' }} class='material-icons'>{this.state.camera && 'videocam' || 'videocam_off'}</i>
-    //   </div>
-    // )
-
+    console.log(this.props.muted)
     return (
         <video
           id={this.props.id}

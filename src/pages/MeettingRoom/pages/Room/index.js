@@ -8,6 +8,7 @@ import Draggable from "../../components/Draggable";
 import './style.scss'
 
 import qs from "query-string";
+import WhiteBoard from "../../components/WhiteBoard";
 class Room extends Component {
   constructor(props) {
     super(props);
@@ -51,7 +52,10 @@ class Room extends Component {
       fullScream: false,
 
       shareScream: false,
-      allMuted: false,
+      allMuted: true,
+
+      outEnable: false,
+      paintScream: false
     };
     this.socket = null;
   }
@@ -95,7 +99,7 @@ class Room extends Component {
     // };
 
     const constraints = (window.constraints = {
-      audio: false,
+      audio: true,
       video: true,
     });
 
@@ -503,24 +507,78 @@ class Room extends Component {
     });
 
     this.socket.on("request_mic_mute", (data) => {
-        this.setState({localMicMute : this.state.localMicMute})
+        this.setState({localMicMute : !this.state.localMicMute})
       // get remote's peerConnection
     });
 
+    // Host User
     this.socket.on("request_question", (data) => {
       const requestSocketId = data;
+      let value = {
+        type: "question",
+        remoteId: requestSocketId,
+        state: false
+      }
+
       this.setState({
-        requestUser: [...this.state.requestUser, requestSocketId]
+        requestUser: [...this.state.requestUser, value]
       })
     // get remote's peerConnection
     });
 
+    //Host User
     this.socket.on("request_out", (data) => {
       const requestSocketId = data;
-    // get remote's peerConnection
+      let value = {
+        type: "out",
+        remoteId: requestSocketId,
+        state: false
+      }
+      this.setState({
+        requestUser: [...this.state.requestUser, value]
+      })
     });
 
+    // normal User reqest question
+    this.socket.on("action_user_request_question", (data) => {
+      data === 'reject' ?  this.setState({ localMicMute: true }) : this.setState({ localMicMute: false })
+    })
 
+    // normal User
+    this.socket.on("action_user_request_out_normaluser", (data) => {
+      data === 'reject' ?  this.setState({ outEnable: false }) : this.setState({ outEnable: true })
+    })
+
+    // host User
+    this.socket.on("action_user_request_out_host", (data) => {
+      const { type, remoteSocketId} = data;
+      let requestUserTemp = [];
+      if(type === 'accept'){
+        requestUserTemp = this.state.requestUser.map(element => {
+          if(element.remoteId === remoteSocketId){
+            let elementTemp = {...element, state: true};
+            return elementTemp;
+          }else{
+            return element
+          }
+        })
+        console.log(requestUserTemp)
+      }else{
+        requestUserTemp = this.state.requestUser.filter(element => element.remoteId !== remoteSocketId);
+      }
+      this.setState({
+        requestUser: requestUserTemp
+      })
+    })
+    
+    this.socket.on("action_host_request_cancel_out", (data) => {
+      const remoteSocketId = data;
+      let requestUserTemp = this.state.requestUser.filter(element => element.remoteId !== remoteSocketId);
+      console.log(requestUserTemp)
+      this.setState({
+        requestUser: requestUserTemp
+      })
+    })
     // const pc_config = null
 
     // const pc_config = {
@@ -633,25 +691,67 @@ class Room extends Component {
     }
   };
   handleAllMuteMic = async () => {
+    this.setState({
+      allMuted: !this.state.allMuted
+    })
     this.sendToPeer("allmute", null, {
       local: this.socket.id,
     });
   }
+  // host user send server and check
+  handleActionRequestUser = async (socketId, type, method) => {
+    let requestUserTemp = [];
+    if(type === 'accept'){
+      requestUserTemp = this.state.requestUser.map(element => {
+        if(element.remoteId === socketId){
+          let elementTemp = {...element, state: true};
+          return elementTemp;
+        }else{
+          return element
+        }
+      })
+    }else{
+      requestUserTemp = this.state.requestUser.filter(element => element.remoteId !== socketId);
+    }
 
+    this.setState({
+      requestUser: requestUserTemp
+    })
+  
+    this.sendToPeer("action_user_request", {type, method}, {
+      remoteSocketId: socketId,
+    });
+  }
+  //normal user 자리 취소 
+  handleCancelOut = () => {
+    this.sendToPeer("action_user_request_cancel_out", null , {
+      local: this.socket.id,
+    });
+    this.setState({
+      outEnable: !this.state.outEnable
+    })
+  } 
+
+  //end to normal user
   handleRequestQuestion = async () => {
+    // requestUserTemp = this.state.requestUser.filter(element => element.remoteId !== remoteSocketId);
     this.sendToPeer("request_question", null, {
       local: this.socket.id,
     });
   }
-
   handleRequestGoOut = async () => {
     this.sendToPeer("request_out", null, {
       local: this.socket.id,
     });
   }
+
+  handlePaintScream = () => {
+    this.setState({
+      paintScream : !this.state.paintScream
+    })
+  }
   render() {
     const {
-      status,
       messages,
       disconnected,
       localStream,
@@ -663,6 +763,8 @@ class Room extends Component {
       fullScream,
       allMuted,
       requestUser,
+      outEnable,
+      paintScream
     } = this.state;
     if (disconnected) {
       // disconnect socket
@@ -699,14 +801,14 @@ class Room extends Component {
                     this.props.history.push("/meetting");
                   }}
                   >
-                    input
+                    exit_to_app
                 </i>
                   <i className="material-icons" onClick={() => this.setState({ fullScream: !this.state.fullScream })}>
                     {fullScream ? "fullscreen_exit" : "fullscreen"}
                   </i>
                 </div>
                 <div className="video-task-btn">
-                  <i className="material-icons" onClick={() => this.handleAllMuteMic()} style={allMuted ? { color: "red" } : {}}> {allMuted ? "volume_off" : "volume_up"} </i>
+                  <i className="material-icons" onClick={() => this.handleAllMuteMic()} style={!allMuted ? { color: "red" } : {}}> {!allMuted ? "volume_off" : "volume_up"} </i>
                   <i className="material-icons" onClick={() => this.handleMuteMic()} style={localMicMute ? { color: "red" } : {}}>
                     {!localMicMute ? "mic" : "mic_off"}
                   </i>
@@ -717,12 +819,15 @@ class Room extends Component {
                 <div className="point-btn">
                   <i className="material-icons" onClick={() => this.handleShareDisplayMedia()}>
                     laptop
-                </i>
+                  </i>
+                  <i className="material-icons" onClick={() => this.handlePaintScream()}>
+                    dvr
+                  </i>
                 </div>
               </div>
             ) : (
                 //Full scream
-                <div className="left-top__fulSize">
+                <div className="left-top__fullSize">
                   <div className="out-full-btn">
                     <i className="material-icons" onClick={() => {
                       this.setState({
@@ -731,14 +836,14 @@ class Room extends Component {
                       this.props.history.push("/meetting");
                     }}
                     >
-                      input
+                      exit_to_app
                   </i>
                     <i class="material-icons" onClick={() => this.setState({ fullScream: !this.state.fullScream })} >
                       {fullScream ? "fullscreen_exit" : "fullscreen"}
                     </i>
                   </div>
                   <div className="video-task-btn">
-                    <i className="material-icons" onClick={() => this.handleAllMuteMic()} style={allMuted ? { color: "red" } : {}}> {allMuted ? "volume_off" : "volume_up"} </i>
+                    <i className="material-icons" onClick={() => this.handleAllMuteMic()} style={!allMuted ? { color: "red" } : {}}> {!allMuted ? "volume_off" : "volume_up"} </i>
                     <i className="material-icons" onClick={() => this.handleMuteMic()}>
                       {!localMicMute ? "mic" : "mic_off"}
                     </i>
@@ -749,24 +854,48 @@ class Room extends Component {
                   <div>
                     <i className="material-icons" onClick={() => this.handleShareDisplayMedia()} >
                       laptop
-                  </i>
+                    </i>
+                    <i className="material-icons" onClick={() => this.handlePaintScream()}>
+                      dvr
+                    </i>
                   </div>
                 </div>
                 )
               ) :
-              <div style={{height: "15%", background: 'black'}}></div>
+              <div  className="left-normaluser">
+                {
+                outEnable && 
+                <>
+                <p> 자리 비움 요청이 수락됩니다. </p>
+                <button onClick={() => this.handleCancelOut()}>자리 비움이 최소</button> 
+                </>
+                || !localMicMute &&
+                  <>
+                    <p>마이크 요청이 수락됩니다.</p>
+                    <p><i className="material-icons" >mic</i></p>
+                  </>
+                }
+              </div>
             }
           <div className="left-content">
+            {
+            paintScream ? 
+            <WhiteBoard />
+            :
             <LeftContentContainer
               switchVideo={this.switchVideo}
               remoteStreams={remoteStreams}
               isMainRoom={isMainRoom}
 
               requestUser={requestUser}
+              handleActionRequestUser={this.handleActionRequestUser}
+
+              //handle for normal user
               handleRequestQuestion={this.handleRequestQuestion}
               handleRequestGoOut={this.handleRequestGoOut}
               videoStream={this.state.selectedVideo && this.state.selectedVideo.stream}
-            ></LeftContentContainer>
+            />
+            }
           </div>
         </div>
 

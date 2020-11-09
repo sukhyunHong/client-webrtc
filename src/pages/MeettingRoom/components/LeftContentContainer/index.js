@@ -2,6 +2,9 @@ import React, { Component } from 'react'
 import Video from '../Video'
 import qs from 'query-string'
 import Axios from 'axios'
+import ReactLoading from "react-loading";
+import styled from 'styled-components'
+import moment from 'moment';
 import './style.scss'
 class LeftContentContainer extends Component {
   constructor(props) {
@@ -14,13 +17,13 @@ class LeftContentContainer extends Component {
       
       selectedVideo: null,
       videoVisible: false,
+      loading: false,
     }
   }
 
   componentWillReceiveProps(nextProps) {
     if (this.props.remoteStreams !== nextProps.remoteStreams || this.props.requestUser !== nextProps.requestUser) {
       const NoOfRemoteStreams = nextProps.remoteStreams.length
-      console.log(nextProps.requestUser)
 
       let selectedVideo = {}
 
@@ -38,8 +41,7 @@ class LeftContentContainer extends Component {
         }
       }).then(res => {
         const { data } = res;
-        hostSocketId = data.data
-        //!안됨
+        hostSocketId = data.data;
         //2명
         if (NoOfRemoteStreams === 1)
           selectedVideo = { selectedVideo: nextProps.remoteStreams[0] }
@@ -47,11 +49,11 @@ class LeftContentContainer extends Component {
           selectedVideo = this.state.selectedVideo && nextProps.remoteStreams.filter(stream => stream.id === hostSocketId) || []
           selectedVideo = selectedVideo.length ? selectedVideo[0] : { selectedVideo: nextProps.remoteStreams[NoOfRemoteStreams - 1] }
         }
-
+        console.log(nextProps.remoteStreams)
         let _rVideos = nextProps.remoteStreams.map((rVideo, index) => {
           const _videoTrack = rVideo.stream.getTracks().filter(track => track.kind === 'video')   
-          const check = nextProps.requestUser.includes(rVideo.name)
-          console.log(check)
+          console.log(nextProps.requestUser)
+          const requestValue = nextProps.requestUser.filter(element => element.remoteId === rVideo.name)
           let video = _videoTrack && (
             <div className="video-item">
               <Video
@@ -65,6 +67,49 @@ class LeftContentContainer extends Component {
                   // maxWidth: 250, maxHeight: 200,
                 }}
               />
+              {
+                requestValue.length === 1 ? 
+                  //자리 비움 요청
+                  requestValue[0].type === 'out' ?
+                      requestValue[0].state ?
+                        <div className="wrapper-request">
+                          <div>
+                            <p className="wrapper-request__name">홍길동</p>
+                            <p>{moment().format('LTS')}</p>
+                          </div>
+                        </div> :
+                        <div className="wrapper-request">
+                          <div>
+                            <p className="wrapper-request__name">홍길동</p>
+                            <p className="wrapper-request__type"><span>자리비움</span> 요청</p> 
+                            <div className="wrapper-request__btn">
+                              <button className="wrapper-request__btn--reject" onClick={() => this.props.handleActionRequestUser(rVideo.name, "reject", requestValue[0].type)}>거절</button>
+                              <button className="wrapper-request__btn--accept" onClick={() => this.props.handleActionRequestUser(rVideo.name, "accept", requestValue[0].type)}>수락</button>
+                            </div>
+                          </div>
+                        </div>
+                      :
+
+                    //질문 요청
+                      requestValue[0].state ?
+                        <div className="wrapper-request">
+                          <div>
+                            <p className="wrapper-request__name">홍길동</p>
+                            <p><i className="material-icons" >mic</i></p>
+                          </div>
+                        </div> :
+                        <div className="wrapper-request">
+                          <div>
+                            <p className="wrapper-request__name">홍길동</p>
+                            <p className="wrapper-request__type"><span>질문</span> 요청</p> 
+                            <div className="wrapper-request__btn">
+                              <button className="wrapper-request__btn--reject" onClick={() => this.props.handleActionRequestUser(rVideo.name, "reject", requestValue[0].type)}>거절</button>
+                              <button className="wrapper-request__btn--accept" onClick={() => this.props.handleActionRequestUser(rVideo.name, "accept", requestValue[0].type)}>수락</button>
+                            </div>
+                          </div>
+                        </div> :
+                    ""
+              }
             </div>
           ) || <div></div>
 
@@ -86,10 +131,10 @@ class LeftContentContainer extends Component {
           remoteStreams: nextProps.remoteStreams,
           rVideos: _rVideos,
           ...selectedVideo,
+          loading: true
         })
 
       })
-
     }
   }
 
@@ -111,14 +156,15 @@ class LeftContentContainer extends Component {
     })
   }
 
-  handleRequestQuestion = () =>{
-    this.props.handleRequestQuestion();
-  }
-
-  handleRequestGoOut = () => {
-    this.props.handleRequestGoOut();
-  }
   render() {
+    const { loading } = this.state;
+    console.log(this.props.remoteStreams)
+    if(!loading)
+    {
+      return <WrapperLoading className="loading">
+            <ReactLoading type="spin" color="#000" />
+        </WrapperLoading>
+    }
     return (
       <div className="left-content__container">
         {
@@ -149,14 +195,14 @@ class LeftContentContainer extends Component {
                         // this.setState({
                         //   disconnected: true,
                         // });
-                        this.props.history.push("/meetting");
+                        window.location.href = "/meetting";
                       }}
                     >
                       input
                     </i>
                     <div>
-                      <button onClick={() => this.handleRequestQuestion()} >음성 질문 요청</button>
-                      <button onClick={() => this.handleRequestGoOut()} >자리 비율 요청</button>
+                      <button onClick={() => this.props.handleRequestQuestion()} >음성 질문 요청</button>
+                      <button onClick={() => this.props.handleRequestGoOut()} >자리 비움 요청</button>
                     </div>
                     <span>수학 - 제1강 집합</span>
                   </div>
@@ -167,5 +213,11 @@ class LeftContentContainer extends Component {
   }
 
 }
+const WrapperLoading = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+`
 
 export default LeftContentContainer
