@@ -35,7 +35,7 @@ const Chat = props => {
   }
 
   const renderMessage = (userType, data) => {
-    console.log('===========', data)
+    // console.log('===========', data)
     const message = data.message
 
     const msgDiv = data.type === 'text' && (
@@ -129,9 +129,11 @@ const Chat = props => {
               <input
                 className="textarea input"
                 type="text"
-                placeholder="문자 메시지 ..."
+                placeholder={props.normalUserChat ? "문자 메시지 금지 상태입니다 ..." : "문자 메시지 ..."}
                 onChange={handleChange}
                 value={message}
+                readOnly={props.normalUserChat}
+                style={props.normalUserChat ? {border: '2px solid red'} : {}}
               />
             </form>
           </div>

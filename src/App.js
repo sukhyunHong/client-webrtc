@@ -4,6 +4,7 @@ import './index.scss'
 
 import Loading from './components/Loading';
 import MeettingRoom from "./pages/MeettingRoom";
+import Alert from "./components/Alert";
 
 // Put variables in global scope to make them available to the browser console.
 const constraints = window.constraints = {
@@ -63,6 +64,7 @@ function App() {
                 <Redirect to="/meetting"/> 
             </Route>
             <Route path = "/meetting"  component = {MeettingRoom}/>
+            <Route path = "/alert"  component = {Alert}/>
           </Switch>
           </BrowserRouter>
       </Suspense>

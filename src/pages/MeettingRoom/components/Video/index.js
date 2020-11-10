@@ -84,7 +84,6 @@ class Video extends Component {
   }
   
   render() {
-    console.log(this.props.muted)
     return (
         <video
           id={this.props.id}

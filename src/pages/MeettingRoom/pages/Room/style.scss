@@ -23,16 +23,17 @@
             .out-full-btn{
                 display: flex;
                 align-items: center;
-                // .out-btn i {
-                //     transform: rotate(180ded);
-                // }
             }
+            
             i{
                 cursor: pointer;
                 padding: 15px;
                 font-size: 25px;
                 outline: none;
             }
+        }
+        .out-btn {
+            transform: rotate(180deg);
         }
         .left-top__fullSize{
             width: 30%;
@@ -57,7 +58,6 @@
                 outline: none;
             }
         }
-
 
         .left-content{
             height: 90%;

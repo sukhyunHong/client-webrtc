@@ -9,6 +9,7 @@ import './style.scss'
 
 import qs from "query-string";
 import WhiteBoard from "../../components/WhiteBoard";
+import Alert from "../../../../components/Alert";
 class Room extends Component {
   constructor(props) {
     super(props);
@@ -17,6 +18,7 @@ class Room extends Component {
 
     this.state = {
       localStream: null, // used to hold local stream object to avoid recreating the stream everytime a new offer comes
+      localStreamTemp: null,
       remoteStream: null, // used to hold remote stream object that is displayed in the main screen
 
       remoteStreams: [], // holds all Video Streams (all remote streams)
@@ -55,7 +57,10 @@ class Room extends Component {
       allMuted: true,
 
       outEnable: false,
-      paintScream: false
+      paintScream: false,
+      enableChat: true,
+
+      normalUserChat: false,
     };
     this.socket = null;
   }
@@ -579,53 +584,11 @@ class Room extends Component {
         requestUser: requestUserTemp
       })
     })
-    // const pc_config = null
-
-    // const pc_config = {
-    //   "iceServers": [
-    //     // {
-    //     //   urls: 'stun:[STUN_IP]:[PORT]',
-    //     //   'credentials': '[YOR CREDENTIALS]',
-    //     //   'username': '[USERNAME]'
-    //     // },
-    //     {
-    //       urls : 'stun:stun.l.google.com:19302'
-    //     }
-    //   ]
-    // }
-
-    // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection
-    // create an instance of RTCPeerConnection
-    // this.pc = new RTCPeerConnection(this.state.pc_config)
-
-    // triggered when a new candidate is returned
-    // this.pc.onicecandidate = (e) => {
-    //   // send the candidates to the remote peer
-    //   // see addCandidate below to be triggered on the remote peer
-    //   if (e.candidate) {
-    //     // console.log(JSON.stringify(e.candidate))
-    //     this.sendToPeer('candidate', e.candidate)
-    //   }
-    // }
-
-    // triggered when there is a change in connection state
-    // this.pc.oniceconnectionstatechange = (e) => {
-    //   console.log(e)
-    // }
-
-    // triggered when a stream is added to pc, see below - this.pc.addStream(stream)
-    // this.pc.onaddstream = (e) => {
-    //   this.remoteVideoref.current.srcObject = e.stream
-    // }
-
-    // this.pc.ontrack = (e) => {
-    //   debugger
-    //   // this.remoteVideoref.current.srcObject = e.streams[0]
-
-    //   this.setState({
-    //     remoteStream: e.streams[0]
-    //   })
-    // }
+    this.socket.on("action_host_chat", (data) => {
+      this.setState({
+        normalUserChat: !this.state.normalUserChat
+      })
+    })
   };
 
   // ************************************* //
@@ -664,8 +627,7 @@ class Room extends Component {
 
   handleShareDisplayMedia = async () => {
     try {
-      navigator.mediaDevices
-        .getDisplayMedia({
+      navigator.mediaDevices.getDisplayMedia({
           video: {
             cursor: "always",
           },
@@ -673,18 +635,37 @@ class Room extends Component {
         })
         .then((stream) => {
           this.setState({
+            localStreamTemp : this.state.localStream,
             localStream: stream,
           });
 
-          const { peerConnections } = this.state;
+          const { peerConnections, shareScream } = this.state;
           let videoTrack = stream.getVideoTracks()[0];
           Object.values(peerConnections).forEach((pc) => {
             var sender = pc.getSenders().find(function (s) {
               return s.track.kind == videoTrack.kind;
             });
-            console.log('found sender:', sender);
+            this.setState({
+              shareScream: !shareScream,
+            });
             sender.replaceTrack(videoTrack);
           })
+
+          //화면 공유 중지
+          const { localStreamTemp } = this.state;
+          videoTrack.onended = () =>  {
+            let videoTrack = localStreamTemp.getVideoTracks()[0];
+            Object.values(peerConnections).forEach((pc) => {
+              var sender = pc.getSenders().find(function (s) {
+                return s.track.kind == videoTrack.kind;
+              });
+              sender.replaceTrack(videoTrack);
+            })
+            this.setState({
+              localStream: localStreamTemp,
+              shareScream: false
+            });
+          }
         });
     } catch (err) {
       console.error("Error: " + err);
@@ -750,6 +731,55 @@ class Room extends Component {
       paintScream : !this.state.paintScream
     })
   }
+  handleControlChat = () => {
+    this.sendToPeer("action_host_chat", null, {
+      local: this.socket.id,
+    });
+    this.setState({
+      enableChat : !this.state.enableChat
+    })
+  }
+  handleOutRoom = () => {
+    const { remoteStreams } = this.state;
+    if(remoteStreams.length !== 0){
+      Alert({
+          title: "수업을 종료하시겠습니까?",
+          content: `핵생이 남아있는 경우, 모도 퇴장됩니다.`,
+          handleClickAccept: () => { //accept
+              this.setState({
+                disconnected: true
+              })
+              this.props.history.push("/meetting");
+          },
+          handleClickReject: () => {} //reject 
+      })
+    }else{
+      Alert({
+        title: "수업을 종료하시겠습니까?",
+        // content: `핵생이 남아있는 경우, 모도 퇴장됩니다.`,
+        handleClickAccept: () => { //accept
+            this.setState({
+              disconnected: true
+            })
+            this.props.history.push("/meetting");
+        },
+        handleClickReject: () => {} //reject 
+      })
+    }
+  }
+  handleUserOutRoom = () => {
+    Alert({
+      title: "수업을 종료하시겠습니까?",
+      // content: `핵생이 남아있는 경우, 모도 퇴장됩니다.`,
+      handleClickAccept: () => { //accept
+          this.setState({
+            disconnected: true
+          })
+          this.props.history.push("/meetting");
+      },
+      handleClickReject: () => {} //reject 
+    })
+  }
   render() {
     const {
       messages,
@@ -764,7 +794,10 @@ class Room extends Component {
       allMuted,
       requestUser,
       outEnable,
-      paintScream
+      paintScream,
+      enableChat,
+      normalUserChat,
+      shareScream
     } = this.state;
     if (disconnected) {
       // disconnect socket
@@ -790,90 +823,50 @@ class Room extends Component {
           {
             isMainRoom ?
             (
-            //Default scream
-            !fullScream ? (
-              <div className="left-top__defaultSize">
-                <div className="out-full-btn">
-                  <i className="material-icons out-btn" onClick={() => {
-                    this.setState({
-                      disconnected: true,
-                    });
-                    this.props.history.push("/meetting");
-                  }}
-                  >
-                    exit_to_app
-                </i>
-                  <i className="material-icons" onClick={() => this.setState({ fullScream: !this.state.fullScream })}>
-                    {fullScream ? "fullscreen_exit" : "fullscreen"}
-                  </i>
-                </div>
-                <div className="video-task-btn">
-                  <i className="material-icons" onClick={() => this.handleAllMuteMic()} style={!allMuted ? { color: "red" } : {}}> {!allMuted ? "volume_off" : "volume_up"} </i>
-                  <i className="material-icons" onClick={() => this.handleMuteMic()} style={localMicMute ? { color: "red" } : {}}>
-                    {!localMicMute ? "mic" : "mic_off"}
-                  </i>
-                  <i className="material-icons" onClick={() => this.handleMuteVideo()} style={localVideoMute ? { color: "red" } : {}}>
-                    {(!localVideoMute && "videocam") || "videocam_off"}
-                  </i>
-                </div>
-                <div className="point-btn">
-                  <i className="material-icons" onClick={() => this.handleShareDisplayMedia()}>
-                    laptop
-                  </i>
-                  <i className="material-icons" onClick={() => this.handlePaintScream()}>
-                    dvr
-                  </i>
-                </div>
-              </div>
-            ) : (
-                //Full scream
-                <div className="left-top__fullSize">
+                //Default scream & full scream
+                <div className={!fullScream ? "left-top__defaultSize" : "left-top__fullSize"}>
                   <div className="out-full-btn">
-                    <i className="material-icons" onClick={() => {
-                      this.setState({
-                        disconnected: true,
-                      });
-                      this.props.history.push("/meetting");
-                    }}
-                    >
+                    <i className="material-icons out-btn" onClick={() => this.handleOutRoom()} >
                       exit_to_app
-                  </i>
-                    <i class="material-icons" onClick={() => this.setState({ fullScream: !this.state.fullScream })} >
+                    </i>
+                    <i className="material-icons" onClick={() => this.setState({ fullScream: !this.state.fullScream })}>
                       {fullScream ? "fullscreen_exit" : "fullscreen"}
                     </i>
                   </div>
                   <div className="video-task-btn">
                     <i className="material-icons" onClick={() => this.handleAllMuteMic()} style={!allMuted ? { color: "red" } : {}}> {!allMuted ? "volume_off" : "volume_up"} </i>
-                    <i className="material-icons" onClick={() => this.handleMuteMic()}>
+                    <i className="material-icons" onClick={() => this.handleMuteMic()} style={localMicMute ? { color: "red" } : {}}>
                       {!localMicMute ? "mic" : "mic_off"}
                     </i>
-                    <i className="material-icons" onClick={() => this.handleMuteVideo()}>
-                      {!localVideoMute ? "videocam" : "videocam_off"}
+                    <i className="material-icons" onClick={() => this.handleMuteVideo()} style={localVideoMute ? { color: "red" } : {}}>
+                      {(!localVideoMute && "videocam") || "videocam_off"}
                     </i>
                   </div>
-                  <div>
-                    <i className="material-icons" onClick={() => this.handleShareDisplayMedia()} >
+                  <div className="point-btn">
+                    <i className="material-icons" onClick={() => this.handleControlChat()} style={enableChat ? {} : {color: "red" }}>
+                      {enableChat ? "speaker_notes" : "speaker_notes_off"}
+                    </i>
+                    <i className="material-icons" onClick={() => this.handleShareDisplayMedia()} style={shareScream ? {color: "red" } : {}}>
                       laptop
                     </i>
-                    <i className="material-icons" onClick={() => this.handlePaintScream()}>
+                    <i className="material-icons" onClick={() => this.handlePaintScream()} style={paintScream ? { color: "red" } : {}}>
                       dvr
                     </i>
                   </div>
                 </div>
-                )
               ) :
               <div  className="left-normaluser">
                 {
-                outEnable && 
-                <>
-                <p> 자리 비움 요청이 수락됩니다. </p>
-                <button onClick={() => this.handleCancelOut()}>자리 비움이 최소</button> 
-                </>
-                || !localMicMute &&
+                  outEnable && 
                   <>
-                    <p>마이크 요청이 수락됩니다.</p>
-                    <p><i className="material-icons" >mic</i></p>
+                  <p> 자리 비움 요청이 수락됩니다. </p>
+                  <button onClick={() => this.handleCancelOut()}>자리 비움이 최소</button> 
                   </>
+                  || !localMicMute &&
+                    <>
+                      <p>마이크 요청이 수락됩니다.</p>
+                      <p><i className="material-icons" >mic</i></p>
+                    </>
                 }
               </div>
             }
@@ -883,6 +876,7 @@ class Room extends Component {
             <WhiteBoard />
             :
             <LeftContentContainer
+              paintScream={!paintScream}
               switchVideo={this.switchVideo}
               remoteStreams={remoteStreams}
               isMainRoom={isMainRoom}
@@ -891,6 +885,7 @@ class Room extends Component {
               handleActionRequestUser={this.handleActionRequestUser}
 
               //handle for normal user
+              handleUserOutRoom = {this.handleUserOutRoom}
               handleRequestQuestion={this.handleRequestQuestion}
               handleRequestGoOut={this.handleRequestGoOut}
               videoStream={this.state.selectedVideo && this.state.selectedVideo.stream}
@@ -923,6 +918,7 @@ class Room extends Component {
               </div>
               <div className="wrapper-localChatting">
                 <Chat
+                  normalUserChat={isMainRoom ? false : normalUserChat}
                   user={{
                     uid: (this.socket && this.socket.id) || "",
                   }}
