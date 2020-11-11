@@ -155,6 +155,7 @@ class LeftContentContainer extends Component {
           let video = _videoTrack && (
             <div className="video-item">
               <Video
+                muted={true}
                 videoMuted={this.videoMuted}
                 videoType='remoteVideo'
                 videoStream={rVideo.stream}
@@ -194,6 +195,9 @@ class LeftContentContainer extends Component {
                           <div>
                             <p className="wrapper-request__name">홍길동</p>
                             <p><i className="material-icons" >mic</i></p>
+                            <div className="wrapper-request__btn">
+                              <button className="wrapper-request__btn--end" onClick={() => this.props.handleActionRequestUser(rVideo.name, "reject", requestValue[0].type)}>질문 요청 완료</button>
+                            </div>
                           </div>
                         </div> :
                         <div className="wrapper-request">
@@ -273,6 +277,7 @@ class LeftContentContainer extends Component {
               </div>
             </div> 
             :
+            //학생인 경우애는 
             <div className="single-video">
                 <div className="single-video__body">
                   <Video
@@ -283,6 +288,7 @@ class LeftContentContainer extends Component {
                         visibility: "visible",
                         objectFit: "initial",
                       }}
+                      muted={true}
                       videoStream={
                         this.state.selectedVideo && this.state.selectedVideo.stream
                       }

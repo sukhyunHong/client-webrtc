@@ -37,7 +37,6 @@ function CreateARoom(props) {
     }
     const handleSearchRoomByUserName = () => {
         try {
-            console.log(process.env.REACT_APP_SERVER_API)
             axios({
                 method: 'get',
                 url: `${process.env.REACT_APP_SERVER_API}/room/search`,
@@ -52,6 +51,24 @@ function CreateARoom(props) {
             console.log(error)            
         }
     }
+    const handleJoinRoom = () => {
+        axios({
+            method: 'get',
+            url: `${process.env.REACT_APP_SERVER_API}/room/joinroomcheck`,
+            params: {
+                roomname: joinroom
+            }
+        }).then(res => {
+            const { data } = res;
+            const { result } = data;
+            if(result){
+                alert("해당하는 방이 생성되지 않습니다.")                
+            }else{
+                props.history.push(`/meetting/open?room=${joinroom}&user=${joinUsername}`)
+            }
+            // setRoomsByUserName(data.data)
+        }).catch(error => console.log(error))
+    }
     return (
         <div className="create-room">
             <div>
@@ -63,7 +80,7 @@ function CreateARoom(props) {
             <div>
                 <input type="text" name="" placeholder="Room Join ... " id="" onChange={(e) => setJoinRoom(e.target.value)} value={joinroom}/>
                 <input type="text" name="" placeholder="User Join ... " id="" onChange={(e) => setJoinUsername(e.target.value)} value={joinUsername}/>
-                <button style={{width: '150px'}} onClick={() => !joinroom ? alert("원하는 방을 입력하세요")  : props.history.push(`/meetting/open?room=${joinroom}&user=${joinUsername}`) }>Join Room</button>
+                <button style={{width: '150px'}} onClick={() => handleJoinRoom()}>Join Room</button>
             </div>
 
             <div>

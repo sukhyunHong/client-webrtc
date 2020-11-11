@@ -82,8 +82,8 @@ class Video extends Component {
       return {camera: !prevState.camera}
     })
   }
-  
   render() {
+    console.log(this.props.muted)
     return (
         <video
           id={this.props.id}

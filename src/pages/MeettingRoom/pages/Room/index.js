@@ -306,6 +306,7 @@ class Room extends Component {
         status: status,
         isMainRoom: isHost,
         messages: data.messages,
+        // localMicMute: isHost ? false : true
       });
     });
 
@@ -322,40 +323,43 @@ class Room extends Component {
     // ************************************* //
 
     this.socket.on("peer-disconnected", (data) => {
-      // close peer-connection with this peer
-      console.log(data.socketID);
-      this.state.peerConnections[data.socketID].close();
-
-      // get and stop remote audio and video tracks of the disconnected peer
-      const rVideo = this.state.remoteStreams.filter(
-        (stream) => stream.id === data.socketID
-      );
-      rVideo && this.stopTracks(rVideo[0].stream);
-
-      // filter out the disconnected peer stream
-      const remoteStreams = this.state.remoteStreams.filter(
-        (stream) => stream.id !== data.socketID
-      );
-
-      this.setState((prevState) => {
-        // check if disconnected peer is the selected video and if there still connected peers, then select the first
-        const selectedVideo =
-          prevState.selectedVideo.id === data.socketID && remoteStreams.length
-            ? {
-              selectedVideo: remoteStreams[0],
-            }
-            : null;
-
-        return {
-          // remoteStream: remoteStreams.length > 0 && remoteStreams[0].stream || null,
-          remoteStreams,
-          ...selectedVideo,
-          status:
-            data.peerCount > 1
-              ? `Room : ${room}: ${data.peerCount}`
-              : "기다리는 중..",
-        };
-      });
+        try {
+          // close peer-connection with this peer
+          console.log(data.socketID);
+          this.state.peerConnections[data.socketID].close();
+    
+          // get and stop remote audio and video tracks of the disconnected peer
+          const rVideo = this.state.remoteStreams.filter(
+            (stream) => stream.id === data.socketID
+          );
+          rVideo && this.stopTracks(rVideo[0].stream);
+    
+          // filter out the disconnected peer stream
+          const remoteStreams = this.state.remoteStreams.filter(
+            (stream) => stream.id !== data.socketID
+          );
+          this.setState((prevState) => {
+            // check if disconnected peer is the selected video and if there still connected peers, then select the first
+            const selectedVideo =
+              prevState.selectedVideo.id === data.socketID && remoteStreams.length
+                ? {
+                  selectedVideo: remoteStreams[0],
+                }
+                : null;
+    
+            return {
+              // remoteStream: remoteStreams.length > 0 && remoteStreams[0].stream || null,
+              remoteStreams,
+              ...selectedVideo,
+              status:
+                data.peerCount > 1
+                  ? `Room : ${room}: ${data.peerCount}`
+                  : "기다리는 중..",
+            };
+          });
+        } catch (error) {
+          console.log(error)        
+        }
     });
 
     // this.socket.on('offerOrAnswer', (sdp) => {
@@ -691,14 +695,13 @@ class Room extends Component {
           return element
         }
       })
-    }else{
+    }else{ //reject
       requestUserTemp = this.state.requestUser.filter(element => element.remoteId !== socketId);
     }
 
     this.setState({
       requestUser: requestUserTemp
     })
-  
     this.sendToPeer("action_user_request", {type, method}, {
       remoteSocketId: socketId,
     });
@@ -749,7 +752,7 @@ class Room extends Component {
               this.setState({
                 disconnected: true
               })
-              this.props.history.push("/meetting");
+              // this.props.history.push("/meetting");
           },
           handleClickReject: () => {} //reject 
       })
@@ -761,7 +764,7 @@ class Room extends Component {
             this.setState({
               disconnected: true
             })
-            this.props.history.push("/meetting");
+            // this.props.history.push("/meetting");
         },
         handleClickReject: () => {} //reject 
       })
@@ -775,7 +778,7 @@ class Room extends Component {
           this.setState({
             disconnected: true
           })
-          this.props.history.push("/meetting");
+          // this.props.history.push("/meetting");
       },
       handleClickReject: () => {} //reject 
     })
@@ -799,6 +802,7 @@ class Room extends Component {
       normalUserChat,
       shareScream
     } = this.state;
+
     if (disconnected) {
       // disconnect socket
       this.socket.close();
@@ -811,8 +815,8 @@ class Room extends Component {
       // stop all remote peerconnections
       peerConnections &&
         Object.values(peerConnections).forEach((pc) => pc.close());
-
-      return <div> You have successfully Disconnected </div>;
+      
+      this.props.history.push("/meetting");
     }
 
     const fullSize = !fullScream ? "85%" : "100%";
