@@ -124,3 +124,13 @@
 //         width: 20%;
 //     }
 // }
+
+@media only screen and (max-width: 1024px) {
+    .room-page__left{
+        display: none;       
+    }
+    .room-page__right{
+        width: 100%;
+        min-width: 100%;
+    }
+}

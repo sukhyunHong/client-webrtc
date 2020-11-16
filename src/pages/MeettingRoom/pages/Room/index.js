@@ -5,6 +5,7 @@ import Video from "../../components/Video";
 import LeftContentContainer from "../../components/LeftContentContainer";
 import Chat from "../../components/Chat";
 import Draggable from "../../components/Draggable";
+import moment from 'moment'
 import './style.scss'
 
 import qs from "query-string";
@@ -23,6 +24,7 @@ class Room extends Component {
 
       remoteStreams: [], // holds all Video Streams (all remote streams)
       peerConnections: {}, // holds all Peer Connections
+      mediaRecorder: null,
       selectedVideo: null,
 
       status: "Please wait...",
@@ -45,6 +47,8 @@ class Room extends Component {
       messages: [],
       sendChannels: [],
       requestUser: [],
+      recordedBlobs: [],
+      mediaRecorder: null,
       disconnected: false,
 
       localVideoMute: false,
@@ -59,6 +63,7 @@ class Room extends Component {
       outEnable: false,
       paintScream: false,
       enableChat: true,
+      enableRecord: false,
 
       normalUserChat: false,
     };
@@ -103,11 +108,17 @@ class Room extends Component {
     //   // },
     // };
 
-    const constraints = (window.constraints = {
-      audio: true,
-      video: true,
-    });
+    // const constraints = (window.constraints = {
+    //   video: true,
+    //   audio: true,
+    // });
 
+    const constraints = {
+      video: {
+        cursor: "always",
+      },
+      audio: false,
+    };
     const handleSuccess = (stream) => {
       const video = document.querySelector("video");
       const videoTracks = stream.getVideoTracks();
@@ -415,6 +426,7 @@ class Room extends Component {
             }
           };
 
+          //online peer
           const receiveChannelCallback = (event) => {
             const receiveChannel = event.channel;
             receiveChannel.onmessage = handleReceiveMessage;
@@ -456,13 +468,31 @@ class Room extends Component {
 
         // Receive Channels
         const handleReceiveMessage = (event) => {
-          const message = JSON.parse(event.data);
-          // console.log(message)
-          this.setState((prevState) => {
-            return {
-              messages: [...prevState.messages, message],
-            };
-          });
+            console.log("aaa")
+            console.log(event)
+            console.log(`Received Message ${event.data.byteLength}`);
+      
+            // const file = fileInput.files[0];
+            // // if (receivedSize === file.size) {
+            // const received = new Blob(receiveBuffer);
+            // receiveBuffer = [];
+        
+            // const url = window.URL.createObjectURL(blob);
+            // const a = document.createElement('a');
+            // a.textContent =  `Click to download '${file.name}' (${file.size} bytes)`;
+            // a.display='block';
+            // a.download = file.name;
+            // a.href = url;
+            // document.body.appendChild(a);
+        
+        
+            const message = JSON.parse(event.data);
+            // console.log(message)
+            this.setState((prevState) => {
+              return {
+                messages: [...prevState.messages, message],
+              };
+            });
         };
 
         const handleReceiveChannelStatusChange = (event) => {
@@ -717,17 +747,69 @@ class Room extends Component {
   } 
 
   //end to normal user
+  //질문 요청
   handleRequestQuestion = async () => {
     // requestUserTemp = this.state.requestUser.filter(element => element.remoteId !== remoteSocketId);
     this.sendToPeer("request_question", null, {
       local: this.socket.id,
     });
+    const { username } = this.socket.query;
+    let message = {
+        type: 'text-request', 
+        message: { 
+              id: this.socket.id, 
+              sender: { 
+                uid: this.socket.id, 
+                username
+              }, 
+          data: { 
+            text: "질문 요청" 
+          }
+        }
+      }
+    this.state.sendChannels.map((sendChannel) => {
+      sendChannel.readyState === "open" &&
+        sendChannel.send(JSON.stringify(message));
+    });
+    this.sendToPeer("new-message", JSON.stringify(message), {
+      local: this.socket.id,
+    });
+    this.setState({
+      messages: [...this.state.messages, message]
+    })
   }
+  handleRequestQuestionForChat = () => {}
+  //자리비움 요청
   handleRequestGoOut = async () => {
     this.sendToPeer("request_out", null, {
       local: this.socket.id,
     });
+    const { username } = this.socket.query;
+    let message = {
+      type: 'text-request', 
+      message: { 
+            id: this.socket.id, 
+            sender: { 
+              uid: this.socket.id, 
+              username
+            }, 
+        data: { 
+          text: "질문 요청" 
+        }
+      }
+    }
+    this.state.sendChannels.map((sendChannel) => {
+      sendChannel.readyState === "open" &&
+        sendChannel.send(JSON.stringify(message));
+    });
+    this.sendToPeer("new-message", JSON.stringify(message), {
+      local: this.socket.id,
+    });
+    this.setState({
+      messages: [...this.state.messages, message]
+    })
   }
+  handleRequestGoOutForChat = () => {}
 
   handlePaintScream = () => {
     this.setState({
@@ -783,6 +865,71 @@ class Room extends Component {
       handleClickReject: () => {} //reject 
     })
   }
+  handleDataAvailable = (event) => {
+    if (event.data && event.data.size > 0) {
+      this.setState({
+        recordedBlobs: [event.data]
+      })
+    }
+  }
+  handleStreamRecord = () => {
+    const { enableRecord } = this.state
+    if(!enableRecord){
+      let options = {mimeType: 'video/webm;codecs=vp9,opus'};
+      if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+        console.error(`${options.mimeType} is not supported`);
+        options = {mimeType: 'video/webm;codecs=vp8,opus'};
+        if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+          console.error(`${options.mimeType} is not supported`);
+          options = {mimeType: 'video/webm'};
+          if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+            console.error(`${options.mimeType} is not supported`);
+            options = {mimeType: ''};
+          }
+        }
+      }
+  
+      let mediaRecorder;
+      try {
+        mediaRecorder = new MediaRecorder(this.state.localStream, options);
+      } catch (e) {
+        console.error('Exception while creating MediaRecorder:', e);
+        return;
+      }
+    
+      mediaRecorder.ondataavailable = this.handleDataAvailable;
+      mediaRecorder.onstop = () =>{
+        const { recordedBlobs } = this.state;
+        const blob = new Blob(recordedBlobs, {type: 'video/webm'});
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        
+        let currentDay = moment().format('l').replace("/", "_")
+        a.download = `${currentDay}.webm`;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+        }, 100);
+      }
+      mediaRecorder.start();
+      console.log('MediaRecorder started', mediaRecorder);
+  
+      this.setState({
+        mediaRecorder,
+        enableRecord: !this.state.enableRecord
+      })
+    }else{
+      const { mediaRecorder } = this.state;
+      mediaRecorder.stop();
+      this.setState({
+        enableRecord: !this.state.enableRecord
+      })
+    }
+  }
   render() {
     const {
       messages,
@@ -800,7 +947,8 @@ class Room extends Component {
       paintScream,
       enableChat,
       normalUserChat,
-      shareScream
+      shareScream,
+      enableRecord
     } = this.state;
 
     if (disconnected) {
@@ -838,6 +986,7 @@ class Room extends Component {
                     </i>
                   </div>
                   <div className="video-task-btn">
+                    <i className="material-icons" onClick={() => this.handleStreamRecord()} style={enableRecord ? { color: "red" } : {}}> switch_video </i>
                     <i className="material-icons" onClick={() => this.handleAllMuteMic()} style={!allMuted ? { color: "red" } : {}}> {!allMuted ? "volume_off" : "volume_up"} </i>
                     <i className="material-icons" onClick={() => this.handleMuteMic()} style={localMicMute ? { color: "red" } : {}}>
                       {!localMicMute ? "mic" : "mic_off"}
@@ -923,11 +1072,13 @@ class Room extends Component {
               <div className="wrapper-localChatting">
                 <Chat
                   normalUserChat={isMainRoom ? false : normalUserChat}
+                  isMainRoom={isMainRoom}
                   user={{
                     uid: (this.socket && this.socket.id) || "",
                   }}
                   messages={messages}
                   sendMessage={(message) => {
+                    // console.log(message)
                     this.setState((prevState) => {
                       return {
                         messages: [...prevState.messages, message],

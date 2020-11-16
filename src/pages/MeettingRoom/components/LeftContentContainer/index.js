@@ -1,10 +1,11 @@
-import React, { Component } from 'react'
+import React, { Component, useEffect, useState } from 'react'
 import Video from '../Video'
 import qs from 'query-string'
 import Axios from 'axios'
 import ReactLoading from "react-loading";
 import styled from 'styled-components'
 import moment from 'moment';
+import CountTime from '../../../../components/CountTime';
 import './style.scss'
 class LeftContentContainer extends Component {
   constructor(props) {
@@ -64,7 +65,7 @@ class LeftContentContainer extends Component {
                         <div className="wrapper-request">
                           <div>
                             <p className="wrapper-request__name">홍길동</p>
-                            <p>{moment().format('LTS')}</p>
+                            <CountTime />
                           </div>
                         </div> :
                         <div className="wrapper-request">
@@ -174,7 +175,7 @@ class LeftContentContainer extends Component {
                         <div className="wrapper-request">
                           <div>
                             <p className="wrapper-request__name">홍길동</p>
-                            <p>{moment().format('LTS')}</p>
+                            <CountTime />
                           </div>
                         </div> :
                         <div className="wrapper-request">
@@ -309,8 +310,8 @@ class LeftContentContainer extends Component {
       </div>
     );
   }
-
 }
+
 const WrapperLoading = styled.div`
   display: flex;
   align-items: center;

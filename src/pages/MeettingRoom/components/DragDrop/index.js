@@ -40,8 +40,8 @@ var DragDrop = props => {
         e.preventDefault()
         e.stopPropagation()
         changeBgColor(false)
-        console.log(e.dataTransfer.items)
         if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          console.log("send file")
           props.sendFiles(e.dataTransfer.files)
         }
       }}

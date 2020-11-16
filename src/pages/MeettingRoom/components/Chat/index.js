@@ -1,6 +1,9 @@
 // https://www.freecodecamp.org/news/building-a-modern-chat-application-with-react-js-558896622194/
 import React, { useState, useEffect, useRef } from 'react'
 import DragDrop from '../DragDrop'
+import './style.scss'
+import moment from 'moment'
+moment.locale();  
 
 const Chat = props => {
   const [message, setMessage] = useState('')
@@ -16,12 +19,21 @@ const Chat = props => {
   useEffect(() => {
     scrollToBottom()
     setUser({ uid: props.user.uid, })
+    
+    const textRequest = props.messages.filter(message => message.type === 'text-request')
+    if(textRequest.length !== 0){
+      // sendMessage(textRequest[0])
+    }
+    // console.log(textRequest)
+    
   }, [props])
+
+
 
   const sendMessage = (msg) => {
     props.sendMessage(msg);
     scrollToBottom()
-  }
+  } 
 
   const handleSubmit = event => {
     if (message === '') return
@@ -37,29 +49,81 @@ const Chat = props => {
   const renderMessage = (userType, data) => {
     // console.log('===========', data)
     const message = data.message
-
-    const msgDiv = data.type === 'text' && (
-      <div className="msg">
-        <p>{message.sender.username}</p>
-        <div className="message"> {message.data.text}</div>
-      </div>
-    ) || (
-        <div className="msg">
-          <p>{message.sender.username}</p>
-          <img
-            onClick={() => {
-              setImageZoom(true)
-              setSelectedImage(message.data)
-            }}
-            className="message"
-            style={{
-              width: 200,
-              // height: 100
-              cursor: 'pointer',
-            }}
-            src={message.data} />
+    const { normalUserChat, isMainRoom } = props;
+    const { type } = data;
+    let msgDiv;
+    if(type === 'text'){
+      msgDiv = (
+        <div className="msg-type">
+          <div className="msg-type__message"> {message.data.text}</div>
+          <div className="msg-type__wrapper-info">
+              <span className="msg-type__name">{message.sender.username}</span>
+              <span className="msg-type__time">{moment().format('LT')}</span>
+          </div>
         </div>
       )
+    }else if(type =='text-request'){
+      //display host room
+      if(isMainRoom){
+        msgDiv = (
+          <div className="msg-request">
+            <div className="msg-request__heading">{`${message.sender.username}이/가 ${message.data.text}했습니다.`}</div>
+            <div className="msg-request__button">   
+              <button>수락</button>
+              <button>취소</button>
+            </div>
+          </div>
+          )
+      }
+      //display user
+      else{
+        msgDiv = (
+          <div className="msg-request">
+            <div className="msg-request__heading">{`${message.data.text}했습니다.`}</div>
+          </div>
+        )
+      }
+    }else{
+        msgDiv = (
+          <div className="msg">
+            <p>{message.sender.username}</p>
+            <img
+              onClick={() => {
+                setImageZoom(true)
+                setSelectedImage(message.data)
+              }}
+              className="message"
+              style={{
+                width: 200,
+                // height: 100
+                cursor: 'pointer',
+              }}
+              src={message.data} />
+          </div>
+        )
+    }
+    // const msgDiv = data.type === 'text' && (
+    //   <div className="msg">
+    //     <p>{message.sender.username}</p>
+    //     <div className="message"> {message.data.text}</div>
+    //   </div>
+    // ) || (
+    //     <div className="msg">
+    //       <p>{message.sender.username}</p>
+    //       <img
+    //         onClick={() => {
+    //           setImageZoom(true)
+    //           setSelectedImage(message.data)
+    //         }}
+    //         className="message"
+    //         style={{
+    //           width: 200,
+    //           // height: 100
+    //           cursor: 'pointer',
+    //         }}
+    //         src={message.data} />
+    //     </div>
+    //   )
 
     return (<li className={userType} >{msgDiv}</li>)
 
@@ -110,17 +174,18 @@ const Chat = props => {
         <DragDrop
           className="chatInputWrapper"
           sendFiles={(files) => {
+            console.log(files)
             const reader = new FileReader()
             reader.onload = (e) => {
+              console.log(e)
               //https://blog.mozilla.org/webrtc/large-data-channel-messages/
               //https://lgrahl.de/articles/demystifying-webrtc-dc-size-limit.html
-              const maximumMessageSize = 262118 //65535 <=== 64KiB // 16384 <=== 16KiB to be safe
-              if (e.target.result.length <= maximumMessageSize)
-                sendMessage({ type: 'image', message: { id: user.uid, sender: { uid: user.uid, }, data: e.target.result } })
-              else
-                alert('Message exceeds Maximum Message Size!')
+              sendMessage({ type: 'image', message: { id: user.uid, sender: { uid: user.uid, }, data: e.target.result } })
+              // const maximumMessageSize = 65535 //65535 <=== 64KiB // 16384 <=== 16KiB to be safe
+              // if (e.target.result.length <= maximumMessageSize){}
+              // else
+              //   alert('Message exceeds Maximum Message Size!')
             }
-
             reader.readAsDataURL(files[0])
           }}
         >
