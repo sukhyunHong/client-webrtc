@@ -19,6 +19,8 @@ class LeftContentContainer extends Component {
       selectedVideo: null,
       videoVisible: false,
       loading: false,
+
+      displayTaskVideo: false
     }
   }
   componentDidMount(){
@@ -116,7 +118,6 @@ class LeftContentContainer extends Component {
       })
     }
   }
-
   componentWillReceiveProps(nextProps) {
     if (
       this.props.remoteStreams !== nextProps.remoteStreams || 
@@ -167,6 +168,16 @@ class LeftContentContainer extends Component {
                   // maxWidth: 250, maxHeight: 200,
                 }}
               />
+              <div className="btn-wrapper" style={requestValue.length === 1 ? {display: 'none'} : {}}>
+                <div>
+                  <h1>홍길동</h1>
+                  <div className="btn-list">
+                    <button onClick = {() => this.props.handleUserWarning(rVideo.name, "warning", "warning")}>경고</button>
+                    <button onClick = {() => this.props.handleDisconnectToUser(rVideo.name, "disconnect")}>강퇴</button>
+                    <button onClick = {() => this.props.handleDisableChattingToUser(rVideo.name, "disable_chatting", "disable_chatting")}>채팅금지</button>
+                  </div>
+                </div>
+              </div>
               {
                 requestValue.length === 1 ? 
                   //자리 비움 요청
@@ -267,7 +278,6 @@ class LeftContentContainer extends Component {
             <ReactLoading type="spin" color="#000" />
         </WrapperLoading>
     }
-    
     return (
       <div className="left-content__container">
         {
@@ -294,6 +304,16 @@ class LeftContentContainer extends Component {
                         this.state.selectedVideo && this.state.selectedVideo.stream
                       }
                       />
+                      {
+                        this.props.outEnable &&
+                        <div className="wrapper-outState">
+                          <div>
+                            <h3>홍길동</h3>
+                            <CountTime/>
+                            <button onClick={() => this.props.handleCancelOut()}>복귀하기</button> 
+                          </div>
+                        </div>
+                      }
                   </div>
                   <div className="single-video__footer">
                     <i className="material-icons" onClick={() => this.props.handleUserOutRoom() }>

@@ -224,14 +224,74 @@
                 display: inline-block;
                 position: relative;
             }
+            .video-item{
+                position: relative;
+                .btn-wrapper{
+                    display: none;
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.6);
+                    > div{
+                        color: white;
+                        height: 100%;
+                        justify-content: center;
+                        align-items: center;
+                        display: flex;
+                        flex-direction: column;
+                        button{
+                            cursor: pointer;
+                            margin: 0 2px;
+                            width: 90px;
+                            height: 30px;
+                            border-radius: 10px;
+                            border: none;
+                            outline: none;
+                        }
+                    }
+                }
+                &:hover .btn-wrapper{
+                    display: block;
+                }
+            }
         }
         .single-video{
             height: 100%; 
+            position: relative;
             &__body{
                 width: 100%;
                 height: 90%;
                 max-width: 1200px;
                 margin: 0 auto;
+            }
+            .wrapper-outState{
+                position: absolute;
+                top: 0;
+                left: 0;
+                height: 90%;
+                width: 100%;
+                background: rgba(0, 0, 0, 0.6);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+
+                div{
+                    text-align: center;
+                }
+                button{
+                    // width: 140px;
+                    // height: 42px;
+                    margin: 15px 0;
+                    color: white;
+                    padding: 10px 40px;
+                    border-radius: 4px;
+                    background-color: #5199ff;
+                    cursor: pointer;
+                    border: none;
+                }
             }
             &__footer{
                 padding: 0 20px;

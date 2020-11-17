@@ -67,20 +67,29 @@ class Video extends Component {
   }
 
   mutemic = (e) => {
-    const stream = this.video.srcObject.getTracks().filter(track => track.kind === 'audio')
-    console.log(stream[0].enabled )
-    this.setState(prevState => {
-      if (stream) stream[0].enabled = !prevState.mic
-      return {mic: !prevState.mic}
-    })
+    try {
+      const stream = this.video.srcObject.getTracks().filter(track => track.kind === 'audio')
+      this.setState(prevState => {
+        if (stream) stream[0].enabled = !prevState.mic
+        return {mic: !prevState.mic}
+      })
+    } catch (error) {
+      console.log(error)
+      alert("현재 접속한 컴퓨터에서 Audio 지원하지 않습니다")      
+    }
   }
 
   mutecamera = (e) => {
-    const stream = this.video.srcObject.getTracks().filter(track => track.kind === 'video')
-    this.setState(prevState => {
-      if (stream) stream[0].enabled = !prevState.camera
-      return {camera: !prevState.camera}
-    })
+    try {
+      const stream = this.video.srcObject.getTracks().filter(track => track.kind === 'video')
+      this.setState(prevState => {
+        if (stream) stream[0].enabled = !prevState.camera
+        return {camera: !prevState.camera}
+      })
+    } catch (error) {
+      console.log(error)
+      alert("현재 접속한 컴퓨터에서 Audio 지원하지 않습니다")  
+    }
   }
   render() {
     return (

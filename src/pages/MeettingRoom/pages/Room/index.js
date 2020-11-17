@@ -117,7 +117,7 @@ class Room extends Component {
       video: {
         cursor: "always",
       },
-      audio: false,
+      audio: true,
     };
     const handleSuccess = (stream) => {
       const video = document.querySelector("video");
@@ -623,6 +623,49 @@ class Room extends Component {
         normalUserChat: !this.state.normalUserChat
       })
     })
+    this.socket.on("action_user_warning", (data) => {
+      let message = {
+        type: 'text-request', 
+        message: { 
+              id: data, 
+              sender: { 
+                uid: data, 
+                username : '강사'
+              }, 
+          data: { 
+            text: "경고 메시지" 
+          }
+        }
+      }
+      this.setState({
+        messages: [...this.state.messages, message]
+      })
+    })
+    this.socket.on("action_user_disconnect", (data) => {
+      this.setState({
+        disconnected: true
+      })
+    })
+
+    this.socket.on("action_user_disable_chatting", (data) => {
+      let message = {
+        type: 'text-request', 
+        message: { 
+              id: data, 
+              sender: { 
+                uid: data, 
+                username : '강사'
+              }, 
+          data: { 
+            text: "강사님, 채팅 금지" 
+          }
+        }
+      }
+      this.setState({
+        normalUserChat: !this.state.normalUserChat,
+        messages: [...this.state.messages, message]
+      })
+    })
   };
 
   // ************************************* //
@@ -715,6 +758,7 @@ class Room extends Component {
   }
   // host user send server and check
   handleActionRequestUser = async (socketId, type, method) => {
+    console.log(socketId, type, method)
     let requestUserTemp = [];
     if(type === 'accept'){
       requestUserTemp = this.state.requestUser.map(element => {
@@ -766,7 +810,7 @@ class Room extends Component {
             text: "질문 요청" 
           }
         }
-      }
+    }
     this.state.sendChannels.map((sendChannel) => {
       sendChannel.readyState === "open" &&
         sendChannel.send(JSON.stringify(message));
@@ -779,6 +823,7 @@ class Room extends Component {
     })
   }
   handleRequestQuestionForChat = () => {}
+  
   //자리비움 요청
   handleRequestGoOut = async () => {
     this.sendToPeer("request_out", null, {
@@ -786,18 +831,18 @@ class Room extends Component {
     });
     const { username } = this.socket.query;
     let message = {
-      type: 'text-request', 
-      message: { 
-            id: this.socket.id, 
-            sender: { 
-              uid: this.socket.id, 
-              username
-            }, 
-        data: { 
-          text: "질문 요청" 
+        type: 'text-request', 
+        message: { 
+              id: this.socket.id, 
+              sender: { 
+                uid: this.socket.id, 
+                username
+              }, 
+          data: { 
+            text: "자리 비움 요청" 
+          }
         }
       }
-    }
     this.state.sendChannels.map((sendChannel) => {
       sendChannel.readyState === "open" &&
         sendChannel.send(JSON.stringify(message));
@@ -930,6 +975,21 @@ class Room extends Component {
       })
     }
   }
+  handleUserWarning = (socketId, type, method) => {
+    this.sendToPeer("action_user_warning", {type, method}, {
+      remoteSocketId: socketId,
+    });
+  }
+  handleDisconnectToUser = (socketId, type) => {
+    this.sendToPeer("action_user_disconnect", {type}, {
+      remoteSocketId: socketId,
+    });
+  }
+  handleDisableChattingToUser = (socketId, type, method) => {
+    this.sendToPeer("action_user_disable_chatting", {type, method}, {
+      remoteSocketId: socketId,
+    });
+  }
   render() {
     const {
       messages,
@@ -1010,12 +1070,7 @@ class Room extends Component {
               ) :
               <div  className="left-normaluser">
                 {
-                  outEnable && 
-                  <>
-                  <p> 자리 비움 요청이 수락됩니다. </p>
-                  <button onClick={() => this.handleCancelOut()}>자리 비움이 최소</button> 
-                  </>
-                  || !localMicMute &&
+                  !localMicMute &&
                     <>
                       <p>마이크 요청이 수락됩니다.</p>
                       <p><i className="material-icons" >mic</i></p>
@@ -1036,12 +1091,18 @@ class Room extends Component {
 
               requestUser={requestUser}
               handleActionRequestUser={this.handleActionRequestUser}
+              handleUserWarning={this.handleUserWarning}
+              handleDisconnectToUser={this.handleDisconnectToUser}
+              handleDisableChattingToUser={this.handleDisableChattingToUser}
+
 
               //handle for normal user
               handleUserOutRoom = {this.handleUserOutRoom}
               handleRequestQuestion={this.handleRequestQuestion}
               handleRequestGoOut={this.handleRequestGoOut}
               videoStream={this.state.selectedVideo && this.state.selectedVideo.stream}
+              handleCancelOut={this.handleCancelOut}
+              outEnable={outEnable}
             />
             }
           </div>
@@ -1072,6 +1133,7 @@ class Room extends Component {
               <div className="wrapper-localChatting">
                 <Chat
                   normalUserChat={isMainRoom ? false : normalUserChat}
+                  handleActionRequestUser={this.handleActionRequestUser}
                   isMainRoom={isMainRoom}
                   user={{
                     uid: (this.socket && this.socket.id) || "",

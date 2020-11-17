@@ -49,6 +49,7 @@ const Chat = props => {
   const renderMessage = (userType, data) => {
     // console.log('===========', data)
     const message = data.message
+    console.log(message)
     const { normalUserChat, isMainRoom } = props;
     const { type } = data;
     let msgDiv;
@@ -65,27 +66,34 @@ const Chat = props => {
     }else if(type =='text-request'){
       //display host room
       if(isMainRoom){
+        const requestType  =  message.data.text === '질문 요청' ? 'question' : 'out';
+        const messageInfo = message.data.text === '질문 요청' ? `${message.sender.username}학생이 질문을 요청하였습니다.`:
+        `${message.sender.username}학생이 자리비움을 요청하였습니다.`
         msgDiv = (
           <div className="msg-request">
-            <div className="msg-request__heading">{`${message.sender.username}이/가 ${message.data.text}했습니다.`}</div>
-            <div className="msg-request__button">   
-              <button>수락</button>
-              <button>취소</button>
+            <div className="msg-request__heading">
+              <p>{messageInfo}</p>
+              <span>{moment().format('LT')}</span></div>
+            <div className="msg-request__button mobile">   
+              <button onClick={() => props.handleActionRequestUser(message.id, "accept", requestType)}>수락</button>
+              <button onClick={() => props.handleActionRequestUser(message.id, "reject", requestType)}>취소</button>
             </div>
           </div>
           )
       }
       //display user
       else{
+        const messageInfo = message.data.text === '경고 메시지 받았습니다 ' ? message.data.text :
+        `${message.data.text} 하였습니다.`;
         msgDiv = (
           <div className="msg-request">
-            <div className="msg-request__heading">{`${message.data.text}했습니다.`}</div>
+            <div className="msg-request__heading">{messageInfo}<span>{moment().format('LT')}</span></div>
           </div>
         )
       }
     }else{
         msgDiv = (
-          <div className="msg">
+          <div className="msg-row">
             <p>{message.sender.username}</p>
             <img
               onClick={() => {
@@ -147,6 +155,7 @@ const Chat = props => {
     />)
   }
 
+  console.log(props.messages)
   return (
     <div style={{
       height: '100%',
