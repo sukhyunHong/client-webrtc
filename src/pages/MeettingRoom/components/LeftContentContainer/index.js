@@ -6,6 +6,7 @@ import ReactLoading from "react-loading";
 import styled from 'styled-components'
 import moment from 'moment';
 import CountTime from '../../../../components/CountTime';
+import CountDownTime from '../../../../components/CountDownTime';
 import './style.scss'
 class LeftContentContainer extends Component {
   constructor(props) {
@@ -20,7 +21,7 @@ class LeftContentContainer extends Component {
       videoVisible: false,
       loading: false,
 
-      displayTaskVideo: false
+      displayTaskVideo: false,
     }
   }
   componentDidMount(){
@@ -132,28 +133,31 @@ class LeftContentContainer extends Component {
       let roomname = qs.parse(window.location.search).room
       let username = qs.parse(window.location.search).user
 
-
-      let hostSocketId
       //n명에 있는 경우에는 점에 사람이 있는 경우에는
       Axios({
         method: 'get',
-        url: `${process.env.REACT_APP_SERVER_API}/room/gethostroom`,
+        url: `${process.env.REACT_APP_SERVER_API}/room/getlistuserbyroom`,
         params: {
           roomname, username
         }
       }).then(res => {
         const { data } = res;
-        hostSocketId = data.data;
+        const hostStream = data.data[0];
+        const listUser = data.data.slice(1, data.data.length)
         //2명
         if (NoOfRemoteStreams === 1)
           selectedVideo = { selectedVideo: nextProps.remoteStreams[0] }
         else {
-          selectedVideo = this.state.selectedVideo && nextProps.remoteStreams.filter(stream => stream.id === hostSocketId) || []
+          selectedVideo = this.state.selectedVideo && nextProps.remoteStreams.filter(stream => stream.id === hostStream.socket_id) || []
           selectedVideo = selectedVideo.length ? selectedVideo[0] : { selectedVideo: nextProps.remoteStreams[NoOfRemoteStreams - 1] }
         }
         let _rVideos = nextProps.remoteStreams.map((rVideo, index) => {
           const _videoTrack = rVideo.stream.getTracks().filter(track => track.kind === 'video')   
           const requestValue = nextProps.requestUser.filter(element => element.remoteId === rVideo.name)
+
+          let infoStreamBySocketId = listUser.filter(element => element.socket_id === rVideo.name);
+          infoStreamBySocketId = infoStreamBySocketId.length ? infoStreamBySocketId[0] : hostStream.username;
+
           let video = _videoTrack && (
             <div className="video-item">
               <Video
@@ -169,11 +173,10 @@ class LeftContentContainer extends Component {
                 }}
               />
               <div className="btn-wrapper" style={requestValue.length === 1 ? {display: 'none'} : {}}>
-                <div>
-                  <h1>홍길동</h1>
+                <div> 
+                  <h1>{infoStreamBySocketId.username}</h1>
                   <div className="btn-list">
                     <button onClick = {() => this.props.handleUserWarning(rVideo.name, "warning", "warning")}>경고</button>
-                    <button onClick = {() => this.props.handleDisconnectToUser(rVideo.name, "disconnect")}>강퇴</button>
                     <button onClick = {() => this.props.handleDisableChattingToUser(rVideo.name, "disable_chatting", "disable_chatting")}>채팅금지</button>
                   </div>
                 </div>
@@ -185,13 +188,13 @@ class LeftContentContainer extends Component {
                       requestValue[0].state ?
                         <div className="wrapper-request">
                           <div>
-                            <p className="wrapper-request__name">홍길동</p>
+                            <p className="wrapper-request__name">{requestValue[0].remoteUsername}</p>
                             <CountTime />
                           </div>
                         </div> :
                         <div className="wrapper-request">
                           <div>
-                            <p className="wrapper-request__name">홍길동</p>
+                            <p className="wrapper-request__name">{requestValue[0].remoteUsername}</p>
                             <p className="wrapper-request__type"><span>자리비움</span> 요청</p> 
                             <div className="wrapper-request__btn">
                               <button className="wrapper-request__btn--reject" onClick={() => this.props.handleActionRequestUser(rVideo.name, "reject", requestValue[0].type)}>거절</button>
@@ -200,12 +203,11 @@ class LeftContentContainer extends Component {
                           </div>
                         </div>
                       :
-
                     //질문 요청
                       requestValue[0].state ?
                         <div className="wrapper-request">
                           <div>
-                            <p className="wrapper-request__name">홍길동</p>
+                            <p className="wrapper-request__name">{requestValue[0].remoteUsername}</p>
                             <p><i className="material-icons" >mic</i></p>
                             <div className="wrapper-request__btn">
                               <button className="wrapper-request__btn--end" onClick={() => this.props.handleActionRequestUser(rVideo.name, "reject", requestValue[0].type)}>질문 요청 완료</button>
@@ -214,7 +216,7 @@ class LeftContentContainer extends Component {
                         </div> :
                         <div className="wrapper-request">
                           <div>
-                            <p className="wrapper-request__name">홍길동</p>
+                            <p className="wrapper-request__name">{requestValue[0].remoteUsername}</p>
                             <p className="wrapper-request__type"><span>질문</span> 요청</p> 
                             <div className="wrapper-request__btn">
                               <button className="wrapper-request__btn--reject" onClick={() => this.props.handleActionRequestUser(rVideo.name, "reject", requestValue[0].type)}>거절</button>
@@ -271,7 +273,8 @@ class LeftContentContainer extends Component {
   }
 
   render() {
-    const { loading } = this.state;
+    const { loading  } = this.state;
+    const { testConcentration, outEnable } = this.props;
     if(!loading)
     {
       return <WrapperLoading className="loading">
@@ -305,7 +308,13 @@ class LeftContentContainer extends Component {
                       }
                       />
                       {
-                        this.props.outEnable &&
+                        testConcentration.state && 
+                        <InputTestConcentration 
+                          testNumber={testConcentration.number}
+                          handleCorrectInput={this.props.handleCorrectInput}
+                        /> || 
+
+                        outEnable &&
                         <div className="wrapper-outState">
                           <div>
                             <h3>홍길동</h3>
@@ -330,6 +339,42 @@ class LeftContentContainer extends Component {
       </div>
     );
   }
+}
+
+const InputTestConcentration = ({testNumber, handleCorrectInput}) => {
+
+  const [number, setNumber] = useState();
+  const [checkInput, setCheckInput] = useState(false);
+  const [displayWrapper, setDisplayWrapper] = useState(true)
+  const handleSubmitInput = (e) => {
+      e.preventDefault();
+      if(number !== testNumber)
+        setCheckInput(true)
+      else{
+        setCheckInput(false);
+        setDisplayWrapper(false);
+        handleCorrectInput();
+      }
+  }
+  if(displayWrapper){
+    return (
+      <div className="test-wrapper">
+        <div> 
+          <h2>집중도 테스트</h2>
+          <CountDownTime />
+          <h1>{testNumber}</h1>
+            <form onSubmit = {(e) =>  handleSubmitInput(e) }>
+                <input type="text" className="input-number" onChange={(e) => setNumber(Number(e.target.value))}/> 
+                {
+                  checkInput &&
+                    <p>올바른 숫자 입력하세요</p>
+                }
+            </form>
+        </div>
+      </div>
+    )   
+  }else return ""
+
 }
 
 const WrapperLoading = styled.div`

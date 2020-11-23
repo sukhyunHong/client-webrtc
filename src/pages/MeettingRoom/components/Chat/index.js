@@ -3,8 +3,9 @@ import React, { useState, useEffect, useRef } from 'react'
 import DragDrop from '../DragDrop'
 import './style.scss'
 import moment from 'moment'
+import Axios from 'axios';
+import qs from 'query-string'
 moment.locale();  
-
 const Chat = props => {
   const [message, setMessage] = useState('')
   const [user, setUser] = useState({ uid: 0, })
@@ -28,8 +29,6 @@ const Chat = props => {
     
   }, [props])
 
-
-
   const sendMessage = (msg) => {
     props.sendMessage(msg);
     scrollToBottom()
@@ -45,52 +44,77 @@ const Chat = props => {
   const handleChange = event => {
     setMessage(event.target.value)
   }
-
+  const handleDownload = (path) => {
+      const url = path
+      const link = document.createElement('a');
+      link.setAttribute("href", `${process.env.REACT_APP_SERVER_API}/${url}`);
+      link.setAttribute("download", ''); //! 안 됨 
+      link.setAttribute("target", '_blank');
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+  }
   const renderMessage = (userType, data) => {
     // console.log('===========', data)
     const message = data.message
-    console.log(message)
     const { normalUserChat, isMainRoom } = props;
     const { type } = data;
     let msgDiv;
     if(type === 'text'){
       msgDiv = (
         <div className="msg-type">
-          <div className="msg-type__message"> {message.data.text}</div>
-          <div className="msg-type__wrapper-info">
+          <div className="msg-type__info">
               <span className="msg-type__name">{message.sender.username}</span>
               <span className="msg-type__time">{moment().format('LT')}</span>
           </div>
+          <div className="msg-type__message"> {message.data.text}</div>
         </div>
       )
-    }else if(type =='text-request'){
+    }else if(type == 'text-request'){
       //display host room
-      if(isMainRoom){
-        const requestType  =  message.data.text === '질문 요청' ? 'question' : 'out';
-        const messageInfo = message.data.text === '질문 요청' ? `${message.sender.username}학생이 질문을 요청하였습니다.`:
-        `${message.sender.username}학생이 자리비움을 요청하였습니다.`
-        msgDiv = (
-          <div className="msg-request">
-            <div className="msg-request__heading">
-              <p>{messageInfo}</p>
-              <span>{moment().format('LT')}</span></div>
-            <div className="msg-request__button mobile">   
-              <button onClick={() => props.handleActionRequestUser(message.id, "accept", requestType)}>수락</button>
-              <button onClick={() => props.handleActionRequestUser(message.id, "reject", requestType)}>취소</button>
+        if(isMainRoom){
+          const requestType  =  message.data.text === '질문 요청' ? 'question' : 'out';
+          const messageInfo = message.data.text === '질문 요청' ? `${message.sender.username}학생이 질문을 요청하였습니다.`:
+          `${message.sender.username}학생이 자리비움을 요청하였습니다.`
+          msgDiv = (
+            <div className="msg-request">
+              <div className="msg-request__heading">
+                <p>{messageInfo}</p>
+                <span>{moment().format('LT')}</span></div>
+              <div className="msg-request__button mobile">   
+                <button onClick={() => props.handleActionRequestUser(message.id, "accept", requestType)}>수락</button>
+                <button onClick={() => props.handleActionRequestUser(message.id, "reject", requestType)}>취소</button>
+              </div>
             </div>
-          </div>
+            )
+        }
+        else{
+          const messageInfo = message.data.text === '경고 메시지 받았습니다 ' ? message.data.text :
+          `${message.data.text} 하였습니다.`;
+          msgDiv = (
+            <div className="msg-request">
+              <div className="msg-request__heading">{messageInfo}<span>{moment().format('LT')}</span></div>
+            </div>
           )
+        }
       }
-      //display user
-      else{
-        const messageInfo = message.data.text === '경고 메시지 받았습니다 ' ? message.data.text :
-        `${message.data.text} 하였습니다.`;
-        msgDiv = (
-          <div className="msg-request">
-            <div className="msg-request__heading">{messageInfo}<span>{moment().format('LT')}</span></div>
+    else if(type === 'file'){
+      const { data } = message
+      msgDiv = (
+        <div className="file-type">
+          <div className="file-type__info">
+              <span className="file-type__name">{message.sender.username}</span>
+              <span className="file-type__time">{moment().format('LT')}</span>
           </div>
+          <div className="file-type__message"> 
+            <p>{message.data.text}</p>
+            {/* <p>요효기간 ~ <span>2020.09.30</span></p> */}
+            <p className="file-type__size">용량 : <span>{(data.size / 1000).toFixed(2)} KB</span></p>
+            <button className = "file-type__btn"onClick={() => handleDownload(data.fileHash)}>다운로드</button>
+          </div>
+        </div>
         )
-      }
     }else{
         msgDiv = (
           <div className="msg-row">
@@ -110,28 +134,6 @@ const Chat = props => {
           </div>
         )
     }
-    // const msgDiv = data.type === 'text' && (
-    //   <div className="msg">
-    //     <p>{message.sender.username}</p>
-    //     <div className="message"> {message.data.text}</div>
-    //   </div>
-    // ) || (
-    //     <div className="msg">
-    //       <p>{message.sender.username}</p>
-    //       <img
-    //         onClick={() => {
-    //           setImageZoom(true)
-    //           setSelectedImage(message.data)
-    //         }}
-    //         className="message"
-    //         style={{
-    //           width: 200,
-    //           // height: 100
-    //           cursor: 'pointer',
-    //         }}
-    //         src={message.data} />
-    //     </div>
-    //   )
 
     return (<li className={userType} >{msgDiv}</li>)
 
@@ -154,8 +156,44 @@ const Chat = props => {
       onClick={() => setImageZoom(false)}
     />)
   }
+  const handleValueFile = (e) => {
+    const { name, size, type } = e.target.files[0];
+    let roomname = qs.parse(window.location.search).room;
+    let params = {
+      roomname
+    }
+    console.log(e.target.files[0])
+    let data = new FormData();
+    data.append('file', e.target.files[0])
+    data.append('params', JSON.stringify(params))
+    Axios.post(`${process.env.REACT_APP_SERVER_API}/room/upfile`, data, {
+        headers: {
+            'Content-Type': 'application/json',
+        }
+      }
+    )
+  }   
 
-  console.log(props.messages)
+  const handleClickUpFile = () => {
+      const upFile = document.createElement('input');
+      upFile.setAttribute('type','file');
+      upFile.setAttribute('name','file');
+      upFile.setAttribute('style','display: none');
+      document.body.appendChild(upFile);
+      upFile.click();
+      upFile.onchange=handleValueFile
+  }
+
+  const handleClickCameraOn = () => {
+      const upImage = document.createElement('input');
+      upImage.setAttribute('type','file');
+      upImage.setAttribute('name','file');
+      upImage.setAttribute('accept','image/*');
+      upImage.setAttribute('style','display: none');
+      document.body.appendChild(upImage);
+      upImage.click();
+      upImage.onchange=handleValueFile
+  }
   return (
     <div style={{
       height: '100%',
@@ -163,6 +201,17 @@ const Chat = props => {
       position: 'relative'
     }}>
       {imageZoom && showEnlargedImage(selectedImage)}
+      <div className="chat-task"> 
+        <i className="material-icons" onClick={() => handleClickUpFile()}>
+          link
+        </i>
+        <i className="material-icons">
+          chat
+        </i>
+        <i className="material-icons camera" onClick={() => handleClickCameraOn()}>
+          camera
+        </i>
+      </div>
 
       <div className="chatWindow" style={{
         zIndex: 10,
@@ -171,7 +220,7 @@ const Chat = props => {
         // top: 190,
         bottom: 0,
         width: '100%',
-        height: '100%',
+        height: '96%',
       }}>
         <ul className="chat" id="chatList">
           {props.messages.map(data => (
@@ -180,7 +229,7 @@ const Chat = props => {
             </div>
           ))}
         </ul>
-        <DragDrop
+        {/* <DragDrop
           className="chatInputWrapper"
           sendFiles={(files) => {
             console.log(files)
@@ -197,7 +246,7 @@ const Chat = props => {
             }
             reader.readAsDataURL(files[0])
           }}
-        >
+        > */}
           <div>
             <form onSubmit={handleSubmit}>
               <input
@@ -211,7 +260,7 @@ const Chat = props => {
               />
             </form>
           </div>
-        </DragDrop>
+        {/* </DragDrop> */}
       </div>
     </div>
   )

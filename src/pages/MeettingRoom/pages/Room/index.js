@@ -66,6 +66,11 @@ class Room extends Component {
       enableRecord: false,
 
       normalUserChat: false,
+      testConcentration: {
+        state: false,
+        number: null
+      },
+      timeTestConcentrationAPI: null
     };
     this.socket = null;
   }
@@ -117,7 +122,7 @@ class Room extends Component {
       video: {
         cursor: "always",
       },
-      audio: true,
+      audio: false,
     };
     const handleSuccess = (stream) => {
       const video = document.querySelector("video");
@@ -313,9 +318,26 @@ class Room extends Component {
           ? `Room : ${room}: ${data.peerCount}`
           : "기다리는 중..";
       const { isHost } = data;
+
+
+      //집중도 테스트함
+      let intervalTime = "";
+
+      if(isHost){
+          intervalTime= setInterval(() => {
+              var min = 0,
+                  max = 10;
+              var rand = Math.floor(Math.random() * (max - min + 1) + min);
+              this.sendToPeer("test-concentration", {
+                number: rand
+              } , null);
+          }, 1000 * 60);
+      }
+
       this.setState({
         status: status,
         isMainRoom: isHost,
+        timeTestConcentrationAPI: intervalTime,
         messages: data.messages,
         // localMicMute: isHost ? false : true
       });
@@ -552,11 +574,13 @@ class Room extends Component {
 
     // Host User
     this.socket.on("request_question", (data) => {
-      const requestSocketId = data;
+      const { remoteSocketId, remoteUsername} = data;
+      console.log("response data", data)
       let value = {
         type: "question",
-        remoteId: requestSocketId,
-        state: false
+        remoteId: remoteSocketId,
+        state: false,
+        remoteUsername: remoteUsername
       }
 
       this.setState({
@@ -567,11 +591,12 @@ class Room extends Component {
 
     //Host User
     this.socket.on("request_out", (data) => {
-      const requestSocketId = data;
+      const { remoteSocketId, remoteUserName} = data;
       let value = {
         type: "out",
-        remoteId: requestSocketId,
-        state: false
+        remoteId: remoteSocketId,
+        state: false,
+        remoteUserName: remoteUserName
       }
       this.setState({
         requestUser: [...this.state.requestUser, value]
@@ -613,7 +638,6 @@ class Room extends Component {
     this.socket.on("action_host_request_cancel_out", (data) => {
       const remoteSocketId = data;
       let requestUserTemp = this.state.requestUser.filter(element => element.remoteId !== remoteSocketId);
-      console.log(requestUserTemp)
       this.setState({
         requestUser: requestUserTemp
       })
@@ -641,11 +665,6 @@ class Room extends Component {
         messages: [...this.state.messages, message]
       })
     })
-    this.socket.on("action_user_disconnect", (data) => {
-      this.setState({
-        disconnected: true
-      })
-    })
 
     this.socket.on("action_user_disable_chatting", (data) => {
       let message = {
@@ -666,7 +685,45 @@ class Room extends Component {
         messages: [...this.state.messages, message]
       })
     })
+
+    this.socket.on("test-concentration", (data) => {
+      const { isMainRoom } = this.state
+      if(!isMainRoom){
+        this.setState({
+          testConcentration: {...this.state.testConcentration,state: true, number: data.number}
+        })
+      }
+    })
+    this.socket.on("upfile-in-chat", (data) => {
+        const { fileHash, originalname, size, mimetype } = data;
+        const { username } = this.socket.query;
+        let message = {
+          type: 'file', 
+          message: { 
+                id: data, 
+                sender: { 
+                  uid: this.socket.id, 
+                  username
+                }, 
+            data: { 
+              text: originalname,
+              size: size,
+              fileHash: fileHash,
+              mimetype
+            }
+          }
+        }
+        this.setState({
+          messages: [...this.state.messages, message]
+        })
+    })
+
+
+
+    
   };
+  
+  
 
   // ************************************* //
   // NOT REQUIRED
@@ -980,15 +1037,16 @@ class Room extends Component {
       remoteSocketId: socketId,
     });
   }
-  handleDisconnectToUser = (socketId, type) => {
-    this.sendToPeer("action_user_disconnect", {type}, {
-      remoteSocketId: socketId,
-    });
-  }
+
   handleDisableChattingToUser = (socketId, type, method) => {
     this.sendToPeer("action_user_disable_chatting", {type, method}, {
       remoteSocketId: socketId,
     });
+  }
+  handleCorrectInput = () => {
+    this.setState({
+      testConcentration: {...this.state.testConcentration, number: null, state: false}
+    })
   }
   render() {
     const {
@@ -1008,7 +1066,8 @@ class Room extends Component {
       enableChat,
       normalUserChat,
       shareScream,
-      enableRecord
+      enableRecord,
+      testConcentration
     } = this.state;
 
     if (disconnected) {
@@ -1020,6 +1079,11 @@ class Room extends Component {
       // stop all remote audio & video tracks
       remoteStreams.forEach((rVideo) => this.stopTracks(rVideo.stream));
 
+
+      const { timeTestConcentrationAPI, isMainRoom} = this.state;
+      console.log(timeTestConcentrationAPI, isMainRoom)
+      if(isMainRoom)
+        clearInterval(timeTestConcentrationAPI)
       // stop all remote peerconnections
       peerConnections &&
         Object.values(peerConnections).forEach((pc) => pc.close());
@@ -1092,7 +1156,6 @@ class Room extends Component {
               requestUser={requestUser}
               handleActionRequestUser={this.handleActionRequestUser}
               handleUserWarning={this.handleUserWarning}
-              handleDisconnectToUser={this.handleDisconnectToUser}
               handleDisableChattingToUser={this.handleDisableChattingToUser}
 
 
@@ -1103,6 +1166,10 @@ class Room extends Component {
               videoStream={this.state.selectedVideo && this.state.selectedVideo.stream}
               handleCancelOut={this.handleCancelOut}
               outEnable={outEnable}
+
+
+              testConcentration={testConcentration}
+              handleCorrectInput={this.handleCorrectInput}
             />
             }
           </div>

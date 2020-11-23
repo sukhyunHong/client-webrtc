@@ -17,20 +17,25 @@
 
             bottom: 40px;
             left: 50%;
-            transform: translateX(-100%);
+            transform: translateX(-50%);
 
             display: flex;
             > div {
                 display: flex;
                 align-items: center;
                 button{
-                    border: none;
                     background: transparent;
                     color: white;
                     margin-left: 20px;
+                    width: 60px;
                     outline: none;
-
                     cursor: pointer;
+                    border: 1px solid transparent;
+                    &:hover{
+                        background: #5199ff;
+                        border-radius: 6px;
+                        border: 1px solid #5199ff;
+                    }
                 }
             }
         }
@@ -54,7 +59,7 @@
             cursor: pointer;
             width: 20px;
             height: 20px;
-            margin-bottom: 5px
+            margin-bottom: 5px;
         }
         
         .colors button:nth-of-type(1) {
