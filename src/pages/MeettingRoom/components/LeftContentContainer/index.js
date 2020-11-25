@@ -60,12 +60,6 @@ class LeftContentContainer extends Component {
                 videoMuted={this.videoMuted}
                 videoType='remoteVideo'
                 videoStream={rVideo.stream}
-                videoStyles={{
-                  // objectFit: 'cover',
-                  // borderRadius: 5,
-                  // width: 250, height: 220,
-                  // maxWidth: 250, maxHeight: 200,
-                }}
               />
               <div className="btn-wrapper" style={requestValue.length === 1 ? {display: 'none'} : {}}>
                 <div> 
@@ -280,7 +274,6 @@ class LeftContentContainer extends Component {
           let video = _videoTrack && (
             <div className="video-item">
               <Video
-                muted={true}
                 videoMuted={this.videoMuted}
                 videoType='remoteVideo'
                 videoStream={rVideo.stream}
@@ -402,6 +395,8 @@ class LeftContentContainer extends Component {
     return (
       <div className="left-content__container">
         {
+
+          //강인 경우에는 여러 사람이 출력함
           this.props.isMainRoom ?
             <div className="list-videos">
               <div className={`video-${this.state.remoteStreams.length}`}>
@@ -409,7 +404,8 @@ class LeftContentContainer extends Component {
               </div>
             </div> 
             :
-            //학생인 경우애는 
+            //학생인 경우애는
+            //강사 출력함 
             <div className="single-video">
                 <div className="single-video__body">
                   <Video

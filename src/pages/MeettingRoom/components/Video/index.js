@@ -26,13 +26,13 @@ class Video extends Component {
         this.video.srcObject = nextProps.videoStream
     }
       
-    if(this.props.localMicMute !== nextProps.localMicMute){
-      this.mutemic()
-    }  
+    // if(this.props.localMicMute !== nextProps.localMicMute){
+    //   this.mutemic()
+    // }  
 
-    if(this.props.localVideoMute !== nextProps.localVideoMute){
-      this.mutecamera()
-    } 
+    // if(this.props.localVideoMute !== nextProps.localVideoMute){
+    //   this.mutecamera()
+    // } 
 
     // This is done only once when we receive a video track
     const videoTrack = nextProps.videoStream && nextProps.videoStream.getVideoTracks()
