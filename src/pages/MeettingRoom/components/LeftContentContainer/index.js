@@ -25,10 +25,127 @@ class LeftContentContainer extends Component {
     }
   }
   componentDidMount(){
+    console.log(this.props.remoteStreams)
     if(this.props.remoteStreams.length !== 0){
       const { remoteStreams, requestUser } = this.props
       let roomname = qs.parse(window.location.search).room
       let username = qs.parse(window.location.search).user
+
+
+      Axios({
+        method: 'get',
+        url: `${process.env.REACT_APP_SERVER_API}/room/getlistuserbyroom`,
+        params: {
+          roomname, username
+        }
+      }).then(res => {
+        const { data } = res;
+        const hostStream = data.data[0];
+        const listUser = data.data.slice(1, data.data.length)
+
+        let selectedVideo = {}
+        selectedVideo = this.state.selectedVideo && remoteStreams.remoteStreams.filter(stream => stream.id === hostStream.socket_id) || [];
+        selectedVideo = selectedVideo.length ? selectedVideo[0] : [];
+
+        let _rVideos = remoteStreams.map((rVideo, index) => {
+          const _videoTrack = rVideo.stream.getTracks().filter(track => track.kind === 'video')   
+          const requestValue = requestUser.filter(element => element.remoteId === rVideo.name)
+          
+          let infoStreamBySocketId = listUser.filter(element => element.socket_id === rVideo.name);
+          infoStreamBySocketId = infoStreamBySocketId.length ? infoStreamBySocketId[0] : hostStream.username;
+
+          let video = _videoTrack && (
+            <div className="video-item">
+              <Video
+                muted={true}
+                videoMuted={this.videoMuted}
+                videoType='remoteVideo'
+                videoStream={rVideo.stream}
+                videoStyles={{
+                  // objectFit: 'cover',
+                  // borderRadius: 5,
+                  // width: 250, height: 220,
+                  // maxWidth: 250, maxHeight: 200,
+                }}
+              />
+              <div className="btn-wrapper" style={requestValue.length === 1 ? {display: 'none'} : {}}>
+                <div> 
+                  <h1>{infoStreamBySocketId.username}</h1>
+                  <div className="btn-list">
+                    <button onClick = {() => this.props.handleUserWarning(rVideo.name, "warning", "warning")}>경고</button>
+                    <button onClick = {() => this.props.handleDisableChattingToUser(rVideo.name, "disable_chatting", "disable_chatting")}>채팅금지</button>
+                  </div>
+                </div>
+              </div>
+              {
+                requestValue.length === 1 ? 
+                  //자리 비움 요청
+                  requestValue[0].type === 'out' ?
+                      requestValue[0].state ?
+                        <div className="wrapper-request">
+                          <div>
+                            <p className="wrapper-request__name">{requestValue[0].remoteUsername}</p>
+                            <CountTime />
+                          </div>
+                        </div> :
+                        <div className="wrapper-request">
+                          <div>
+                            <p className="wrapper-request__name">{requestValue[0].remoteUsername}</p>
+                            <p className="wrapper-request__type"><span>자리비움</span> 요청</p> 
+                            <div className="wrapper-request__btn">
+                              <button className="wrapper-request__btn--reject" onClick={() => this.props.handleActionRequestUser(rVideo.name, "reject", requestValue[0].type)}>거절</button>
+                              <button className="wrapper-request__btn--accept" onClick={() => this.props.handleActionRequestUser(rVideo.name, "accept", requestValue[0].type)}>수락</button>
+                            </div>
+                          </div>
+                        </div>
+                      :
+                    //질문 요청
+                      requestValue[0].state ?
+                        <div className="wrapper-request">
+                          <div>
+                            <p className="wrapper-request__name">{requestValue[0].remoteUsername}</p>
+                            <p><i className="material-icons" >mic</i></p>
+                            <div className="wrapper-request__btn">
+                              <button className="wrapper-request__btn--end" onClick={() => this.props.handleActionRequestUser(rVideo.name, "reject", requestValue[0].type)}>질문 요청 완료</button>
+                            </div>
+                          </div>
+                        </div> :
+                        <div className="wrapper-request">
+                          <div>
+                            <p className="wrapper-request__name">{requestValue[0].remoteUsername}</p>
+                            <p className="wrapper-request__type"><span>질문</span> 요청</p> 
+                            <div className="wrapper-request__btn">
+                              <button className="wrapper-request__btn--reject" onClick={() => this.props.handleActionRequestUser(rVideo.name, "reject", requestValue[0].type)}>거절</button>
+                              <button className="wrapper-request__btn--accept" onClick={() => this.props.handleActionRequestUser(rVideo.name, "accept", requestValue[0].type)}>수락</button>
+                            </div>
+                          </div>
+                        </div> :
+                    ""
+              }
+            </div>
+          ) || <div></div>
+
+          return (
+            video
+            // <div
+            //   id={rVideo.name}
+            //   onClick={() => this.switchVideo(rVideo)}
+            //   style={{
+            //     cursor: 'pointer', display: 'inline-block'
+            //   }}
+            //   key={index}
+            // >
+            //   {video}
+            // </div>
+          )
+        })
+        this.setState({
+          remoteStreams: remoteStreams,
+          rVideos: _rVideos,
+          ...selectedVideo,
+          loading: true
+        })
+      })
 
       //n명에 있는 경우에는 점에 사람이 있는 경우에는
       Axios({
@@ -249,7 +366,6 @@ class LeftContentContainer extends Component {
           ...selectedVideo,
           loading: true
         })
-
       })
     }
   }

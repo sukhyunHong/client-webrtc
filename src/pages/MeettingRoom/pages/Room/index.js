@@ -38,10 +38,10 @@ class Room extends Component {
       },
 
       sdpConstraints: {
-        mandatory: {
-          OfferToReceiveAudio: true,
-          OfferToReceiveVideo: true,
-        },
+        'mandatory': {
+            'OfferToReceiveAudio': true,
+            'OfferToReceiveVideo': true
+        }
       },
 
       messages: [],
@@ -76,53 +76,12 @@ class Room extends Component {
   }
 
   getLocalStream = () => {
-    // called when getUserMedia() successfully returns - see below
-    // getUserMedia() returns a MediaStream object (https://developer.mozilla.org/en-US/docs/Web/API/MediaStream)
-    // const success = (stream) => {
-    // const video = document.querySelector('video');
-    // const videoTracks = stream.getVideoTracks();
-    // console.log('Got stream with constraints:', constraints);
-    // console.log(`Using video device: ${videoTracks[0].label}`);
-    // window.stream = stream; // make variable available to browser console
-    // video.srcObject = stream;
-
-    //   window.stream  = stream;
-    //   // this.localVideoref.current.srcObject = stream
-    //   // this.pc.addStream(stream);
-    //   this.setState({
-    //     localStream: stream,
-    //   });
-
-    //   this.whoisOnline();
-    // };
-
-    // // https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
-    // // see the above link for more constraint options
-    // const constraints =  window.constraints = {
-    //   audio: true,
-    //   video: true,
-    //   // video: {
-    //   //   width: 1280,
-    //   //   height: 720
-    //   // },
-    //   // video: {
-    //   //   width: { min: 1280 },
-    //   // }
-    //   // options: {
-    //   //   mirror: true,
-    //   // },
-    // };
-
-    // const constraints = (window.constraints = {
-    //   video: true,
-    //   audio: true,
-    // });
-
     const constraints = {
-      video: {
-        cursor: "always",
-      },
-      audio: false,
+      audio: true,
+      video: true,
+      options: {
+        mirror: true,
+      }
     };
     const handleSuccess = (stream) => {
       const video = document.querySelector("video");
@@ -300,6 +259,7 @@ class Room extends Component {
 
   componentDidMount = () => {
     const { room, user } = qs.parse(window.location.search);
+
     this.socket = io.connect(`${process.env.REACT_APP_SERVER_API}/room`, {
       path: `/io/webrtc`,
       query: {
@@ -307,11 +267,14 @@ class Room extends Component {
         username: user,
       },
     });
+
     window.onunload = window.onbeforeunload = function () {
       this.socket.close();
     };
 
     this.socket.on("connection-success", (data) => {
+
+      console.log("aaa")
       this.getLocalStream();
       const status =
         data.peerCount > 1
@@ -339,7 +302,6 @@ class Room extends Component {
         isMainRoom: isHost,
         timeTestConcentrationAPI: intervalTime,
         messages: data.messages,
-        // localMicMute: isHost ? false : true
       });
     });
 
@@ -490,9 +452,6 @@ class Room extends Component {
 
         // Receive Channels
         const handleReceiveMessage = (event) => {
-            console.log("aaa")
-            console.log(event)
-            console.log(`Received Message ${event.data.byteLength}`);
       
             // const file = fileInput.files[0];
             // // if (receivedSize === file.size) {
@@ -765,7 +724,7 @@ class Room extends Component {
           video: {
             cursor: "always",
           },
-          audio: false,
+          audio: true,
         })
         .then((stream) => {
           this.setState({
@@ -1048,7 +1007,12 @@ class Room extends Component {
       testConcentration: {...this.state.testConcentration, number: null, state: false}
     })
   }
+
+
   render() {
+
+    console.log(this.state.remoteStreams)
+    
     const {
       messages,
       disconnected,

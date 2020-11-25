@@ -1,6 +1,6 @@
 import React from 'react';
 import EventBus from '../eventBus';
-import Store from '../store';
+import Store from '../constants/Store';
 
 export default class History extends React.Component {
 	constructor(){

@@ -31,7 +31,9 @@ export default class Tools extends React.Component {
 			key={i}
 			onClick={this.handleClick(i).bind(this)}
 			className={tool.selected ? 'selected' : ''}
-		><i className={tool.label + ' fa'}></i></div>)
+        ><i className={tool.label + ' fa'}></i></div>)
+        
+        
 		return (<div id="tools">
 			{tools}
 			<ColorPicker />
