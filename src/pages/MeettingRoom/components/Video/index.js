@@ -4,7 +4,7 @@ class Video extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      mic: false,
+      mic: true,
       camera: true,
       // currentStream: new MediaStream(),
       // videoTrack: false,
@@ -91,8 +91,17 @@ class Video extends Component {
       alert("현재 접속한 컴퓨터에서 Audio 지원하지 않습니다")  
     }
   }
+
   render() {
+    console.log("mich", this.props.muted)
+    const muteControls = this.props.showMuteControls && (
+      <div>
+        <i onClick={this.mutemic} style={{ cursor: 'pointer', padding: 5, fontSize: 20, color: this.state.mic && 'white' || 'red' }} class='material-icons'>{this.state.mic && 'mic' || 'mic_off'}</i>
+        <i onClick={this.mutecamera} style={{ cursor: 'pointer', padding: 5, fontSize: 20, color: this.state.camera && 'white' || 'red' }} class='material-icons'>{this.state.camera && 'videocam' || 'videocam_off'}</i>
+      </div>
+    )
     return (
+      <>
         <video
           id={this.props.id}
           muted={this.props.muted}
@@ -104,6 +113,8 @@ class Video extends Component {
           ref={ (ref) => {this.video = ref }}
         >
         </video>
+        {muteControls}
+        </>
     )
   }
 }

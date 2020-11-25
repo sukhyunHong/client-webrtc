@@ -57,7 +57,6 @@ class LeftContentContainer extends Component {
           let video = _videoTrack && (
             <div className="video-item">
               <Video
-                muted={true}
                 videoMuted={this.videoMuted}
                 videoType='remoteVideo'
                 videoStream={rVideo.stream}
@@ -164,6 +163,9 @@ class LeftContentContainer extends Component {
         let _rVideos = remoteStreams.map((rVideo, index) => {
           const _videoTrack = rVideo.stream.getTracks().filter(track => track.kind === 'video')   
           const requestValue = requestUser.filter(element => element.remoteId === rVideo.name)
+
+
+          console.log("aaaaaa")
           let video = _videoTrack && (
             <div className="video-item">
               <Video
@@ -418,7 +420,6 @@ class LeftContentContainer extends Component {
                         visibility: "visible",
                         objectFit: "initial",
                       }}
-                      muted={true}
                       videoStream={
                         this.state.selectedVideo && this.state.selectedVideo.stream
                       }

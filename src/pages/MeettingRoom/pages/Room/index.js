@@ -86,7 +86,7 @@ class Room extends Component {
     const handleSuccess = (stream) => {
       const video = document.querySelector("video");
       const videoTracks = stream.getVideoTracks();
-      console.log("Got stream with constraints:", constraints);
+      // console.log("Got stream with constraints:", constraints);
       console.log(`Using video device: ${videoTracks[0].label}`);
 
       this.setState({
@@ -294,7 +294,7 @@ class Room extends Component {
               this.sendToPeer("test-concentration", {
                 number: rand
               } , null);
-          }, 1000 * 60);
+          }, 1000 * 100);
       }
 
       this.setState({
@@ -1011,8 +1011,6 @@ class Room extends Component {
 
   render() {
 
-    console.log(this.state.remoteStreams)
-    
     const {
       messages,
       disconnected,
@@ -1140,6 +1138,7 @@ class Room extends Component {
         </div>
 
         {
+          //localhost
           !fullScream && (
             <div className="room-page__right">
               <div className="wrapper-localVideo">
@@ -1154,14 +1153,15 @@ class Room extends Component {
                     borderRadius: 5,
                     backgroundColor: "black",
                   }}
-                  localMicMute={localMicMute}
-                  localVideoMute={localVideoMute}
+                  // localMicMute={localMicMute}
+                  // localVideoMute={localVideoMute}
                   videoStream={localStream}
+                  showMuteControls={true}
                   autoPlay
-                  muted={localMicMute}
+                  muted
                 ></Video>
               </div>
-              <div className="wrapper-localChatting">
+              {/* <div className="wrapper-localChatting">
                 <Chat
                   normalUserChat={isMainRoom ? false : normalUserChat}
                   handleActionRequestUser={this.handleActionRequestUser}
@@ -1190,7 +1190,7 @@ class Room extends Component {
                     });
                   }}
                 />
-              </div>
+              </div> */}
             </div>
           )}
       </div>
