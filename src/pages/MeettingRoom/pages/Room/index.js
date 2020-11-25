@@ -30,11 +30,11 @@ class Room extends Component {
       status: "Please wait...",
 
       pc_config: {
-        iceServers: [
+        "iceServers": [
           {
-            urls: "stun:stun.l.google.com:19302",
-          },
-        ],
+            urls : 'stun:stun.l.google.com:19302'
+          }
+        ]
       },
 
       sdpConstraints: {
