@@ -52,7 +52,7 @@ class Room extends Component {
       disconnected: false,
 
       localVideoMute: false,
-      localMicMute: true,
+      localMicMute: false,
 
       isMainRoom: false,
       fullScream: false,
@@ -302,6 +302,7 @@ class Room extends Component {
         isMainRoom: isHost,
         timeTestConcentrationAPI: intervalTime,
         messages: data.messages,
+        localMicMute: isHost ? false : true
       });
     });
 
@@ -1075,10 +1076,10 @@ class Room extends Component {
                     <i className="material-icons" onClick={() => this.handleStreamRecord()} style={enableRecord ? { color: "red" } : {}}> switch_video </i>
                     <i className="material-icons" onClick={() => this.handleAllMuteMic()} style={!allMuted ? { color: "red" } : {}}> {!allMuted ? "volume_off" : "volume_up"} </i>
                     <i className="material-icons" onClick={() => this.handleMuteMic()} style={localMicMute ? { color: "red" } : {}}>
-                      {!localMicMute ? "mic" : "mic_off"}
+                      {localMicMute ? "mic_off" : "mic"}
                     </i>
                     <i className="material-icons" onClick={() => this.handleMuteVideo()} style={localVideoMute ? { color: "red" } : {}}>
-                      {(!localVideoMute && "videocam") || "videocam_off"}
+                      {(localVideoMute && "videocam_off") || "videocam"}
                     </i>
                   </div>
                   <div className="point-btn">
@@ -1153,15 +1154,15 @@ class Room extends Component {
                     borderRadius: 5,
                     backgroundColor: "black",
                   }}
-                  // localMicMute={localMicMute}
-                  // localVideoMute={localVideoMute}
+                  localMicMute={localMicMute}
+                  localVideoMute={localVideoMute}
                   videoStream={localStream}
                   showMuteControls={true}
                   autoPlay
-                  muted
+                  muted //local default true
                 ></Video>
               </div>
-              {/* <div className="wrapper-localChatting">
+              <div className="wrapper-localChatting">
                 <Chat
                   normalUserChat={isMainRoom ? false : normalUserChat}
                   handleActionRequestUser={this.handleActionRequestUser}
@@ -1190,7 +1191,7 @@ class Room extends Component {
                     });
                   }}
                 />
-              </div> */}
+              </div>
             </div>
           )}
       </div>
