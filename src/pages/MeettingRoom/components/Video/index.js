@@ -12,25 +12,69 @@ class Video extends Component {
     }
   }
 
+  //처음에 한번만 했음 - 보인인 경우에는 this.props.videoStream를 전달을 안 되어서 거의 의미가 없음
+  //Remote Stream를 이용함 - Left에서 Stream를 존재해서 전달하니까 바로반응
   componentDidMount() {
     if (this.props.videoStream) {
       this.video.srcObject = this.props.videoStream
     }
   }
 
+  //보인 Stream를 먼저 Render - Stream를 전달함 하지만 this.props.videoStream 아직 값이 없음
+  //그후에 다른 사람의 Stream를 Render
   componentWillReceiveProps(nextProps) {
-
-    // This is done only once
+    // 전단해주는 Stream는 값이 있을떄 
     if (nextProps.videoStream && nextProps.videoStream !== this.props.videoStream) {
-      // if (!this.props.videoStream) {
         this.video.srcObject = nextProps.videoStream
+        const { isMainRoom, showMuteControls } = this.props
+        
+        //Default Host방이 아니고, 보인 Stream라고, video-stream전달 완료
+        if(!isMainRoom && showMuteControls && nextProps.videoStream){
+            this.mutemic()
+        }
     }
-      
+
+    // console.log(this.props.videoStream)
+
+    //!HOST유저를 처음에는 mic는 default on
+    //Mic 기능 제어함
+    if(this.props.isMainRoom && 
+      this.props.showMuteControls && 
+      this.props.localMicMute !== nextProps.localMicMute)
+    {
+      this.mutemic()
+    }  
+    //Camera 기능 제어함
+    if(
+      this.props.isMainRoom &&
+      this.props.showMuteControls && 
+      this.props.localVideoMute !== nextProps.localVideoMute){
+      this.mutecamera()
+    } 
     
+    //!USER mic control
+    //Mic 기능 제어함
+    if(!this.props.isMainRoom && 
+      this.props.showMuteControls && 
+      this.props.flagControl !== nextProps.flagControl &&
+      this.props.localMicMute !== nextProps.localMicMute)
+    {
+      this.mutemic()
+    }  
+    //Camera 기능 제어함
+    if(
+      !this.props.isMainRoom &&
+      this.props.showMuteControls && 
+      this.props.flagControl !== nextProps.flagControl &&
+      this.props.localVideoMute !== nextProps.localVideoMute){
+      this.mutecamera()
+    } 
+
+
+
     // This is done only once when we receive a video track
     const videoTrack = nextProps.videoStream && nextProps.videoStream.getVideoTracks()
     if (this.props.videoType === 'remoteVideo' && videoTrack && videoTrack.length) {
-      
       videoTrack[0].onmute = () => {
         // alert('muted')
         this.setState({
@@ -56,14 +100,6 @@ class Video extends Component {
           // this.props.videoMuted(nextProps.videoStream)
         }
     }
-    // if(this.props.localMicMute !== nextProps.localMicMute){
-    //   this.mutemic()
-    // }  
-
-    // if(this.props.localVideoMute !== nextProps.localVideoMute){
-    //   this.mutecamera()
-    // } 
-      
   }
 
   mutemic = (e) => {
@@ -91,15 +127,15 @@ class Video extends Component {
       alert("현재 접속한 컴퓨터에서 Audio 지원하지 않습니다")  
     }
   }
-
   render() {
-    const muteControls = this.props.showMuteControls && (
-      <div>
+    //local 아님
+    //
+    const muteControls = !this.props.showMuteControls && this.props.viewStateMicAndCam && (
+      <div className="stream-info">
         <i onClick={this.mutemic} style={{ cursor: 'pointer', padding: 5, fontSize: 20, color: this.state.mic && 'white' || 'red' }} class='material-icons'>{this.state.mic && 'mic' || 'mic_off'}</i>
         <i onClick={this.mutecamera} style={{ cursor: 'pointer', padding: 5, fontSize: 20, color: this.state.camera && 'white' || 'red' }} class='material-icons'>{this.state.camera && 'videocam' || 'videocam_off'}</i>
       </div>
     )
-    console.log(this.props.muted)
     return (
       <>
         <video
@@ -107,13 +143,13 @@ class Video extends Component {
           muted={this.props.muted}
           autoPlay
           style={{
-            visibility: this.state.videoVisible && 'visible' || 'hidden',
+            visibility: this.state.videoVisible ? 'visible' : 'hidden',
             ...this.props.videoStyles,
           }}
           ref={ (ref) => {this.video = ref }}
         >
         </video>
-        {/* {muteControls} */}
+        {muteControls}
         </>
     )
   }

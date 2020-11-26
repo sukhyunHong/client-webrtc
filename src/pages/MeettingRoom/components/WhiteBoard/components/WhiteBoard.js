@@ -67,6 +67,9 @@ export default class WhiteBoard extends React.Component {
       case 27: //escape
         EventBus.emit(EventBus.UNDO)
         break;
+        
+      default:
+        break;
     }
   }
   onMove(shape) {

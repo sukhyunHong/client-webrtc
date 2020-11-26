@@ -1,6 +1,5 @@
 // https://www.freecodecamp.org/news/building-a-modern-chat-application-with-react-js-558896622194/
-import React, { useState, useEffect, useRef } from 'react'
-import DragDrop from '../DragDrop'
+import React, { useState, useEffect } from 'react'
 import './style.scss'
 import moment from 'moment'
 import Axios from 'axios';
@@ -58,7 +57,7 @@ const Chat = props => {
   const renderMessage = (userType, data) => {
     // console.log('===========', data)
     const message = data.message
-    const { normalUserChat, isMainRoom } = props;
+    const {  isMainRoom } = props;
     const { type } = data;
     let msgDiv;
     if(type === 'text'){
@@ -71,7 +70,7 @@ const Chat = props => {
           <div className="msg-type__message"> {message.data.text}</div>
         </div>
       )
-    }else if(type == 'text-request'){
+    }else if(type === 'text-request'){
       //display host room
         if(isMainRoom){
           const requestType  =  message.data.text === '질문 요청' ? 'question' : 'out';
@@ -130,6 +129,7 @@ const Chat = props => {
                 // height: 100
                 cursor: 'pointer',
               }}
+              alt="update img"
               src={message.data} />
           </div>
         )
@@ -141,6 +141,7 @@ const Chat = props => {
 
   const showEnlargedImage = (data) => {
     return (<img
+      alt="update img"
       src={data}
       style={{
         backgroundColor: 'black',
@@ -157,7 +158,7 @@ const Chat = props => {
     />)
   }
   const handleValueFile = (e) => {
-    const { name, size, type } = e.target.files[0];
+    // const { name, size, type } = e.target.files[0];
     let roomname = qs.parse(window.location.search).room;
     let params = {
       roomname

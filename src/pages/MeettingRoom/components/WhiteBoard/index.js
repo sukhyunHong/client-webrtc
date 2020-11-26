@@ -1,8 +1,4 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react'
-import PropTypes from 'prop-types'
-import Icon from '../../../../constants/icons'
-import rough from "roughjs/bundled/rough.esm";
-import html2canvas from 'html2canvas';
+import React from 'react'
 import './style.scss'
 
 
@@ -12,8 +8,6 @@ import WhiteBoard from './components/WhiteBoard';
 
 
 function WhiteBoardContainer(props) {
-
-
   return (
     <div className="paint-wrapper">
       <div id="whiteBoard" className="paint-wrapper__container">
@@ -22,7 +16,6 @@ function WhiteBoardContainer(props) {
             <Tools/>
             <WhiteBoard/>
           </div>
-
         </div>
       </div>
     </div>

@@ -4,7 +4,6 @@ import io from "socket.io-client";
 import Video from "../../components/Video";
 import LeftContentContainer from "../../components/LeftContentContainer";
 import Chat from "../../components/Chat";
-import Draggable from "../../components/Draggable";
 import moment from 'moment'
 import './style.scss'
 
@@ -48,11 +47,11 @@ class Room extends Component {
       sendChannels: [],
       requestUser: [],
       recordedBlobs: [],
-      mediaRecorder: null,
       disconnected: false,
 
       localVideoMute: false,
       localMicMute: false,
+      flagControl: false,
 
       isMainRoom: false,
       fullScream: false,
@@ -274,7 +273,6 @@ class Room extends Component {
 
     this.socket.on("connection-success", (data) => {
 
-      console.log("aaa")
       this.getLocalStream();
       const status =
         data.peerCount > 1
@@ -294,7 +292,7 @@ class Room extends Component {
               this.sendToPeer("test-concentration", {
                 number: rand
               } , null);
-          }, 1000 * 100);
+          }, 1000 * 30);
       }
 
       this.setState({
@@ -321,7 +319,6 @@ class Room extends Component {
     this.socket.on("peer-disconnected", (data) => {
         try {
           // close peer-connection with this peer
-          console.log(data.socketID);
           this.state.peerConnections[data.socketID].close();
     
           // get and stop remote audio and video tracks of the disconnected peer
@@ -375,11 +372,7 @@ class Room extends Component {
         // 2. Create Offer
         if (pc) {
           // Send Channel
-          const handleSendChannelStatusChange = (event) => {
-            console.log(
-              "send channel status: " + this.state.sendChannels[0].readyState
-            );
-          };
+          const handleSendChannelStatusChange = (event) => {};
 
           const sendChannel = pc.createDataChannel("sendChannel");
           sendChannel.onopen = handleSendChannelStatusChange;
@@ -527,8 +520,12 @@ class Room extends Component {
       if (pc) pc.addIceCandidate(new RTCIceCandidate(data.candidate));
     });
 
+    //모든 유저를 Mic On/Of
     this.socket.on("request_mic_mute", (data) => {
-        this.setState({localMicMute : !this.state.localMicMute})
+        this.setState({
+          localMicMute : !this.state.localMicMute,
+          flagControl: !this.state.flagControl
+      })
       // get remote's peerConnection
     });
 
@@ -565,7 +562,17 @@ class Room extends Component {
 
     // normal User reqest question
     this.socket.on("action_user_request_question", (data) => {
-      data === 'reject' ?  this.setState({ localMicMute: true }) : this.setState({ localMicMute: false })
+      if(data === 'accept'){
+        this.setState({ 
+          localMicMute: false,
+          flagControl: !this.state.flagControl 
+        })
+      }else{
+        this.setState({ 
+          localMicMute: true,
+          flagControl: !this.state.flagControl 
+        })
+      }
     })
 
     // normal User
@@ -737,7 +744,7 @@ class Room extends Component {
           let videoTrack = stream.getVideoTracks()[0];
           Object.values(peerConnections).forEach((pc) => {
             var sender = pc.getSenders().find(function (s) {
-              return s.track.kind == videoTrack.kind;
+              return s.track.kind === videoTrack.kind;
             });
             this.setState({
               shareScream: !shareScream,
@@ -751,7 +758,7 @@ class Room extends Component {
             let videoTrack = localStreamTemp.getVideoTracks()[0];
             Object.values(peerConnections).forEach((pc) => {
               var sender = pc.getSenders().find(function (s) {
-                return s.track.kind == videoTrack.kind;
+                return s.track.kind === videoTrack.kind;
               });
               sender.replaceTrack(videoTrack);
             })
@@ -775,7 +782,6 @@ class Room extends Component {
   }
   // host user send server and check
   handleActionRequestUser = async (socketId, type, method) => {
-    console.log(socketId, type, method)
     let requestUserTemp = [];
     if(type === 'accept'){
       requestUserTemp = this.state.requestUser.map(element => {
@@ -828,7 +834,7 @@ class Room extends Component {
           }
         }
     }
-    this.state.sendChannels.map((sendChannel) => {
+    this.state.sendChannels.forEach((sendChannel) => {
       sendChannel.readyState === "open" &&
         sendChannel.send(JSON.stringify(message));
     });
@@ -860,7 +866,7 @@ class Room extends Component {
           }
         }
       }
-    this.state.sendChannels.map((sendChannel) => {
+    this.state.sendChannels.forEach((sendChannel) => {
       sendChannel.readyState === "open" &&
         sendChannel.send(JSON.stringify(message));
     });
@@ -1007,11 +1013,9 @@ class Room extends Component {
     this.setState({
       testConcentration: {...this.state.testConcentration, number: null, state: false}
     })
-  }
-
-
+  } 
   render() {
-
+   
     const {
       messages,
       disconnected,
@@ -1030,9 +1034,9 @@ class Room extends Component {
       normalUserChat,
       shareScream,
       enableRecord,
-      testConcentration
+      testConcentration,
+      flagControl
     } = this.state;
-
     if (disconnected) {
       // disconnect socket
       this.socket.close();
@@ -1158,6 +1162,8 @@ class Room extends Component {
                   localVideoMute={localVideoMute}
                   videoStream={localStream}
                   showMuteControls={true}
+                  isMainRoom={isMainRoom}
+                  flagControl={flagControl}
                   autoPlay
                   muted //local default true
                 ></Video>
@@ -1181,7 +1187,7 @@ class Room extends Component {
                     const { username } = this.socket.query;
                     message.message.sender.username = username;
                     // send channels
-                    this.state.sendChannels.map((sendChannel) => {
+                    this.state.sendChannels.forEach((sendChannel) => {
                       sendChannel.readyState === "open" &&
                         sendChannel.send(JSON.stringify(message));
                     });

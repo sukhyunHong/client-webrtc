@@ -32,7 +32,9 @@
                 }
                 &__btn{
                     display: flex;
-                    justify-content: space-between;
+                    justify-content: center;
+                    width: 150px;
+                    margin: auto;
                     button{
                         border: none;
                         padding: 8px 20px;
@@ -41,7 +43,7 @@
                         margin: 10px 2px;
                         cursor: pointer;
                         outline: none;
-
+                        
                         background: white;
                         color: black;
                     }
@@ -226,6 +228,17 @@
             }
             .video-item{
                 position: relative;
+                .stream-info{
+                    position: absolute;
+                    top: 0px;
+                    padding: 5px;
+                    right: 0px;
+                    background: #5199ff;
+                    border-radius: 0px 0px 0px 5px;
+                    i{
+                        color: white;
+                    }
+                }
                 .btn-wrapper{
                     display: none;
                     position: absolute;

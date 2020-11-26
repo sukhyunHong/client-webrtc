@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import PropTypes from 'prop-types'
 
 function CountDownTime(props) {
     const [seconds, setSeconds ] =  useState(10);

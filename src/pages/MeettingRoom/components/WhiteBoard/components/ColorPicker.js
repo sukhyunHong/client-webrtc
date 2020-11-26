@@ -41,10 +41,9 @@ export default class ColorPicker extends React.Component {
 			};
 			let borderStyle = {
         display: 'flex',
-        border: 1,
-        border: this.state.selectedColorIndex === i?'1px solid':'',
+        border: this.state.selectedColorIndex === i ? '1px solid': '',
 				margin: 1
-			};
+		};
 
 			return <div key={i} style={borderStyle}>
 					<div style={style} onClick={this.handleClick(i).bind(this)}></div>

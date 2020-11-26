@@ -1,11 +1,9 @@
 import React from 'react'
-import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { render } from 'react-dom';
 import './style.scss'
 
 function Alert({title, content, handleClickAccept, handleClickReject}) {
-    const ref = React.createRef();
     const modal = (
         <WrapperAlert>
             <div className="container-alert">
@@ -45,12 +43,6 @@ const WrapperAlert = styled.div`
     height: 100%;
     background: rgba(0,0,0,0.5);
     z-index: 100;
-    
-    
-    /* display: flex; */
-    /* align-items: center; */
-    /* justify-content: center; */
-
 `
 export default Alert
 
