@@ -10,13 +10,11 @@ import WhiteBoard from './components/WhiteBoard';
 function WhiteBoardContainer(props) {
   return (
     <div className="paint-wrapper">
-      <div id="whiteBoard" className="paint-wrapper__container">
-        <div id="main">
-          <div id="container">
-            <Tools/>
-            <WhiteBoard/>
-          </div>
-        </div>
+      <div className="paint-wrapper__board">
+        <WhiteBoard/>
+      </div>
+      <div className="paint-wrapper__tools">
+        <Tools/>
       </div>
     </div>
   )

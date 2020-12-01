@@ -76,7 +76,7 @@ class Room extends Component {
 
   getLocalStream = () => {
     const constraints = {
-      audio: true,
+      audio: false,
       video: true,
       options: {
         mirror: true,
@@ -285,6 +285,8 @@ class Room extends Component {
       let intervalTime = "";
 
       if(isHost){
+          const time = localStorage.getItem("time") ? localStorage.getItem("time") : 1;
+          console.log(time)
           intervalTime= setInterval(() => {
               var min = 0,
                   max = 10;
@@ -292,7 +294,7 @@ class Room extends Component {
               this.sendToPeer("test-concentration", {
                 number: rand
               } , null);
-          }, 1000 * 30);
+          }, 1000 * Number(time) * 60);
       }
 
       this.setState({
@@ -684,7 +686,19 @@ class Room extends Component {
           messages: [...this.state.messages, message]
         })
     })
-
+    
+  //   this.socket.on("test-concentration_fail", (data) => {
+  //     const {remoteSocketId, remoteUserName } = data 
+  //     let value = {
+  //       type: "text-alert",
+  //       remoteId: remoteSocketId,
+  //       state: false,
+  //       remoteUserName: remoteUserName
+  //     }
+  //     this.setState({
+  //       requestUser: [...this.state.requestUser, value]
+  //     })
+  // })
 
 
     
@@ -975,7 +989,7 @@ class Room extends Component {
         a.href = url;
         
         let currentDay = moment().format('l').replace("/", "_")
-        a.download = `${currentDay}.webm`;
+        a.download = `${currentDay}.mp4`;
         document.body.appendChild(a);
         a.click();
         setTimeout(() => {
@@ -1014,8 +1028,48 @@ class Room extends Component {
       testConcentration: {...this.state.testConcentration, number: null, state: false}
     })
   } 
+  handleDownAllTime = () => {
+    // this.sendToPeer("test-concentration_fail", null, {
+    //   local: this.socket.id,
+    // });
+    const { username } = this.socket.query;
+    let message = {
+        type: 'text-alert', 
+        message: { 
+          id: this.socket.id, 
+          sender: { 
+            uid: this.socket.id, 
+            username
+          }, 
+          data: { 
+            text: "집중 테스트 실패했습니다." 
+          }
+        }
+      }
+    console.log(message)
+    this.state.sendChannels.forEach((sendChannel) => {
+      sendChannel.readyState === "open" &&
+        sendChannel.send(JSON.stringify(message));
+    });
+    this.sendToPeer("new-message", JSON.stringify(message), {
+      local: this.socket.id,
+    });
+    this.setState({
+      messages: [...this.state.messages, message]
+    })
+  }
+  handleOffChatForUser = (socketId, type, method) => {
+    if(socketId="allmute"){
+      this.sendToPeer("action_host_chat", null, {
+        local: this.socket.id,
+      });
+    }else{
+      this.sendToPeer("action_user_disable_chatting", {type, method}, {
+        remoteSocketId: socketId,
+      });
+    }
+  }
   render() {
-   
     const {
       messages,
       disconnected,
@@ -1087,9 +1141,9 @@ class Room extends Component {
                     </i>
                   </div>
                   <div className="point-btn">
-                    <i className="material-icons" onClick={() => this.handleControlChat()} style={enableChat ? {} : {color: "red" }}>
+                    {/* <i className="material-icons" onClick={() => this.handleControlChat()} style={enableChat ? {} : {color: "red" }}>
                       {enableChat ? "speaker_notes" : "speaker_notes_off"}
-                    </i>
+                    </i> */}
                     <i className="material-icons" onClick={() => this.handleShareDisplayMedia()} style={shareScream ? {color: "red" } : {}}>
                       laptop
                     </i>
@@ -1136,6 +1190,7 @@ class Room extends Component {
 
 
               testConcentration={testConcentration}
+              handleDownAllTime={this.handleDownAllTime}
               handleCorrectInput={this.handleCorrectInput}
             />
             }
@@ -1173,9 +1228,11 @@ class Room extends Component {
                   normalUserChat={isMainRoom ? false : normalUserChat}
                   handleActionRequestUser={this.handleActionRequestUser}
                   isMainRoom={isMainRoom}
+                  handleOffChatForUser={this.handleOffChatForUser}
                   user={{
                     uid: (this.socket && this.socket.id) || "",
                   }}
+                  remoteStreams={remoteStreams}
                   messages={messages}
                   sendMessage={(message) => {
                     // console.log(message)

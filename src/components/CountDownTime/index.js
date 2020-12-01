@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react'
 
-function CountDownTime(props) {
+function CountDownTime({handleDownAllTime}) {
     const [seconds, setSeconds ] =  useState(10);
     useEffect(()=>{
         let timer = setInterval(() => {
             if(seconds === 0){
                 clearInterval(timer)
+                handleDownAllTime();
             }else{
                 setSeconds(seconds - 1)
             }

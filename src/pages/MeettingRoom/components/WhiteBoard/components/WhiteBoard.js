@@ -27,7 +27,13 @@ export default class WhiteBoard extends React.Component {
   };
 
   onResize() {
-    this.rect = this._svg.getBoundingClientRect();
+    try {
+      if(this._svg !== null){
+        this.rect = this._svg.getBoundingClientRect();
+      }
+    } catch (error) {
+      console.log(error)      
+    }
   }
 
   mousePos(e) {
@@ -99,6 +105,7 @@ export default class WhiteBoard extends React.Component {
         width={this.props.width}
         height={this.props.height}
         ref={(canvas) => this._svg = canvas}
+        data-html2canvas-ignore="true"
       >
         {shapes}
         {current}

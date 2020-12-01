@@ -1,0 +1,111 @@
+.tools{
+    &-list{
+        padding: 10px 20px;
+        border-radius: 10px;
+
+        bottom: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        > div {
+            display: flex;
+            width: 1140px;
+            border-radius: 5px;
+            // align-items: center;
+            background: rgb(12, 11, 11);
+            padding: 5px 0;
+            button{
+                background: transparent;
+                color: white;
+                margin-left: 20px;
+                width: 60px;
+                outline: none;
+                cursor: pointer;
+                border: 1px solid transparent;
+                &:hover{
+                    background: #5199ff;
+                    border-radius: 6px;
+                    border: 1px solid #5199ff;
+                }
+            }
+            .tool{
+                position: relative;
+                > button.selected{
+                    background: #5199ff;
+                    border-radius: 6px;
+                    border: 1px solid #5199ff;
+                }
+                &-childs{
+                    top: 0;
+                    transform: translateY(-70px);
+                    margin-left: 20px;
+                    position: absolute;
+                    display: flex;
+                    align-items: center;
+                    border-radius: 5px;
+    
+                    background: rgb(12, 11, 11);
+                    > button{
+                        background: transparent;
+                        color: white;
+                        margin-left: 20px;
+                        width: 60px;
+                        height: 50px;
+                        outline: none;
+                        cursor: pointer;
+                        border: 1px solid transparent;
+                        &:hover{
+                            background: #5199ff;
+                            border-radius: 6px;
+                            border: 1px solid #5199ff;
+                        }
+                    }
+                }
+                .figure{
+                    height: 100px;
+                    width: 260px;
+                    display: block;
+                    transform: translateY(-120px);
+                }
+                .color{
+                    height: 100px;
+                    width: 180px;
+                    display: block;
+                    padding: 10px;
+                    transform: translateY(-120px);
+                    button{
+                        border-radius: 5px;
+                        padding: 0;
+                        margin: 5px;
+                        width: 30px;
+                        height: 30px;
+                    }
+                }
+                .del{
+                    width: 160px;
+                    display: flex;
+                    display: block;
+                    transform: translateY(-120px);
+                    padding: 12px;
+                    p{
+                        width: auto;
+                        color: #ccc;
+                        font-size: 14px;
+                        font-weight: normal;
+                        cursor: pointer;
+                        margin: 3px 0;
+                        &:hover{
+                            color: white
+                        }
+                    }
+                }
+                .check{
+                    height: 100px;
+                    width: 260px;
+                    display: block;
+                    transform: translateY(-122px);
+                }
+            }
+        }
+    }
+}

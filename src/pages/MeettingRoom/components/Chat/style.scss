@@ -24,6 +24,64 @@
         cursor: pointer;
         margin-right: 10px;
     }
+    &__camera{
+        display: none;
+    }
+    &__offchat{
+        z-index: 50;
+        position: relative;
+        > div{
+            background: #EAF1F6;
+            top: 30px;
+            right: 15px;
+            width: 110px;
+            text-align: right;
+            position: absolute;
+            height: auto;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            /* width */
+            ::-webkit-scrollbar {
+                width: 10px;
+                display: block !important;
+            }
+            
+            /* Track */
+            
+            ::-webkit-scrollbar-track {
+                background: #3930ba; 
+            }
+            
+            /* Handle */
+            
+                ::-webkit-scrollbar-thumb {
+                background: #888; 
+            }
+            
+                
+            /* Handle on hover */
+            ::-webkit-scrollbar-thumb:hover {
+                
+                background: #555; 
+            } 
+            ul{ 
+                li{
+                    text-align: left;
+                    list-style: none;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    cursor: pointer;
+                    font-size: 14px;
+                    margin-bottom: 5px;
+                    &:hover{
+                        color: black;
+                    }
+                }
+            }
+        }
+    }
 }
 .chatWindow {
     display: grid;
@@ -206,7 +264,6 @@
         text-align: center;
         span{
             display: inline-block;
-            font-weight: 100;
         }
     }
     &__button{
@@ -392,6 +449,14 @@ input.textarea {
             border-radius: 5px;
             width: 100%;
             font-size: 14px;
+        }
+    }
+    .chat-task{
+        &__camera{
+            display: block;
+        }
+        &__file{
+            display: none;
         }
     }
 }

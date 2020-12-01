@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default class Ellipse extends React.Component {
+export default class FigureEllipseLine extends React.Component {
   prepareData() {
     let ellipse = {
       cx: this.props.path[0].x,

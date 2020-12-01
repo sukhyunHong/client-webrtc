@@ -1,6 +1,7 @@
 import React from 'react';
 
-export default class Line extends React.Component {
+//!class Name
+export default class LineThink extends React.Component {
   prepareData() {
     let d = [
       `M ${this.props.path[0].x} ${this.props.path[0].y}`,
@@ -14,7 +15,7 @@ export default class Line extends React.Component {
     let d = this.prepareData();
     return (<path d={d}
       stroke={this.props.color}
-    strokeWidth={1}
+      strokeWidth={1}
       fill="none"
     />);
   }

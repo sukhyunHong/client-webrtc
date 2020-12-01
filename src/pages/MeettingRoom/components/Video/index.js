@@ -9,6 +9,7 @@ class Video extends Component {
       // currentStream: new MediaStream(),
       // videoTrack: false,
       videoVisible: true,
+      chat: true,
     }
   }
 
@@ -105,10 +106,11 @@ class Video extends Component {
   mutemic = (e) => {
     try {
       const stream = this.video.srcObject.getTracks().filter(track => track.kind === 'audio')
-      this.setState(prevState => {
-        if (stream) stream[0].enabled = !prevState.mic
-        return {mic: !prevState.mic}
-      })
+      if(stream.length !== 0)
+        this.setState(prevState => {
+          if (stream) stream[0].enabled = !prevState.mic
+          return {mic: !prevState.mic}
+        })
     } catch (error) {
       console.log(error)
       alert("현재 접속한 컴퓨터에서 Audio 지원하지 않습니다")      
@@ -118,22 +120,23 @@ class Video extends Component {
   mutecamera = (e) => {
     try {
       const stream = this.video.srcObject.getTracks().filter(track => track.kind === 'video')
-      this.setState(prevState => {
-        if (stream) stream[0].enabled = !prevState.camera
-        return {camera: !prevState.camera}
-      })
+      if(stream.length !== 0)
+        this.setState(prevState => {
+          if (stream) stream[0].enabled = !prevState.camera
+          return {camera: !prevState.camera}
+        })
     } catch (error) {
       console.log(error)
       alert("현재 접속한 컴퓨터에서 Audio 지원하지 않습니다")  
     }
   }
   render() {
-    //local 아님
     //
     const muteControls = !this.props.showMuteControls && this.props.viewStateMicAndCam && (
       <div className="stream-info">
-        <i onClick={this.mutemic} style={{ cursor: 'pointer', padding: 5, fontSize: 20, color: this.state.mic && 'white' || 'red' }} class='material-icons'>{this.state.mic && 'mic' || 'mic_off'}</i>
-        <i onClick={this.mutecamera} style={{ cursor: 'pointer', padding: 5, fontSize: 20, color: this.state.camera && 'white' || 'red' }} class='material-icons'>{this.state.camera && 'videocam' || 'videocam_off'}</i>
+        <i style={{ cursor: 'pointer', padding: 5, fontSize: 20, color: this.state.mic ? 'white' : 'red' }} class='material-icons'>{this.state.mic ? 'mic' : 'mic_off'}</i>
+        <i style={{ cursor: 'pointer', padding: 5, fontSize: 20, color: this.state.camera ? 'white' : 'red' }} class='material-icons'>{this.state.camera  ? 'videocam' : 'videocam_off'}</i>
+        <i style={{ cursor: 'pointer', padding: 5, fontSize: 20, color: this.state.camera ? 'white' : 'red' }} class='material-icons'>{this.state.chat  ? 'chat' : 'chat_off'}</i>
       </div>
     )
     return (

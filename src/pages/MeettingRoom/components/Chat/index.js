@@ -10,6 +10,8 @@ const Chat = props => {
   const [user, setUser] = useState({ uid: 0, })
   const [imageZoom, setImageZoom] = useState(false)
   const [selectedImage, setSelectedImage] = useState('')
+  const [boxedListUser, setBoxedListUser] = useState(false)
+  const [listUser, setListUser] = useState([])
 
   const scrollToBottom = () => {
     const chat = document.getElementById("chatList");
@@ -24,7 +26,20 @@ const Chat = props => {
     if(textRequest.length !== 0){
       // sendMessage(textRequest[0])
     }
-    // console.log(textRequest)
+    let roomname = qs.parse(window.location.search).room
+    let username = qs.parse(window.location.search).user
+    Axios({
+      method: 'get',
+      url: `${process.env.REACT_APP_SERVER_API}/room/getlistuserbyroom`,
+      params: {
+        roomname, username
+      }
+    }).then(res => {
+      const { data } = res;
+      const hostStream = data.data[0];
+      const listUser = data.data.slice(1, data.data.length)
+      setListUser(listUser)
+    })
     
   }, [props])
 
@@ -114,6 +129,18 @@ const Chat = props => {
           </div>
         </div>
         )
+    }
+    else if(type === "text-alert"){
+      const { data } = message
+      const messageInfo = message.sender.username+ " " + data.text;
+      msgDiv = (
+        <div className="msg-request">
+          <div className="msg-request__heading">
+            <p>{messageInfo}</p>
+            <span>{moment().format('LT')}</span></div>
+        </div>
+      )
+      
     }else{
         msgDiv = (
           <div className="msg-row">
@@ -163,16 +190,20 @@ const Chat = props => {
     let params = {
       roomname
     }
-    console.log(e.target.files[0])
-    let data = new FormData();
-    data.append('file', e.target.files[0])
-    data.append('params', JSON.stringify(params))
-    Axios.post(`${process.env.REACT_APP_SERVER_API}/room/upfile`, data, {
-        headers: {
-            'Content-Type': 'application/json',
+    const { size } = e.target.files[0];
+    if((size / 1000000) < 100){
+      let data = new FormData();
+      data.append('file', e.target.files[0])
+      data.append('params', JSON.stringify(params))
+      Axios.post(`${process.env.REACT_APP_SERVER_API}/room/upfile`, data, {
+          headers: {
+              'Content-Type': 'application/json',
+          }
         }
-      }
-    )
+      )
+    }else{
+      alert("파일 공유 용량제한이 100MB이하 입니다.")
+    }
   }   
 
   const handleClickUpFile = () => {
@@ -203,15 +234,52 @@ const Chat = props => {
     }}>
       {imageZoom && showEnlargedImage(selectedImage)}
       <div className="chat-task"> 
-        <i className="material-icons" onClick={() => handleClickUpFile()}>
-          link
-        </i>
-        <i className="material-icons">
-          chat
-        </i>
-        <i className="material-icons camera" onClick={() => handleClickCameraOn()}>
-          camera
-        </i>
+        <span className="chat-task__file">
+          <i className="material-icons" onClick={() => handleClickUpFile()}>
+            link
+          </i>
+        </span>
+        {
+          props.isMainRoom &&
+          <span className="chat-task__offchat">
+            <i className="material-icons" onClick={() => setBoxedListUser(!boxedListUser)}>
+              chat
+            </i>
+            {
+              boxedListUser &&
+              <div className="list-user-chat">
+                <ul>
+                  
+                  {
+                    listUser.length !== 0 &&
+                    <>
+                      <li onClick={() => 
+                          {
+                              props.handleOffChatForUser("allmute","disable_chatting","disable_chatting")
+                              setBoxedListUser(!boxedListUser)
+                          }}>1. 전체
+                      </li>
+                      {
+                        listUser.map((user,idx) => (
+                          <li onClick={() => 
+                            {
+                              props.handleOffChatForUser(user.socket_id,"disable_chatting","disable_chatting")
+                              setBoxedListUser(!boxedListUser)
+                          }} key = {idx} >{idx + 2}.{user.username}</li>
+                        ))
+                      }
+                    </>
+                  }
+                </ul>
+              </div>
+            }
+          </span>
+        }
+        <span className="chat-task__camera">
+          <i className="material-icons" onClick={() => handleClickCameraOn()}>
+            camera
+          </i>
+        </span>
       </div>
 
       <div className="chatWindow" style={{

@@ -1,4 +1,4 @@
-import { ELLIPSE, PEN } from './ToolStore';
+import { FIGURE_ELLIPSE_LINE, DRAW } from './ToolStore';
 
 export function pointInsideRect(point, rect) {
   return point.x >= rect.x && point.x <= rect.x + rect.width &&
@@ -7,7 +7,7 @@ export function pointInsideRect(point, rect) {
 
 export function getShapeRect(shape) {
   const end = shape.path.length - 1
-  if (shape.type === ELLIPSE) {
+  if (shape.type === FIGURE_ELLIPSE_LINE) {
     const halfWidth = Math.abs(shape.path[0].x - shape.path[end].x)
     const halfHeight = Math.abs(shape.path[0].y - shape.path[end].y)
     return {
@@ -16,7 +16,7 @@ export function getShapeRect(shape) {
       width: 2 * halfWidth,
       height: 2 * halfHeight,
     }
-  } else if (shape.type === PEN) {
+  } else if (shape.type === DRAW) {
     const minX = Math.min(...shape.path.map(p => p.x))
     const maxX = Math.max(...shape.path.map(p => p.x))
     const minY = Math.min(...shape.path.map(p => p.y))

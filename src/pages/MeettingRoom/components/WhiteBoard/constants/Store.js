@@ -1,22 +1,66 @@
 import Immutable from 'immutable';
 import EventBus from '../events/EventBus'
-import ToolStore, { POINTER, PEN, LINE, ELLIPSE, RECT } from './ToolStore';
-import Line from '../shapes/Line';
-import Pen from '../shapes/Pen';
-import Rect from '../shapes/Rect';
-import Ellipse from '../shapes/Ellipse';
+//Types
+// import ToolStore, { 
+// 	POINTER, PEN, LINE, ELLIPSE, RECT
+// } from './ToolStore';
+//Mapping Tool
+import ToolStore,{
+	//선택, 테스트, 그리기, 지우기
+	SELECT, TEXT, DRAW, ERASER,
+	
+	//선 
+	LINE_THINK, LINE_MEDIUM, LINE_BOLD, LINE_DASH,
+	
+	//도형
+	FIGURE_REC_LINE, FIGURE_REC_FILL,
+	FIGURE_ELLIPSE_LINE,FIGURE_ELLIPSE_FILL,
+	FIGURE_TRIANGLE_LINE, FIGURE_TRIANGLE_FILL,
+
+} from './ToolStore';
+//그리기
+import Draw from '../shapes/Draw'
+
+//선
+import LineThink from '../shapes/LineThink';
+import LineMedium from '../shapes/LineMedium';
+import LineBold from '../shapes/LineBold';
+import LineDash from '../shapes/LineDash'
+
+//도형
+import FigureRecLine from '../shapes/FigureRecLine';
+import FigureRecFill from '../shapes/FigureRecFill';
+import FigureEllipseLine from '../shapes/FigureEllipseLine';
+import FigureEllipseFill from '../shapes/FigureEllipseFill';
+import FigureTriangleLine from '../shapes/FigureTriangleLine';
+import FigureTriangleFill from '../shapes/FigureTriangleFill';
+
+// import Pen from '../shapes/Pen';
+// import Rect from '../shapes/Rect';
+// import Ellipse from '../shapes/Ellipse';
+
+
 import { pointInsideRect, getShapeRect } from './Utils'
 
-export const SELECT = 'Select'
-export const DRAW = 'Draw'
-export const MOVE = 'Move'
-export const RESIZE = 'Resize'
+// export const SELECT = 'Select'
+// export const DRAW = 'Draw'
+// export const MOVE = 'Move'
+// export const RESIZE = 'Resize'
 
 const mapTools = {}
-mapTools[LINE] = Line
-mapTools[RECT] = Rect
-mapTools[ELLIPSE] = Ellipse
-mapTools[PEN] = Pen
+mapTools[DRAW] = Draw
+
+mapTools[LINE_THINK] = LineThink
+mapTools[LINE_MEDIUM] = LineMedium
+mapTools[LINE_BOLD] = LineBold
+mapTools[LINE_DASH] = LineDash
+
+mapTools[FIGURE_REC_LINE] = FigureRecLine
+mapTools[FIGURE_REC_FILL] = FigureRecFill
+mapTools[FIGURE_ELLIPSE_LINE] = FigureEllipseLine
+mapTools[FIGURE_ELLIPSE_FILL] = FigureEllipseFill
+mapTools[FIGURE_TRIANGLE_LINE] = FigureTriangleLine
+mapTools[FIGURE_TRIANGLE_FILL] = FigureTriangleFill
 
 class Store {
 	constructor() {
@@ -36,7 +80,7 @@ class Store {
 		};
 		this.history = [this.data.shapes];
 		this.historyIndex = -1;
-		this.tool = Line;
+		this.tool = Draw;
 		this.color = 'black';
 
 		ToolStore.subscribe(() => {
@@ -44,6 +88,8 @@ class Store {
 			this.toolType = tool
 			this.tool = mapTools[tool] || null
 			this.color = ToolStore.color
+
+			console.log("tool", tool)
 		})
 	}
 	subscribe(cb) {
@@ -59,13 +105,12 @@ class Store {
 			path: [position],
 			color: this.color
 		}
-		if (this.toolType === POINTER) {
+		if (this.toolType === SELECT) {
 			this.selectShape(position)
 		}
 		this.emitChanges()
 	}
 	movePath(event, position) {
-		//console.log('position',position)
 		if (this.data.mouseTracker) {
 			this.data.mouseTracker.path.push(position);
 			this.emitChanges()
@@ -74,7 +119,7 @@ class Store {
 	endPath(event, position) {
 		if (this.data.mouseTracker) {
 			this.data.mouseTracker.path.push(position);
-			if (this.toolType === POINTER) {
+			if (this.toolType === SELECT) {
 				this.addVersion()
 			} else if(this.data.mouseTracker.class) {
 				this.addShapeToCanvas(this.data.mouseTracker)

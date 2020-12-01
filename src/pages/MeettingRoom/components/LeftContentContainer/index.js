@@ -1,4 +1,4 @@
-import React, { Component, useState } from 'react'
+import React, { Component, useCallback, useState } from 'react'
 import Video from '../Video'
 import qs from 'query-string'
 import Axios from 'axios'
@@ -307,6 +307,7 @@ class LeftContentContainer extends Component {
                         <InputTestConcentration 
                           testNumber={testConcentration.number}
                           handleCorrectInput={this.props.handleCorrectInput}
+                          handleDownAllTime={this.props.handleDownAllTime}
                         /> : 
 
                         outEnable &&
@@ -336,7 +337,7 @@ class LeftContentContainer extends Component {
   }
 }
 
-const InputTestConcentration = ({testNumber, handleCorrectInput}) => {
+const InputTestConcentration = React.memo(({testNumber, handleCorrectInput, handleDownAllTime}) => {
 
   const [number, setNumber] = useState();
   const [checkInput, setCheckInput] = useState(false);
@@ -351,12 +352,16 @@ const InputTestConcentration = ({testNumber, handleCorrectInput}) => {
         handleCorrectInput();
       }
   }
+  const handleDownAllTimeCallback = useCallback(()=> handleDownAllTime);
+
   if(displayWrapper){
     return (
       <div className="test-wrapper">
         <div> 
           <h2>집중도 테스트</h2>
-          <CountDownTime />
+          <CountDownTime
+            handleDownAllTime = {handleDownAllTimeCallback()} 
+          />
           <h1>{testNumber}</h1>
             <form onSubmit = {(e) =>  handleSubmitInput(e) }>
                 <input type="text" className="input-number" onChange={(e) => setNumber(Number(e.target.value))}/> 
@@ -370,7 +375,7 @@ const InputTestConcentration = ({testNumber, handleCorrectInput}) => {
     )   
   }else return ""
 
-}
+})
 
 const WrapperLoading = styled.div`
   display: flex;

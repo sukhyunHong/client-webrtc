@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import './style.scss'
 import axios from 'axios'
 
-function CreateARoom(props) {
+function CreateRoom(props) {
     const [roomname, setRoomName] = useState("");
     const [username, setUserName] = useState("");
 
@@ -11,6 +11,8 @@ function CreateARoom(props) {
  
     const [searchUsername, setSearchUsername] = useState("");
     const [roomsByUsername, setRoomsByUserName] = useState([]);
+
+    const [timeTest, setTimeTest] = useState();
     const handleCreateRoom = () => {
         try {
             axios({
@@ -69,22 +71,33 @@ function CreateARoom(props) {
             // setRoomsByUserName(data.data)
         }).catch(error => console.log(error))
     }
+    const handleSetTime = (e) => {
+        localStorage.setItem("time", e.target.value)
+    }
     return (
         <div className="create-room">
-            <div>
-                <input type="text" name="" placeholder="Room Name ... " id="" onChange={(e) => setRoomName(e.target.value)} value={roomname}/>
-                <input type="text" name="" placeholder="User Name ..." id="" onChange={(e) => setUserName(e.target.value)}  value={username} />
-                <button style={{width: '150px'}} onClick={() => handleCreateRoom()}>Create Room</button>
+            <div className="create-room-container">
+                <h4>Lecture planet WEB-RTC Project v.1</h4>
+                <div>
+                    <div className="create-room-made">
+                        <input type="text" name="" placeholder="룸 이름 ... " id="" onChange={(e) => setRoomName(e.target.value)} value={roomname}/>
+                        <input type="text" name="" placeholder="유저 이름 ..." id="" onChange={(e) => setUserName(e.target.value)}  value={username} />
+                        <input type="text" name="" placeholder="집중 테스트 시간 ... 분" id="" onChange={(e) => handleSetTime(e)} value={timeTest}/>
+                        <button style={{width: '150px'}} onClick={() => handleCreateRoom()}>룸 생성하기</button>
+                    </div>
+
+                    <div className="create-room-join">
+                        <input type="text" name="" placeholder="룸 이름 ... " id="" onChange={(e) => setJoinRoom(e.target.value)} value={joinroom}/>
+                        <input type="text" name="" placeholder="유저 이름 ... " id="" onChange={(e) => setJoinUsername(e.target.value)} value={joinUsername}/>
+                        <button style={{width: '150px'}} onClick={() => handleJoinRoom()}>룸 참여하기</button>
+                    </div>
+
+                </div>
             </div>
 
-            <div>
-                <input type="text" name="" placeholder="Room Join ... " id="" onChange={(e) => setJoinRoom(e.target.value)} value={joinroom}/>
-                <input type="text" name="" placeholder="User Join ... " id="" onChange={(e) => setJoinUsername(e.target.value)} value={joinUsername}/>
-                <button style={{width: '150px'}} onClick={() => handleJoinRoom()}>Join Room</button>
-            </div>
 
-            <div>
-                <input type="text" name="" placeholder="Search room by username ... " id="" onChange={(e) => setSearchUsername(e.target.value)} value={searchUsername}/>
+            {/* <div className="create-room-search">
+                <input type="text" name="" placeholder="룸 이름 ... " id="" onChange={(e) => setSearchUsername(e.target.value)} value={searchUsername}/>
                 <button style={{width: '150px'}} onClick={() => !searchUsername ? alert("원하는 방을 입력하세요")  : handleSearchRoomByUserName() }>Search Room</button>
             </div>
             {
@@ -94,12 +107,12 @@ function CreateARoom(props) {
                         roomsByUsername.map((item, idx) => <li  style={{cursor: 'pointer'}} key ={idx} onClick={() => props.history.push(`/meetting/open?room=${item.roomname}&user=${item.username}`)}>{item.roomname}</li>)
                     }
                 </ul>
-            }
+            } */}
         </div>
     )
 }
 
 
 
-export default CreateARoom
+export default CreateRoom
 
