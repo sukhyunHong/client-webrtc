@@ -284,7 +284,7 @@ const Chat = props => {
 
       <div className="chatWindow" style={{
         zIndex: 10,
-        position: 'absolute',
+        // position: 'absolute',
         // right: 5,
         // top: 190,
         bottom: 0,

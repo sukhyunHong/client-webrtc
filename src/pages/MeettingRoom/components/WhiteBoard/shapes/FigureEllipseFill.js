@@ -20,7 +20,7 @@ export default class FigureEllipseFill extends React.Component {
       ry={ellipse.ry}
       stroke={this.props.color}
       strokeWidth={1}
-      fill="white"
+      fill={this.props.color}
     />);
   }
 }

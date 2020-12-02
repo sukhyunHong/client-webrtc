@@ -19,7 +19,7 @@ export default class FigureRecFill extends React.Component {
       height={rect.height}
       stroke={this.props.color}
       strokeWidth={1}
-      fill="white"
+      fill={this.props.color}
     />);
   }
 }

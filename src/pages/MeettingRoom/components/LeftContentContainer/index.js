@@ -51,7 +51,10 @@ class LeftContentContainer extends Component {
           
           let infoStreamBySocketId = listUser.filter(element => element.socket_id === rVideo.name);
           infoStreamBySocketId = infoStreamBySocketId.length ? infoStreamBySocketId[0] : hostStream.username;
-
+          if(infoStreamBySocketId.length === 0){
+            return null
+          }else
+          infoStreamBySocketId = infoStreamBySocketId.length ? infoStreamBySocketId[0] : hostStream.username;
 
           let video = _videoTrack ? (
             <div className="video-item">
@@ -166,7 +169,12 @@ class LeftContentContainer extends Component {
           const requestValue = nextProps.requestUser.filter(element => element.remoteId === rVideo.name)
 
           let infoStreamBySocketId = listUser.filter(element => element.socket_id === rVideo.name);
-          infoStreamBySocketId = infoStreamBySocketId.length ? infoStreamBySocketId[0] : hostStream.username;
+        
+
+          if(infoStreamBySocketId.length === 0){
+              return null
+          }else
+            infoStreamBySocketId = infoStreamBySocketId.length ? infoStreamBySocketId[0] : hostStream.username;
 
           let video = _videoTrack ? (
             <div className="video-item">

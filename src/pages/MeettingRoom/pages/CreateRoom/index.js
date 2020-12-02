@@ -82,7 +82,7 @@ function CreateRoom(props) {
                     <div className="create-room-made">
                         <input type="text" name="" placeholder="룸 이름 ... " id="" onChange={(e) => setRoomName(e.target.value)} value={roomname}/>
                         <input type="text" name="" placeholder="유저 이름 ..." id="" onChange={(e) => setUserName(e.target.value)}  value={username} />
-                        <input type="text" name="" placeholder="집중 테스트 시간 ... 분" id="" onChange={(e) => handleSetTime(e)} value={timeTest}/>
+                        <input type="text" name="" placeholder="집중도 테스트 시간 ... 분" id="" onChange={(e) => handleSetTime(e)} value={timeTest}/>
                         <button style={{width: '150px'}} onClick={() => handleCreateRoom()}>룸 생성하기</button>
                     </div>
 

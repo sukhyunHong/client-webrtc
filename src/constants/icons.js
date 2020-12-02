@@ -34,6 +34,8 @@ import checkQuestionIcon from '../assets/whiteboard-icon/icon_board_check_questi
 import delIcon  from '../assets/whiteboard-icon/icon_board_del.svg'
 import tagIcon from  '../assets/whiteboard-icon/icon_board_tag.svg'
 import saveIcon from  '../assets/whiteboard-icon/icon_board_save.svg'
+import boardHidden from  '../assets/whiteboard-icon/icon_Del.svg'
+import boardDisplay from '../assets/whiteboard-icon/icon_board_display.svg'
 
 const Icon = {
     //Whiteboard Icon
@@ -70,7 +72,9 @@ const Icon = {
     resetCancelIcon,
     delIcon,
     tagIcon,
-    saveIcon
+    saveIcon,
+    boardHidden,
+    boardDisplay
 }
 
 export default Icon

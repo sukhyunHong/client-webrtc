@@ -37,8 +37,7 @@ export default class WhiteBoard extends React.Component {
   }
 
   mousePos(e) {
-    ;
-    let round = 2
+    let round = 2;
     return {
       x: round * Math.round(e.clientX / round) - this.rect.left,
       y: round * Math.round(e.clientY / round) - this.rect.top

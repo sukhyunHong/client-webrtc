@@ -1,5 +1,5 @@
 import React from 'react';
-import EventBus from '../eventBus';
+import EventBus from '../events/EventBus';
 import Store from '../constants/Store';
 
 export default class History extends React.Component {
@@ -7,6 +7,7 @@ export default class History extends React.Component {
 		super();
 
 		Store.subscribe(()=>{
+			localStorage.setItem('history', Store.history.length)
 			this.setState({
 				history: Store.history,
 				selectedIndex: Store.historyIndex

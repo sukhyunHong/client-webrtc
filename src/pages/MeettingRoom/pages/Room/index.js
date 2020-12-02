@@ -76,7 +76,7 @@ class Room extends Component {
 
   getLocalStream = () => {
     const constraints = {
-      audio: false,
+      audio: true,
       video: true,
       options: {
         mirror: true,
@@ -265,6 +265,7 @@ class Room extends Component {
         room: room,
         username: user,
       },
+      secure: true
     });
 
     window.onunload = window.onbeforeunload = function () {
@@ -284,6 +285,7 @@ class Room extends Component {
       //집중도 테스트함
       let intervalTime = "";
 
+      //default 1분
       if(isHost){
           const time = localStorage.getItem("time") ? localStorage.getItem("time") : 1;
           console.log(time)
@@ -1042,11 +1044,10 @@ class Room extends Component {
             username
           }, 
           data: { 
-            text: "집중 테스트 실패했습니다." 
+            text: "집중도 테스트 실패했습니다." 
           }
         }
       }
-    console.log(message)
     this.state.sendChannels.forEach((sendChannel) => {
       sendChannel.readyState === "open" &&
         sendChannel.send(JSON.stringify(message));
@@ -1131,11 +1132,11 @@ class Room extends Component {
                     </i>
                   </div>
                   <div className="video-task-btn">
-                    <i className="material-icons" onClick={() => this.handleStreamRecord()} style={enableRecord ? { color: "red" } : {}}> switch_video </i>
                     <i className="material-icons" onClick={() => this.handleAllMuteMic()} style={!allMuted ? { color: "red" } : {}}> {!allMuted ? "volume_off" : "volume_up"} </i>
                     <i className="material-icons" onClick={() => this.handleMuteMic()} style={localMicMute ? { color: "red" } : {}}>
                       {localMicMute ? "mic_off" : "mic"}
                     </i>
+                    <i className="material-icons" onClick={() => this.handleStreamRecord()} style={enableRecord ? { color: "red" } : {}}> switch_video </i>
                     <i className="material-icons" onClick={() => this.handleMuteVideo()} style={localVideoMute ? { color: "red" } : {}}>
                       {(localVideoMute && "videocam_off") || "videocam"}
                     </i>

@@ -16,6 +16,7 @@ function App() {
             </Route>
             <Route path = "/meetting"  component = {MeettingRoom}/>
             <Route path = "/alert"  component = {Alert}/>
+            {/* <Route component = {MeettingRoom} /> */}
           </Switch>
           </BrowserRouter>
       </Suspense>

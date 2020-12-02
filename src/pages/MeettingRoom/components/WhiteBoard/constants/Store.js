@@ -20,6 +20,7 @@ import ToolStore,{
 } from './ToolStore';
 //그리기
 import Draw from '../shapes/Draw'
+import Eraser from '../shapes/Eraser'
 
 //선
 import LineThink from '../shapes/LineThink';
@@ -49,6 +50,7 @@ import { pointInsideRect, getShapeRect } from './Utils'
 
 const mapTools = {}
 mapTools[DRAW] = Draw
+mapTools[ERASER] = Eraser
 
 mapTools[LINE_THINK] = LineThink
 mapTools[LINE_MEDIUM] = LineMedium
