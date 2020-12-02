@@ -86,6 +86,7 @@ export default function Tools() {
   ])
 
   useEffect(() => {
+    localStorage.setItem('history', 0)
     ToolStore.subscribe(() => {
       const _tools = tools.map(tool => ({ ...tool, selected: ToolStore.tool === tool.id }))
       setTools(_tools)
@@ -107,14 +108,12 @@ export default function Tools() {
     }
     saveSvgAsPng(document.getElementById("whiteBoard"), `${fnCurrentTime()}.png`)
   }
-  const [versionIndex, setVersionIndex] = useState();
-  const prevConunt = useRef(versionIndex);
+  
+  var prevConunt = useRef(Number(localStorage.getItem('history')) - 2);
 
   useEffect(() => {
-    prevConunt.current = versionIndex;
-    setVersionIndex(prevConunt.current--)
-    EventBus.emit(EventBus.PICK_VERSION, Number(prevConunt.current--));
-  },[versionIndex])
+    prevConunt.current = Number(localStorage.getItem('history')) - 1;
+  },[localStorage.getItem('history')])
 
   const handleClickTool = (type, index, key) => {
     //Save Event
@@ -130,48 +129,18 @@ export default function Tools() {
 
     //재실행
     if( type === 'Reset'){
-      let count = localStorage.getItem('count');
-      if(count){
-        let resetIndex = localStorage.getItem('count') ? localStorage.getItem('count') : "";
-        localStorage.setItem('count', resetIndex++) 
-        console.log(resetIndex)
-      }else{
-        localStorage.setItem('count', 0) 
-      }
-      // if(resetIndex)
-      //   resetIndex = ""
-      // if(!resetIndex){
-      //   console.log(resetIndex)
-      //   let history = localStorage.getItem('history')
-      //   history = Number(history) - 1
-      //   history--;
-      //   localStorage.setItem('current_history', history)
-      // }else{
-      //   // let history = localStorage.getItem('history')
-      //   resetIndex = Number(resetIndex) - 1
-      //   localStorage.setItem('current_history', resetIndex)
-      // }
-      // EventBus.emit(EventBus.PICK_VERSION, Number(localStorage.getItem('current_history')));
+      console.log(prevConunt)
+      if(prevConunt.current >= 0){
+        prevConunt.current--;
+        EventBus.emit(EventBus.PICK_VERSION, Number(prevConunt.current));
+      }else{}
     }
 
     //실행 취소
     if( type === 'Reset-cancel'){
-      let resetIndex= localStorage.getItem('current_history') ? localStorage.getItem('current_history') : "";
-      if(!resetIndex){
-        let history = localStorage.getItem('history')
-        history--;
-        localStorage.setItem('current_history', history)
-      }else{
-        // let history = localStorage.getItem('history')
-        resetIndex = Number(resetIndex) - 1
-        console.log(resetIndex)
-        localStorage.setItem('current_history', resetIndex)
-      }
-      // history = history + 1;
-      // let current = localStorage.getItem('history')
-      // localStorage.setItem('current_history', history)
-      console.log(resetIndex)
-      EventBus.emit(EventBus.PICK_VERSION, Number(localStorage.getItem('current_history')));
+      prevConunt.current++;
+      console.log(prevConunt)
+      EventBus.emit(EventBus.PICK_VERSION, Number(prevConunt.current));
     }
 
     //Color Change Event

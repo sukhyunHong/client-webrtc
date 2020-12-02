@@ -321,7 +321,7 @@ const Chat = props => {
               <input
                 className="textarea input"
                 type="text"
-                placeholder={props.normalUserChat ? "문자 메시지 금지 상태입니다 ..." : "문자 메시지 ..."}
+                placeholder={props.normalUserChat ? "채팅 금지 상태입니다 ..." : "채팅 ..."}
                 onChange={handleChange}
                 value={message}
                 readOnly={props.normalUserChat}

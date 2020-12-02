@@ -90,8 +90,6 @@ class Store {
 			this.toolType = tool
 			this.tool = mapTools[tool] || null
 			this.color = ToolStore.color
-
-			console.log("tool", tool)
 		})
 	}
 	subscribe(cb) {
@@ -162,7 +160,6 @@ class Store {
 		}
 	}
 	pickVersion(event, index) {
-		console.log(index)
 		if (this.history && this.history[index]) {
 			this.historyIndex = index;
 			let shapes = this.history[index];

@@ -32,6 +32,6 @@ export default class History extends React.Component {
 			onClick={this.handleClick(i).bind(this)}
 			className={this.state.selectedIndex===i?'selected':''}
 			></span>)
-		return(<div id="history"> History: {versions} </div>);
+		return(<div id="history"> {versions} </div>);
 	}
 }
