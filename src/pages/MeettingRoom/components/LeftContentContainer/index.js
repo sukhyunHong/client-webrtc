@@ -48,7 +48,6 @@ class LeftContentContainer extends Component {
         let _rVideos = remoteStreams.map((rVideo, index) => {
           const _videoTrack = rVideo.stream.getTracks().filter(track => track.kind === 'video')   
           const requestValue = requestUser.filter(element => element.remoteId === rVideo.name)
-          
           let infoStreamBySocketId = listUser.filter(element => element.socket_id === rVideo.name);
           infoStreamBySocketId = infoStreamBySocketId.length ? infoStreamBySocketId[0] : hostStream.username;
           if(infoStreamBySocketId.length === 0){
@@ -170,7 +169,6 @@ class LeftContentContainer extends Component {
 
           let infoStreamBySocketId = listUser.filter(element => element.socket_id === rVideo.name);
         
-
           if(infoStreamBySocketId.length === 0){
               return null
           }else
@@ -321,7 +319,7 @@ class LeftContentContainer extends Component {
                         outEnable &&
                         <div className="wrapper-outState">
                           <div>
-                            <h3>홍길동</h3>
+                            <h3>자리비움 중</h3>
                             <CountTime/>
                             <button onClick={() => this.props.handleCancelOut()}>복귀하기</button> 
                           </div>

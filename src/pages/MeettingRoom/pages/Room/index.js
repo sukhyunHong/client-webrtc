@@ -536,7 +536,6 @@ class Room extends Component {
     // Host User
     this.socket.on("request_question", (data) => {
       const { remoteSocketId, remoteUsername} = data;
-      console.log("response data", data)
       let value = {
         type: "question",
         remoteId: remoteSocketId,
@@ -552,6 +551,7 @@ class Room extends Component {
 
     //Host User
     this.socket.on("request_out", (data) => {
+      console.log("request_out")
       const { remoteSocketId, remoteUserName} = data;
       let value = {
         type: "out",

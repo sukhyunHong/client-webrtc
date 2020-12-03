@@ -77,16 +77,18 @@ function CreateRoom(props) {
     return (
         <div className="create-room">
             <div className="create-room-container">
-                <h4>Lecture planet WEB-RTC Project v.1</h4>
+                <h4 style={{marginBottom: '15px'}}>Lecture planet WEB-RTC Project v.1</h4>
                 <div>
                     <div className="create-room-made">
+                        <h4>강사 입장</h4>
                         <input type="text" name="" placeholder="강좌 이름 ... " id="" onChange={(e) => setRoomName(e.target.value)} value={roomname}/>
                         <input type="text" name="" placeholder="사용자 이름 ..." id="" onChange={(e) => setUserName(e.target.value)}  value={username} />
                         <input type="text" name="" placeholder="집중도 테스트 시간 ... 분" id="" onChange={(e) => handleSetTime(e)} value={timeTest}/>
                         <button style={{width: '150px'}} onClick={() => handleCreateRoom()}>강좌 생성하기</button>
                     </div>
 
-                    <div className="create-room-join">.
+                    <div className="create-room-join">
+                        <h4>학생 입장</h4>
                         <input type="text" name="" placeholder="강좌 이름 ... " id="" onChange={(e) => setJoinRoom(e.target.value)} value={joinroom}/>
                         <input type="text" name="" placeholder="사용자 이름 ... " id="" onChange={(e) => setJoinUsername(e.target.value)} value={joinUsername}/>
                         <button style={{width: '150px'}} onClick={() => handleJoinRoom()}>강좌 참여하기</button>
