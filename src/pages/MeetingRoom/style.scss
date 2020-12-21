@@ -1,0 +1,31 @@
+.meeting-room{
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: row;
+  /**
+  Set % layout
+  */
+  .left-content{
+    width: 85%;
+    .heading-controller{
+      width: 100%;
+      height: 10%;
+    }
+    .remote-stream{
+      width: 100%;
+      height: 90%;
+    }
+  }
+  .right-content{
+    width: 15%;
+    .local-stream{
+      width: 100%;
+      height: 20%;
+    }
+    .chat-component{
+      width: 100%;
+      height: 80%;
+    }
+  }
+}

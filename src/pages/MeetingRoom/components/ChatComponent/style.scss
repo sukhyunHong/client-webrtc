@@ -1,0 +1,23 @@
+.chatting__component{
+  width: 100%;
+  height: 100%;
+  background-color: #eaf1f6;
+  .chatting-tasks{
+    display: flex;
+    padding-right: 10px;
+    height: 5%;
+    justify-content: flex-end;
+    ul {
+      display: flex;
+      li {
+        display: flex;
+        cursor: pointer;
+        margin-left: 5px;
+      }
+    }
+  }
+  .chatting-content{
+    height: 95%;
+    width: 100%;
+  }
+}

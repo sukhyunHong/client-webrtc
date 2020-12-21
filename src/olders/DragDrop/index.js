@@ -1,39 +1,38 @@
-import React, { useState } from 'react'
+import React, { useState } from "react"
 
 var DragDrop = props => {
-  const [bgColor, setBgColor] = useState('transparent')
+  const [bgColor, setBgColor] = useState("transparent")
 
-  const changeBgColor = (state) => {
-    setBgColor(state ? 'green' : 'transparent')
+  const changeBgColor = state => {
+    setBgColor(state ? "green" : "transparent")
   }
 
   return (
-    <div style={{
-      backgroundColor: bgColor
-    }} className={props.className}
+    <div
+      style={{
+        backgroundColor: bgColor
+      }}
+      className={props.className}
       // ref={ref}
-      onDragEnter={(e) => {
+      onDragEnter={e => {
         e.preventDefault()
         e.stopPropagation()
         changeBgColor(true)
-        e.dataTransfer.dropEffect = 'copy'
-        console.log('DragEnter', e.dataTransfer.items.length)
+        e.dataTransfer.dropEffect = "copy"
+        console.log("DragEnter", e.dataTransfer.items.length)
       }}
-
-      onDragLeave={(e) => {
+      onDragLeave={e => {
         e.preventDefault()
         e.stopPropagation()
         changeBgColor(false)
-        console.log('onDragLeave')
+        console.log("onDragLeave")
       }}
-
-      onDragOver={(e) => {
+      onDragOver={e => {
         e.preventDefault()
         e.stopPropagation()
-        console.log('onDragOver')
+        console.log("onDragOver")
       }}
-
-      onDrop={(e) => {
+      onDrop={e => {
         e.preventDefault()
         e.stopPropagation()
         changeBgColor(false)

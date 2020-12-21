@@ -1,5 +1,5 @@
 //https://stackoverflow.com/questions/20926551/recommended-way-of-making-react-component-div-draggable
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef } from "react"
 
 var Draggable = props => {
   const [pressed, setPressed] = useState(false)
@@ -14,7 +14,7 @@ var Draggable = props => {
   }, [position])
 
   // Update the current position if mouse is down
-  const onMouseMove = (event) => {
+  const onMouseMove = event => {
     if (pressed) {
       setPosition({
         x: position.x + event.movementX,
@@ -29,7 +29,8 @@ var Draggable = props => {
       ref={ref}
       onMouseMove={onMouseMove}
       onMouseDown={() => setPressed(true)}
-      onMouseUp={() => setPressed(false)}>
+      onMouseUp={() => setPressed(false)}
+    >
       {props.children}
     </div>
   )

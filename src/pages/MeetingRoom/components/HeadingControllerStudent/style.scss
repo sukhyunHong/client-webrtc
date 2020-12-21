@@ -1,0 +1,46 @@
+.heading-stream__controller{
+  height: 100%;
+  width: 100%;
+  .heading-container__small{
+    display: flex;
+    height: 100%;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    background: black;
+  }
+
+  .heading-col ul{
+    display: flex;
+    li{
+      margin: 0 10px;
+      display: flex;
+      img{
+        cursor: pointer;
+      }
+    }
+    p{
+      color: white;
+    }
+  }
+  .request-task button{
+      padding: 10px 20px;
+      border: none;
+      color: black;
+      font-weight: bold;
+      outline: none;
+      border-radius: 5px;
+      background: white;
+      cursor: pointer;
+  }
+  .record-time{
+    color: red;
+    border: 1px solid red;
+    border-radius: 40px;
+    padding: 0 10px;
+    h1{
+      font-size: 14px;
+      font-weight: 500;
+    }
+  }
+}
