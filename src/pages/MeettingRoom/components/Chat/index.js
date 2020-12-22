@@ -1,6 +1,6 @@
 // https://www.freecodecamp.org/news/building-a-modern-chat-application-with-react-js-558896622194/
 import React, { useState, useEffect } from "react"
-import "./style.scss"
+// import "./style.scss"
 import moment from "moment"
 import Axios from "axios"
 import qs from "query-string"

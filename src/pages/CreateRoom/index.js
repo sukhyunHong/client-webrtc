@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react"
 import "./style.scss"
 import axios from "axios"
 import { useDispatch, useSelector } from "react-redux"
+import Loading from '../../components/Loading'
 
 import actions from '../../features/AuthFeature/action';
 import selectors from '../../features/AuthFeature/selector';
@@ -18,7 +19,7 @@ function CreateRoom(props) {
     const query = qs.parse(window.location.search.slice(1));
     const { redirect_key, sl_idx, user_idx } = query   
     console.log(redirect_key, sl_idx, user_idx)
-    if (redirect_key && sl_idx & user_idx) {
+    if (redirect_key && sl_idx && user_idx) {
       let userInfo = {
         redirect_key,
         sl_idx,
@@ -45,7 +46,7 @@ function CreateRoom(props) {
   }, [])
   return (
     <div className="create-room">
-      
+      <Loading />
     </div>
     
   )

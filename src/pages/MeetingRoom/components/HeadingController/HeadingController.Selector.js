@@ -16,9 +16,9 @@ const getLocalStreamCamState = createSelector(
 );
 
 const selectors = {
-  getLocalStreamSoundState,
-  getLocalStreamMicState,
-  getLocalStreamCamState
+    getLocalStreamSoundState,
+    getLocalStreamMicState,
+    getLocalStreamCamState
 };
 
 export default selectors;

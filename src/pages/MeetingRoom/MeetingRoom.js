@@ -672,10 +672,9 @@ class MeetingRoom extends Component {
     }
 
     const windowSize = !fullScream ? "85%" : "100%" 
-    console.log("remote", this.state.remoteStreams)
     return (
       <div className="meeting-room">
-        <div className="left-content"  style={{ width: windowSize }}>
+        <div className="left-content" id="left-content-id" style={{ width: windowSize }}>
           <div className="heading-controller">
             {
               isMainRoom ?
@@ -742,7 +741,9 @@ class MeetingRoom extends Component {
                 />
               </div>
               <div className="chat-component">
-                <ChatComponent/>
+                <ChatComponent
+                  remoteStreams={remoteStreams}
+                />
               </div>
             </div>
           )

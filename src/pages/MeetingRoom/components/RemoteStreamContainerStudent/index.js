@@ -6,9 +6,11 @@ import Axios from "axios"
 import ReactLoading from 'react-loading'
 import CountTime from '../../../../components/CountTime'
 import './style.scss'
-import { getInformationRoom } from './RemoteStreamContainerStudent.Service'
+import { getInformationRoom, getLectureInfo } from './RemoteStreamContainerStudent.Service'
 import CountDownTime from '../../../../components/CountDownTime'
 import getSocket from '../../../rootSocket'
+
+let intervalTime = "";
 class RemoteStreamContainerStudent extends Component {
   constructor(props) {
     super(props)
@@ -23,19 +25,53 @@ class RemoteStreamContainerStudent extends Component {
 
       displayTaskVideo: false,
 
+      resize: false,
       lecOutState: false,
     }
   }
+  
   componentDidMount(){
+    window.addEventListener('resize', this.handleResize);
     //질문 요청의 상태를 알람
     getSocket().on("alert-user-process-req-question", data => {
       console.log(data)
     })
-
     //자리비움 요청의 상태를 알림
     getSocket().on("alert-user-process-req-lec-out", data => {
       console.log(data)
     })
+
+    const UserRoomId = () => {
+      return JSON.parse(window.localStorage.getItem("usr_id"))
+    }
+
+    let params = {
+      userroom_id: UserRoomId()
+    }
+
+    const fetchData = async () => {
+      const resp = await getLectureInfo(params)
+      const { test_gap } = resp.data
+      let time = test_gap === "01" ? 10 : test_gap === "02" ? 20  : test_gap === "03" ? 30 : 40;
+      intervalTime = setInterval(() => {
+          var min = 1,
+              max = 9;
+          var rand = Math.floor(Math.random() * (max - min + 1) + min);
+          // this.sendToPeer("test-concentration", {
+          //   number: rand
+          // } , null);
+      }, 1000 * Number(time) * 60);
+    }
+    fetchData()
+
+  }
+  handleResize = () => {
+      this.setState({resize : !this.state.resize})
+  };
+
+  componentWillUnmount(){
+    window.removeEventListener('resize', () => {})
+    clearInterval(intervalTime)
   }
   
   videoMuted = rVideo => {
@@ -57,15 +93,22 @@ class RemoteStreamContainerStudent extends Component {
   }
   render() {
     const { testConcentration, outEnable } = this.props
-    const { lecOutState } = this.state
-    console.log("aaa", this.props.remoteStreams)
+    const { lecOutState } = this.state;
+
+    let height = document.getElementById("video-body") ?  document.getElementById("video-body").getBoundingClientRect().height : null;
+    if(!height){
+      height = document.getElementById("left-content-id") ?  document.getElementById("left-content-id").getBoundingClientRect().height : null
+    }
+    let width = (height * 4) / 3
     return (
       <div className="remote-stream__container">
         <div className="single-video">
-          <VideoItem
-            rVideo={this.props.remoteStreams.length !== 0 && this.props.remoteStreams[0]}
-            lecOutEable={lecOutState}
-          />
+          <div className="single-video__body" id="video-body" style={{width}}>
+            <VideoItem
+              rVideo={this.props.remoteStreams.length !== 0 && this.props.remoteStreams[0]}
+              lecOutEable={lecOutState}
+            />
+          </div>
           {/* <div className="single-video__body">
             <Video
               videoType="previewVideo"
@@ -123,9 +166,6 @@ class RemoteStreamContainerStudent extends Component {
 const VideoItem = ({rVideo, username}) => {
 
 
-
-
-
   const handleCorrectInput = () => {
 
   }
@@ -133,7 +173,7 @@ const VideoItem = ({rVideo, username}) => {
     
   }
   return (
-    <div className="single-video__body">
+    <>
       <Video
         videoType="previewVideo"
         videoStyles={{
@@ -152,7 +192,7 @@ const VideoItem = ({rVideo, username}) => {
         handleCorrectInput={() => handleCorrectInput()}
         handleDownAllTime={() => handleDownAllTime()}
       /> */}
-    </div>
+    </>
   )
 }
 

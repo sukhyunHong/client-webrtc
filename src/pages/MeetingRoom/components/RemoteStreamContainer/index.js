@@ -65,6 +65,7 @@ class RemoteStreamContainer extends Component {
       const { filterRemote } = this.state;
       const { remoteSocketId, remoteUsername } = data;
 
+      const time = moment().format('DD/MM/YYYYHH:mm:ss')
       //요청한 유저의 Video를 수정
       let _rVideos = filterRemote.map(rVideo => {
         const _videoTrack = rVideo.stream.getTracks().filter(track => track.kind === "video")
@@ -74,6 +75,7 @@ class RemoteStreamContainer extends Component {
               rVideo={rVideo}
               username={remoteUsername}
               request={requestValue}
+              time={time}
               type="request-question"
             />
         ) : <img src={Icon.boardWarning}></img>
@@ -128,6 +130,9 @@ class RemoteStreamContainer extends Component {
       })
     }
   }
+  handleResize = () => {
+    this.setState({resize: !this.state.resize})
+  };
 
   render() {
     const { loading } = this.state
@@ -151,19 +156,13 @@ class RemoteStreamContainer extends Component {
 }
 //!rVideo.id = socket.id
 const VideoItem = ({rVideo, username, request, type ,time}) => {
-  console.log("videoeooo", request)
   const[req, setReq] = useState()
 
   //!체크필요함
   useEffect(() => {
-
-    console.log('asdas')
     setReq(request)
   }, [time])
   useEffect(() => {
-
-
-
     
     setReq(request)
   },[])
@@ -197,8 +196,6 @@ const VideoItem = ({rVideo, username, request, type ,time}) => {
     remoteStreamContainer.emitProcessRequestUser(payload)
   }
 
-
-  console.log(req)
   return (
     <div className="video-item">
       <Video

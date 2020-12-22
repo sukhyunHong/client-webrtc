@@ -91,14 +91,14 @@ class Video extends Component {
         this.setState({
           videoVisible: false
         })
-        this.props.videoMuted(nextProps.videoStream)
+        // this.props.videoMuted(nextProps.videoStream)
       }
 
       videoTrack[0].onunmute = () => {
         this.setState({
           videoVisible: true
         })
-        this.props.videoMuted(nextProps.videoStream)
+        // this.props.videoMuted(nextProps.videoStream)
       }
     }
 

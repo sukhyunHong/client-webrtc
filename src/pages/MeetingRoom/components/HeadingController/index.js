@@ -20,6 +20,12 @@ function HeadingController({handleOutRoom, handleWindowSize, handleScreenMode, h
 
   const handleChangeWindowSize = () => {
     setWindowSize(!windowSize)
+    if(!windowSize){
+      document.documentElement.requestFullscreen();
+    } else{
+      if(document.fullscreenElement !== null)
+          document.exitFullscreen();
+    }
     handleWindowSize()
   }
   const handleSoundState = () => {
