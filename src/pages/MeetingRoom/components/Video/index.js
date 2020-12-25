@@ -192,7 +192,7 @@ class Video extends Component {
     return (
       <>
         <video
-          id={this.props.id}
+          id={this.props.id ? this.props.id : "local" }
           muted={this.props.muted}
           autoPlay
           style={{

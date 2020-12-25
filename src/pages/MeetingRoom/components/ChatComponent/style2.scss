@@ -84,6 +84,7 @@
     }
 }
 .chatWindow {
+    height: 100%;
     display: grid;
     grid-column-start: 2;
     grid-column-end: 9;
@@ -223,6 +224,40 @@
         border: none;
         border-bottom: 1px solid white;
         color: white;
+        cursor: pointer;
+        outline: none;
+    }
+    &__name{
+        font-size: 14px;
+        margin-right: 5px;
+    }
+    &__size{
+        font-weight: 100;
+        margin: 10px 0px;
+    }
+    &__time{
+        font-size: 14px;
+    }
+}
+.other .file-type{
+    display: flex;
+    &__message{
+        padding: 5px 10px;
+        background: white; 
+        color: black;
+        border-radius: 5px;
+        // margin-left: 5px;
+    }
+    &__info{
+        display: flex;
+        align-items: flex-end;
+        order: 1;
+    }
+    &__btn{
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid white;
+        color: black;
         cursor: pointer;
         outline: none;
     }

@@ -67,6 +67,8 @@ const actions = {
 
       // call api: signin
       let response = await fetchSignin(userInfo);
+
+      console.log(response)
       const { result } = response;
       if(result) {
         window.localStorage.setItem(

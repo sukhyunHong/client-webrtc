@@ -1,13 +1,12 @@
 import React, { Component, useState, useEffect } from 'react'
 import styled from 'styled-components'
 import qs from 'query-string'
-import Video from '../Video'
+import Video from '../../Video'
 import ReactLoading from 'react-loading'
-import CountTime from '../../../../components/CountTime'
-import { getInformationRoom } from './RemoteStreamContainer.Service'
-import remoteStreamContainer from './RemoteStreamContainer.Socket'
-import getSocket from "../../../rootSocket"
-import Icon from '../../../../constants/icons'
+import { getInformationRoom } from '../RemoteStreamContainer.Service'
+import remoteStreamContainer from '../RemoteStreamContainer.Socket'
+import getSocket from "../../../../rootSocket"
+import Icon from '../../../../../constants/icons'
 import moment from "moment"
 import './style.scss'
 class RemoteStreamContainer extends Component {
@@ -33,7 +32,6 @@ class RemoteStreamContainer extends Component {
   //!일단 하나씩 됨 
   componentDidMount() {
     getSocket().on("alert-host-lecOut", data => {
-
       
       const { filterRemote } = this.state;
       const { remoteSocketId, remoteUsername } = data;
@@ -42,7 +40,6 @@ class RemoteStreamContainer extends Component {
       let _rVideos = filterRemote.map(rVideo => {
         const _videoTrack = rVideo.stream.getTracks().filter(track => track.kind === "video")
         const requestValue = rVideo.name === remoteSocketId ? true : false;
-
 
         const time = moment().format('DD/MM/YYYYHH:mm:ss')
         let video = _videoTrack ? (
@@ -90,7 +87,6 @@ class RemoteStreamContainer extends Component {
       const { remoteStreams } = this.props
       const fetchVideos = async () => {
         const { rVideos, filterRemote } = await setVideos(remoteStreams)
-        console.log(rVideos, filterRemote)
         this.setState({
           rVideos: rVideos,
           filterRemote: filterRemote,
@@ -111,7 +107,6 @@ class RemoteStreamContainer extends Component {
     ) {
       const fetchVideos = async () => {
         const { rVideos, filterRemote } = await setVideos(nextProps.remoteStreams)
-        console.log(rVideos, filterRemote)
         this.setState({
           rVideos: rVideos,
           filterRemote: filterRemote,
@@ -234,18 +229,20 @@ const setVideos = (remoteStreams) => {
     let data = window.localStorage.getItem("asauth")
     let { userId } = JSON.parse(data).userInfoToken
     let params = { usr_id, userId }
-    console.log(params)
     getInformationRoom(params).then(res => {
       const { data } = res
+      //!여기서 유저인지 강사인지 구분해야됨
       const listUser = data.slice(1, data.length)
       let _filterRemote = remoteStreams.filter(rVideo => listUser.find(({ socket_id }) => rVideo.id === socket_id) && rVideo)
       let _rVideos = _filterRemote.map((rVideo, index) => {
         const _videoTrack = rVideo.stream.getTracks().filter(track => track.kind === "video")
         let [infoStreamBySocketId] = listUser.filter(element => element.socket_id === rVideo.name)
+        
+        console.log(listUser)
         let video = _videoTrack ? (
           <VideoItem 
             rVideo={rVideo}
-            username={infoStreamBySocketId.username}
+            username={infoStreamBySocketId.user_name}
           />
         ) : <img src={Icon.boardWarning}></img>
         return video

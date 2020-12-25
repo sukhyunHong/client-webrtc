@@ -1,11 +1,11 @@
 import React, { useState } from "react"
-import Icon from "../../../../constants/icons"
+import Icon from "../../../../../constants/icons"
 import './style.scss'
 import { useDispatch, useSelector } from 'react-redux';
-import meetingRoomSelectors from '../../MeetingRoom.Selector'
-import CountTime from "../../../../components/CountTime";
+import meetingRoomSelectors from '../../../MeetingRoom.Selector'
+import CountTime from "../../../../../components/CountTime";
 
-import headingControllerAction from './HeadingController.Action'
+import headingControllerAction from '../HeadingController.Action'
 
 function HeadingController({handleOutRoom, handleWindowSize, handleScreenMode, handleWhiteBoard, handleScreamRecording}) {
 

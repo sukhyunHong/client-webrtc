@@ -42,7 +42,38 @@ const actions = {
             type: constants.CHANGE_CAM_STATE_ERROR,
         });
     }
-  },
+  },  
 
+  //STUDENT
+  listenRequestQuestion: (data) => async(dispatch) => {
+    try {
+      dispatch({
+          type: constants.REQUEST_QUESTION_STATUS,
+          payload: {
+            status: data.status
+          }
+      });
+    } catch (error) {
+        Errors.handle(error);
+        dispatch({
+            type: constants.REQUEST_QUESTION_ERROR,
+        });
+    }
+  },
+  listenRequestLecOut: (data) => async(dispatch) => {
+    try {
+      dispatch({
+        type: constants.REQUEST_QUESTION_STATUS,
+        payload: {
+          status: data.status
+        }
+    });
+    } catch (error) {
+        Errors.handle(error);
+        dispatch({
+            type: constants.REQUEST_LECOUT_ERROR,
+        });
+    }
+  },
 };
 export default actions;

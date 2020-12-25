@@ -1,14 +1,14 @@
 import React, { Component, useCallback, useState } from 'react'
 import styled from 'styled-components'
 import qs from 'query-string'
-import Video from '../Video'
+import Video from '../../Video'
 import Axios from "axios"
 import ReactLoading from 'react-loading'
-import CountTime from '../../../../components/CountTime'
+import CountTime from '../../../../../components/CountTime'
 import './style.scss'
-import { getInformationRoom, getLectureInfo } from './RemoteStreamContainerStudent.Service'
-import CountDownTime from '../../../../components/CountDownTime'
-import getSocket from '../../../rootSocket'
+import { getInformationRoom, getLectureInfo } from '../RemoteStreamContainer.Service'
+import CountDownTime from '../../../../../components/CountDownTime'
+import getSocket from '../../../../rootSocket'
 
 let intervalTime = "";
 class RemoteStreamContainerStudent extends Component {
@@ -17,11 +17,11 @@ class RemoteStreamContainerStudent extends Component {
 
     this.state = {
       rVideos: [],
-      remoteStreams: [],
+      remoteStream: null,
 
       selectedVideo: null,
       videoVisible: false,
-      loading: false,
+      loading: true,
 
       displayTaskVideo: false,
 
@@ -29,12 +29,20 @@ class RemoteStreamContainerStudent extends Component {
       lecOutState: false,
     }
   }
-  
-  componentDidMount(){
+
+  componentDidMount() {
+    if (this.props.remoteStreams.length !== 0) {
+      this.setState({
+        remoteStream: this.props.remoteStreams[0],
+        loading: false
+      })
+    }
+
+    //!!store 저장할 필요함
     window.addEventListener('resize', this.handleResize);
     //질문 요청의 상태를 알람
     getSocket().on("alert-user-process-req-question", data => {
-      console.log(data)
+      
     })
     //자리비움 요청의 상태를 알림
     getSocket().on("alert-user-process-req-lec-out", data => {
@@ -52,28 +60,36 @@ class RemoteStreamContainerStudent extends Component {
     const fetchData = async () => {
       const resp = await getLectureInfo(params)
       const { test_gap } = resp.data
-      let time = test_gap === "01" ? 10 : test_gap === "02" ? 20  : test_gap === "03" ? 30 : 40;
+      let time = test_gap === "01" ? 10 : test_gap === "02" ? 20 : test_gap === "03" ? 30 : 40;
       intervalTime = setInterval(() => {
-          var min = 1,
-              max = 9;
-          var rand = Math.floor(Math.random() * (max - min + 1) + min);
-          // this.sendToPeer("test-concentration", {
-          //   number: rand
-          // } , null);
+        var min = 1,
+          max = 9;
+        var rand = Math.floor(Math.random() * (max - min + 1) + min);
+        // this.sendToPeer("test-concentration", {
+        //   number: rand
+        // } , null);
       }, 1000 * Number(time) * 60);
     }
     fetchData()
 
   }
   handleResize = () => {
-      this.setState({resize : !this.state.resize})
+    this.setState({ resize: !this.state.resize })
   };
 
-  componentWillUnmount(){
-    window.removeEventListener('resize', () => {})
+  componentWillUnmount() {
+    window.removeEventListener('resize', () => { })
     clearInterval(intervalTime)
   }
-  
+  componentWillReceiveProps(nextProps) {
+    if (this.props.remoteStreams !== nextProps.remoteStreams) {
+      this.setState({
+        remoteStream: nextProps.remoteStreams[0],
+        loading: false
+      })
+    }
+  }
+
   videoMuted = rVideo => {
     const muteTrack = rVideo.getVideoTracks()[0]
     const isSelectedVideo = rVideo.id === this.state.selectedVideo.stream.id
@@ -92,22 +108,34 @@ class RemoteStreamContainerStudent extends Component {
     })
   }
   render() {
+    const { loading } = this.state
+    if (loading) {
+      return (
+        <WrapperLoading className="loading">
+          <ReactLoading type="spin" color="#000" />
+        </WrapperLoading>
+      )
+    }
     const { testConcentration, outEnable } = this.props
     const { lecOutState } = this.state;
 
-    let height = document.getElementById("video-body") ?  document.getElementById("video-body").getBoundingClientRect().height : null;
-    if(!height){
-      height = document.getElementById("left-content-id") ?  document.getElementById("left-content-id").getBoundingClientRect().height : null
+    let height = document.getElementById("video-body") ? document.getElementById("video-body").getBoundingClientRect().height : null;
+    if (!height) {
+      height = document.getElementById("left-content-id") ? document.getElementById("left-content-id").getBoundingClientRect().height : null
     }
     let width = (height * 4) / 3
     return (
       <div className="remote-stream__container">
         <div className="single-video">
-          <div className="single-video__body" id="video-body" style={{width}}>
-            <VideoItem
-              rVideo={this.props.remoteStreams.length !== 0 && this.props.remoteStreams[0]}
-              lecOutEable={lecOutState}
-            />
+          <div className="single-video__body" id="video-body" style={{ width }}>
+            {
+              this.props.remoteStreams.length !== 0 ?
+                <VideoItem
+                  rVideo={this.state.remoteStream}
+                  lecOutEable={lecOutState}
+                /> :
+                <ReactLoading />
+            }
           </div>
           {/* <div className="single-video__body">
             <Video
@@ -122,7 +150,7 @@ class RemoteStreamContainerStudent extends Component {
                 this.props.remoteStreams.length !== 0 && this.props.remoteStreams[0].stream
               }
             /> */}
-            {/* {testConcentration.state ? (
+          {/* {testConcentration.state ? (
               <InputTestConcentration
                 testNumber={testConcentration.number}
                 handleCorrectInput={this.props.handleCorrectInput}
@@ -163,14 +191,14 @@ class RemoteStreamContainerStudent extends Component {
     )
   }
 }
-const VideoItem = ({rVideo, username}) => {
+const VideoItem = ({ rVideo, username }) => {
 
 
   const handleCorrectInput = () => {
 
   }
   const handleDownAllTime = () => {
-    
+
   }
   return (
     <>
@@ -184,7 +212,7 @@ const VideoItem = ({rVideo, username}) => {
         }}
         videoStream={rVideo.stream}
       />
-      
+
       {/* 
       //!시간 및 숙자를 세팅 해야됨
       <InputTestConcentration

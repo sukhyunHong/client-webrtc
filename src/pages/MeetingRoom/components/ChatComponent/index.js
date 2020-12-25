@@ -8,6 +8,9 @@ import chatComponentSocket from './ChatComponent.Socket'
 import chatComponentService from './ChatComponent.Service'
 import getSocket from '../../../rootSocket'
 
+import roomSelector from '../../MeetingRoom.Selector'
+import { useSelector } from 'react-redux'
+
 moment.locale()
 function ChatComponent(props) {
 
@@ -18,6 +21,8 @@ function ChatComponent(props) {
   const [boxedListUser, setBoxedListUser] = useState(false)
   const [listUser, setListUser] = useState([])
   
+  const isHostUser = useSelector(roomSelector.selectIsHostUser)
+
 
    //!나중에 추가함
   const [imageZoom, setImageZoom] = useState(false)
@@ -57,6 +62,9 @@ function ChatComponent(props) {
   }, [props])
   
   useEffect(() => {
+
+    console.log("is Host user", isHostUser)
+
     getSocket().on("res-sent-message", data => {
         setMessages(prevState => [...prevState, data])  
     })
@@ -91,7 +99,7 @@ function ChatComponent(props) {
     const { userInfoToken } = JSON.parse(window.localStorage.getItem("asauth"))
     return userInfoToken
   }
-  const RoomId = () => {
+  const userRoomId = () => {
     return JSON.parse(window.localStorage.getItem("usr_id"))
   }
   const handleSubmit = event => {
@@ -106,14 +114,10 @@ function ChatComponent(props) {
       }
     }
     chatComponentSocket.emitSentMessage(payload)
-
     setMessage("")
   }
 
- 
-
   const renderMessage = (userType, data) => {
-
     const message = data.message
     const { isMainRoom } = props
     const { type } = data
@@ -123,7 +127,7 @@ function ChatComponent(props) {
         <div className="msg-type">
           <div className="msg-type__info">
             <span className="msg-type__name">{message.sender.username}</span>
-            <span className="msg-type__time">{moment().format("LT")}</span>
+            <span className="msg-type__time">{moment(message.data.timestamp).format("LT")}</span>
           </div>
           <div className="msg-type__message"> {message.data.text}</div>
         </div>
@@ -244,7 +248,7 @@ function ChatComponent(props) {
   const handleValueFile = e => {
     // const { name, size, type } = e.target.files[0];
     let params = {
-      roomId: RoomId()
+      userRoomId: userRoomId()
     }
     const { size } = e.target.files[0]
     if ((size / 1000000) < 100) {
@@ -305,38 +309,46 @@ function ChatComponent(props) {
     <div className="chatting__component">
       <div className="chatting-tasks">
         <ul>
-          <li><img onClick={() => handleClickCameraOn()} src={Icon.chatCameraOnIcon}></img></li>
-          <li><img onClick={() => handleClickUpFile()} src={Icon.chatFileIcon}></img></li>
-          <li><img  onClick={() => setBoxedListUser(!boxedListUser)} src={Icon.chatTalkOnIcon}></img>
-            {
-              boxedListUser &&
-              <div className="list-user-chat">
-                <ul>
-                  {listUser.length !== 0 && (
-                    <>
-                      <li
-                        onClick={() => { 
-                          handleOffChatForUser(0)
-                          setBoxedListUser(!boxedListUser) }}
-                      >
-                        1. 전체
-                      </li>
-                      {listUser.map((user, idx) => (
-                        <li onClick={() => { 
-                            handleOffChatForUser(user.socket_id) 
-                            setBoxedListUser(!boxedListUser)
-                          }}
-                          key={idx}
-                        >
-                          {idx + 2}.{user.username}
-                        </li>
-                      ))}
-                    </>
-                  )}
-                </ul>
-              </div>
-            }
-          </li>
+          {
+            isHostUser ?
+            <>
+              <li><img onClick={() => handleClickCameraOn()} src={Icon.chatCameraOnIcon}></img></li>
+              <li><img onClick={() => handleClickUpFile()} src={Icon.chatFileIcon}></img></li>
+              <li><img  onClick={() => setBoxedListUser(!boxedListUser)} src={Icon.chatTalkOnIcon}></img>
+                {
+                  boxedListUser &&
+                  <div className="list-user-chat">
+                    <ul>
+                      {listUser.length !== 0 && (
+                        <>
+                          <li
+                            onClick={() => { 
+                              handleOffChatForUser(0)
+                              setBoxedListUser(!boxedListUser) }}
+                          >
+                            1. 전체
+                          </li>
+                          {listUser.map((user, idx) => (
+                            <li onClick={() => { 
+                                handleOffChatForUser(user.socket_id) 
+                                setBoxedListUser(!boxedListUser)
+                              }}
+                              key={idx}
+                            >
+                              {idx + 2}.{user.username}
+                            </li>
+                          ))}
+                        </>
+                      )}
+                    </ul>
+                  </div>
+                }
+              </li>
+            </> :
+            <>
+              <li><img onClick={() => handleClickUpFile()} src={Icon.chatFileIcon}></img></li>
+            </>
+          }
         </ul>
       </div>
       <div className="chatting-content"> 

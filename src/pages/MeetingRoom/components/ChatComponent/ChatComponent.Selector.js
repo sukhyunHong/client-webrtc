@@ -2,6 +2,7 @@ import { createSelector } from "reselect";
 
 const selectRaw = (state) => state.message;
 
+
 const selectFindLoading = createSelector(
     [selectRaw],
     (message) => message.findLoading
@@ -95,7 +96,7 @@ const selectors = {
     selectHasMoreMessageList,
     selectSending,
     selectSoundPlayStatus,
-    selectCurrentSound
+    selectCurrentSound,
 };
 
 export default selectors;

@@ -17,7 +17,8 @@ const remoteStreamContainerSocket = {
   emitProcessRequestUser: (payload) => {
     console.log("oneee")
     getSocket().emit("host-send-process-request", payload)
-  }
+  },
+  
 } 
 
 export default remoteStreamContainerSocket

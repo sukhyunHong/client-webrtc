@@ -6,6 +6,8 @@ const initialState = {
   soundState: true,
   micState: true,
   camState: true,
+  requestQuestionStatus: false,
+  requestLecOutStatus: false,
 }
 
 export const localStreamReducer =(state = initialState, { type, payload })  =>
@@ -13,7 +15,6 @@ export const localStreamReducer =(state = initialState, { type, payload })  =>
     switch (type) {
       case constants.CHANGE_SOUND_STATE:
         draft.soundState = !state.soundState;
-        console.log(draft.soundState)
         break;
       case constants.CHANGE_SOUND_STATE_ERROR:
         draft.soundState = null
@@ -29,6 +30,18 @@ export const localStreamReducer =(state = initialState, { type, payload })  =>
         break;
       case constants.CHANGE_CAM_STATE_ERROR:
         draft.camState = null
+        break;
+      case constants.REQUEST_QUESTION_STATUS:
+        draft.requestQuestionStatus = payload.status
+        break;
+      case constants.REQUEST_QUESTION_ERROR:
+        draft.requestQuestionStatus = null
+        break;
+      case constants.REQUEST_LECOUT_STATUS:
+        draft.requestLecOutStatus = payload.status
+        break;
+      case constants.REQUEST_LECOUT_ERROR:
+        draft.requestLecOutStatus = null
         break;
       default:
         return state

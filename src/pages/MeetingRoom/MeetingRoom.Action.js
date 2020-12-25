@@ -61,24 +61,29 @@ const actions = {
   //     });
   //   }
   // },
-
+  setHostUser: (data) => (dispatch) => {
+    console.log(data)
+    try {
+      dispatch({
+        type: constants.SET_HOST,
+        payload: data
+      })
+    } catch (error) {
+      Errors.handle(error);
+    }
+  },
   doCreateLocalStream :  (localStream) => async(dispatch) => {
     try {
-      // dispatch({
-      //     type: constants.CREATE_LOCALSTREAM,
-      // });
-
-      dispatch({
-          type: constants.CREATE_LOCALSTREAM,
-          payload: { localStream: localStream },
-      });
-
-  } catch (error) {
-      Errors.handle(error);
-      dispatch({
-          type: constants.CREATE_LOCALSTREAM_ERROR,
-      });
-  }
+        dispatch({
+            type: constants.CREATE_LOCALSTREAM,
+            payload: { localStream: localStream },
+        });
+    } catch (error) {
+        Errors.handle(error);
+        dispatch({
+            type: constants.CREATE_LOCALSTREAM_ERROR,
+        });
+    }
   },
   whoisOnline: () => async(dispatch) => {
     try {

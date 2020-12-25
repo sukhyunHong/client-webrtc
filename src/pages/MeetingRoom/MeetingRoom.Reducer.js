@@ -2,7 +2,8 @@ import produce from 'immer'
 import constants from './MeetingRoom.Constants'
 
 const initialState = {
-  localStream: null
+  localStream: null,
+  isHostUser: false,
 }
 
 export const roomReducer =(state = initialState, { type, payload })  =>
@@ -10,6 +11,9 @@ export const roomReducer =(state = initialState, { type, payload })  =>
     switch (type) {
       case constants.CREATE_LOCALSTREAM:
         draft.localStream = payload.localStream
+        break;
+      case constants.SET_HOST:
+        draft.isHostUser = payload.isHostUser
         break;
       default:
         return state
