@@ -19,7 +19,6 @@ import WhiteBoard from './components/WhiteBoard'
 
 import moment from 'moment'
 import HeadingControllerStudent from './components/HeadingController/HeadingControllerStudent/index'
-import ffmpeg from 'ffmpeg'
 
 import RecordRTCPromisesHandler from 'recordrtc'
 import styled from 'styled-components'

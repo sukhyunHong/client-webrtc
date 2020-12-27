@@ -65,6 +65,28 @@ function ChatComponent(props) {
 
     console.log("is Host user", isHostUser)
 
+    //요청하고 있는거 알려줌
+    getSocket().on("alert-all-request-message", data => {
+
+        const {id, type, timestamp, user_idx, username } = data
+        let message = {
+          type: "request",
+          message: {
+            id: id,
+            sender: {
+              uid: user_idx, 
+              username: username
+            },
+            data: {
+              text: type,
+              time: timestamp
+            }
+          }
+        }
+        setMessages(prevState => [...prevState, message])
+    })
+
+
     getSocket().on("res-sent-message", data => {
         setMessages(prevState => [...prevState, data])  
     })
@@ -119,7 +141,6 @@ function ChatComponent(props) {
 
   const renderMessage = (userType, data) => {
     const message = data.message
-    const { isMainRoom } = props
     const { type } = data
     let msgDiv
     if (type === "text") {
@@ -132,41 +153,40 @@ function ChatComponent(props) {
           <div className="msg-type__message"> {message.data.text}</div>
         </div>
       )
-    } else if (type === "text-request") {
-      //display host room
-      if (isMainRoom) {
-        const requestType =
-          message.data.text === "질문 요청" ? "question" : "out"
-        const messageInfo =
-          message.data.text === "질문 요청"
-            ? `${message.sender.username}학생이 질문을 요청하였습니다.`
-            : `${message.sender.username}학생이 자리비움을 요청하였습니다.`
+    } else if (type === "request") {
+      console.log(isHostUser)
+      console.log(data)
+      //강사인 경우에는
+      if (isHostUser) {
+        const { message } = data;
+        // const requestType = message.data.text === "질문 요청" ? "question" : "lecOut"
+        const messageInfo = message.data.text === "request_question" ? `${message.sender.username} 학생이 질문을 요청하였습니다.` : `${message.sender.username}학생이 자리비움을 요청하였습니다.`
         msgDiv = (
           <div className="msg-request">
             <div className="msg-request__heading">
               <p>{messageInfo}</p>
-              <span>{moment().format("LT")}</span>
+              <span>{moment(message.data.time).format("LT")}</span>
             </div>
             <div className="msg-request__button mobile">
               <button
-                onClick={() =>
-                  props.handleActionRequestUser(
-                    message.id,
-                    "accept",
-                    requestType
-                  )
-                }
+                // onClick={() =>
+                //   handleActionRequestUser(
+                //     message.id,
+                //     "accept",
+                //     requestType
+                //   )
+                // }
               >
                 수락
               </button>
               <button
-                onClick={() =>
-                  props.handleActionRequestUser(
-                    message.id,
-                    "reject",
-                    requestType
-                  )
-                }
+                // onClick={() =>
+                //   handleActionRequestUser(
+                //     message.id,
+                //     "reject",
+                //     requestType
+                //   )
+                // }
               >
                 취소
               </button>
@@ -174,15 +194,12 @@ function ChatComponent(props) {
           </div>
         )
       } else {
-        const messageInfo =
-          message.data.text === "경고 메시지 받았습니다 "
-            ? message.data.text
-            : `${message.data.text} 하였습니다.`
+        const messageInfo = message.data.text === "request_question" ? `${message.sender.username}학생이 질문을 요청중입니다...` : `${message.sender.username}학생이 자리비움을 요청중입니다.`
         msgDiv = (
           <div className="msg-request">
             <div className="msg-request__heading">
               {messageInfo}
-              <span>{moment().format("LT")}</span>
+              <span>{moment(message.data.time).format("LT")}</span>
             </div>
           </div>
         )

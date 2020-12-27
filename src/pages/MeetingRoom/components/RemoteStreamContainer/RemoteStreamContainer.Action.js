@@ -1,4 +1,4 @@
-import constants from "./HeadingController.Constants"
+import constants from "./RemoteStreamContainer.Constants"
 // import getStore, { getHistory } from "../../store/config";
 import Errors from "../../../../components/Error/error";
 // import services from "./MeetingRoom.Service";
@@ -7,6 +7,15 @@ import Errors from "../../../../components/Error/error";
 // import meetingRoomSocket from './MeetingRoom.Socket'
 
 const actions = {
-  
+  saveListUser: (data) => (dispatch) => {
+    try {
+      dispatch({
+        type: constants.SET_LIST_USER,
+        payload: {listUser: data}
+      })
+    } catch (error) {
+      Errors.handle(error);
+    }
+  }
 };
 export default actions;

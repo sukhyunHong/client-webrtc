@@ -4,6 +4,7 @@ import auth from "../features/AuthFeature/reducer"
 import user from "../features/UserFeature/reducer"
 import room from "../pages/MeetingRoom/MeetingRoom.Reducer"
 import localStream from '../pages/MeetingRoom/components/HeadingController/HeadingController.Reducer'
+import remoteStream from '../pages/MeetingRoom/components/RemoteStreamContainer/RemoteStreamContainer.Reducer'
 // import userReducer from './userReducer'
 // import roomReducer from './roomReducer'
 //add all redux
@@ -13,7 +14,6 @@ export default history =>
     auth,
     user,
     room,
-    localStream
-    // userReducer,
-    // roomReducer
+    localStream,
+    remoteStream
 })

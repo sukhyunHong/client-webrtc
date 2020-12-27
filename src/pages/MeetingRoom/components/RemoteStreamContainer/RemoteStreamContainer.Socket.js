@@ -8,14 +8,12 @@ const remoteStreamContainerSocket = {
     })
   },
   emitHostWarning : (payload) => {
-    console.log(payload)
     getSocket().emit("host-send-warning", payload)
   },
   emitHostDisableChat : (payload) => {
     getSocket().emit("host-send-disable-chat", payload)
   },
   emitProcessRequestUser: (payload) => {
-    console.log("oneee")
     getSocket().emit("host-send-process-request", payload)
   },
   

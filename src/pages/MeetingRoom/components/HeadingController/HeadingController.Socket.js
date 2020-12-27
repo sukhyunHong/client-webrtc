@@ -12,9 +12,15 @@ const headingControllerSSocket = {
   emitUserRequestQuestion : (payload) => {
     getSocket().emit("user-request-question", payload)
   },
+  emitUserCancelRequestQuestion: (payload) => {
+    getSocket().emit("user-cancel-request-question", payload)
+  },
   emitUserRequestLecOut: (payload) => {
     getSocket().emit("user-request-lecOut", payload)
-  }
+  },
+  emitUserCancelRequestLecOut: (payload) => {
+    getSocket().emit("user-cancel-request-lecOut", payload)
+  },
 } 
 
 export default headingControllerSSocket

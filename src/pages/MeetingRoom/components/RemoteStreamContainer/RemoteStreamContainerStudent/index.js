@@ -1,4 +1,4 @@
-import React, { Component, useCallback, useState } from 'react'
+import React, { Component, useCallback, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import qs from 'query-string'
 import Video from '../../Video'
@@ -9,6 +9,9 @@ import './style.scss'
 import { getInformationRoom, getLectureInfo } from '../RemoteStreamContainer.Service'
 import CountDownTime from '../../../../../components/CountDownTime'
 import getSocket from '../../../../rootSocket'
+import headingControllerSocket from '../../HeadingController/HeadingController.Socket'
+import moment from 'moment'
+import { set } from 'immutable'
 
 let intervalTime = "";
 class RemoteStreamContainerStudent extends Component {
@@ -32,21 +35,42 @@ class RemoteStreamContainerStudent extends Component {
 
   componentDidMount() {
     if (this.props.remoteStreams.length !== 0) {
-      this.setState({
-        remoteStream: this.props.remoteStreams[0],
-        loading: false
-      })
+      const fetchVideos = async() => {
+        const { rVideos } = await SetVideo(this.props.remoteStreams[0], this.props)
+        this.setState({
+          remoteStream: this.props.remoteStreams[0],
+          rVideos: rVideos,
+          loading: false
+        })
+      }
+      fetchVideos();
     }
 
     //!!store 저장할 필요함
     window.addEventListener('resize', this.handleResize);
     //질문 요청의 상태를 알람
     getSocket().on("alert-user-process-req-question", data => {
-      
+      if(data){
+        // const time = moment().format('DD/MM/YYYYHH:mm:ss')
+        // const { remoteStream } = this.state
+        // let video = <VideoItem 
+        //   videoStream={remoteStream}
+        //   req_question_status={data}
+        //   time={time}
+        // />
+        // this.setState({ rVideos : video})
+      }
     })
     //자리비움 요청의 상태를 알림
-    getSocket().on("alert-user-process-req-lec-out", data => {
-      console.log(data)
+    getSocket().on("alert-user-process-req-lecOut", data => {
+      const time = moment().format('DD/MM/YYYYHH:mm:ss')
+      const { remoteStream } = this.state
+      let video = <VideoItem 
+        videoStream={remoteStream}
+        req_lecOut_status={data}
+        time={time}
+      />
+      this.setState({ rVideos : video})
     })
 
     const UserRoomId = () => {
@@ -61,6 +85,7 @@ class RemoteStreamContainerStudent extends Component {
       const resp = await getLectureInfo(params)
       const { test_gap } = resp.data
       let time = test_gap === "01" ? 10 : test_gap === "02" ? 20 : test_gap === "03" ? 30 : 40;
+      
       intervalTime = setInterval(() => {
         var min = 1,
           max = 9;
@@ -71,8 +96,8 @@ class RemoteStreamContainerStudent extends Component {
       }, 1000 * Number(time) * 60);
     }
     fetchData()
-
   }
+
   handleResize = () => {
     this.setState({ resize: !this.state.resize })
   };
@@ -82,11 +107,17 @@ class RemoteStreamContainerStudent extends Component {
     clearInterval(intervalTime)
   }
   componentWillReceiveProps(nextProps) {
-    if (this.props.remoteStreams !== nextProps.remoteStreams) {
-      this.setState({
-        remoteStream: nextProps.remoteStreams[0],
-        loading: false
-      })
+    if (this.props.remoteStreams !== nextProps.remoteStreams 
+      && nextProps.remoteStreams.length !== 0) {
+      const fetchVideos = async() => {
+        const { rVideos } = await SetVideo(nextProps.remoteStreams[0], this.props)
+        this.setState({
+          rVideos: rVideos,
+          loading: false,
+          remoteStream: nextProps.remoteStreams[0]
+        })
+      }
+      fetchVideos();
     }
   }
 
@@ -129,13 +160,16 @@ class RemoteStreamContainerStudent extends Component {
         <div className="single-video">
           <div className="single-video__body" id="video-body" style={{ width }}>
             {
+              this.state.rVideos
+            }
+            {/* {
               this.props.remoteStreams.length !== 0 ?
                 <VideoItem
                   rVideo={this.state.remoteStream}
                   lecOutEable={lecOutState}
                 /> :
                 <ReactLoading />
-            }
+            } */}
           </div>
           {/* <div className="single-video__body">
             <Video
@@ -191,28 +225,66 @@ class RemoteStreamContainerStudent extends Component {
     )
   }
 }
-const VideoItem = ({ rVideo, username }) => {
 
+//set default
+const SetVideo = (remoteStream, props)=> {
+  return new Promise((resolve, rej) => {
+    let _rVideos = <VideoItem 
+      videoStream={remoteStream}
+    />
 
+    resolve({
+      rVideos: _rVideos,
+    })
+  })
+
+}
+//! 이미 추가해넣었음
+const VideoItem = ({ videoStream,  req_question_status, time, req_lecOut_status }) => {
+
+  const [reqQuestionStatus, setReqQuestionStatus] = useState(false)
+  const [reqLecOutStatus, setLecOutStatus] = useState(false)
+
+  useEffect(() => {
+    setReqQuestionStatus(req_question_status)
+    setLecOutStatus(req_lecOut_status)
+  }, [time])
   const handleCorrectInput = () => {
 
   }
   const handleDownAllTime = () => {
 
   }
+  const UserRoomId = () => {
+    return JSON.parse(window.localStorage.getItem("usr_id"))
+  }
+
+  const handleCancelLecOut = () => {
+    const payload = {
+      status : false,
+      userRoomId: UserRoomId()
+    }
+    headingControllerSocket.emitUserCancelRequestLecOut(payload)
+    setLecOutStatus(!reqLecOutStatus)
+  }
   return (
     <>
       <Video
-        videoType="previewVideo"
-        videoStyles={{
-          width: "100%",
-          height: "100%",
-          visibility: "visible",
-          objectFit: "initial"
-        }}
-        videoStream={rVideo.stream}
+        videoStream={videoStream.stream}
       />
-
+      {
+        reqLecOutStatus &&
+        <div className="wrapper-request wrapper-request-lecOut">
+            <div>
+              <h3>자리비움 중</h3>
+              <CountTime />
+              <button onClick={() => handleCancelLecOut()}>
+                복귀하기
+              </button>
+            </div>
+        </div>
+      }
+      
       {/* 
       //!시간 및 숙자를 세팅 해야됨
       <InputTestConcentration
@@ -242,7 +314,6 @@ const InputTestConcentration = React.memo(
       setDisplayWrapper(false)
       handleDownAllTime()
     })
-    console.log(displayWrapper)
     if (displayWrapper) {
       return (
         <div className="test-wrapper">

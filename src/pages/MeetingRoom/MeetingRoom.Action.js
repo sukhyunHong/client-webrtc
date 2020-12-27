@@ -62,11 +62,10 @@ const actions = {
   //   }
   // },
   setHostUser: (data) => (dispatch) => {
-    console.log(data)
     try {
       dispatch({
         type: constants.SET_HOST,
-        payload: data
+        payload: {listUser : data}
       })
     } catch (error) {
       Errors.handle(error);
