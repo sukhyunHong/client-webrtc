@@ -21,6 +21,9 @@ const remoteStreamContainerSocket = {
   },
   emitFailTestConcentration: (payload) => {
     getSocket().emit("user-test-concentration-fail", payload)
+  },
+  emitUserComeback: (payload) => {
+    getSocket().emit("user-send-comeback-lec", payload)
   }
 } 
 

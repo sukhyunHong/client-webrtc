@@ -16,6 +16,16 @@ const actions = {
     } catch (error) {
       Errors.handle(error);
     }
+  },
+  saveLectureInfo: (data) => (dispatch) => {
+    try {
+      dispatch({
+        type: constants.SET_LECTURE_INFO,
+        payload: {lecture: data.data}
+      })
+    } catch (error) {
+      Errors.handle(error);
+    }
   }
 };
 export default actions;

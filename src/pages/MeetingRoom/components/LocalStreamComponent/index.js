@@ -13,6 +13,7 @@ function LocalStreamComponent({localStream}) {
   const localStreamSoundState = useSelector(headingController.getLocalStreamSoundState)
   const localStreamMicState = useSelector(headingController.getLocalStreamMicState)
   const localStreamCamState = useSelector(headingController.getLocalStreamCamState)
+  const isHostUser = useSelector(meetingRoomSelectors.selectIsHostUser)
 
   // useEffect(() => {
   //   console.log("change", localStreamSoundState)
@@ -34,7 +35,7 @@ function LocalStreamComponent({localStream}) {
       localVideoMute={localStreamCamState}
       videoStream={localStream}
       showMuteControls={true}
-      isMainRoom={"hello"} //!수정필요함
+      isMainRoom={isHostUser} //!수정필요함
       autoPlay
       muted //local default true
     ></Video>

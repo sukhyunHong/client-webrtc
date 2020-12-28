@@ -63,6 +63,7 @@ function ChatComponent(props) {
     //   const listUser = data.data.slice(1, data.data.length)
     //   setListUser(listUser)
     // })
+   
   }, [props])
   
   useEffect(() => {
@@ -422,7 +423,6 @@ function ChatComponent(props) {
       chatComponentSocket.emitDisableUserChat(payload)
     }
   }
-
   return (
     <div className="chatting__component">
       <div className="chatting-tasks">

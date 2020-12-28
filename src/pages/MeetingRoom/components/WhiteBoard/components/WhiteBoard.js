@@ -117,7 +117,7 @@ export default class WhiteBoard extends React.Component {
         data-html2canvas-ignore="true"
       >
         {shapes}
-        {current}
+        {/* {current} */}
         {selection}
       </svg>
     )

@@ -148,60 +148,60 @@ export default function Tools() {
       label: Icon.resetIcon,
       type: "reset",
       child: [],
-      text: "재실행"
+      text: "실행취소"
     },
     {
       id: RESET_CANCEL,
       label: Icon.resetCancelIcon,
       type: "reset-cancel",
       child: [],
-      text: "실행취소"
+      text: "재실행"
     },
     {
       id: DEL,
       label: Icon.delIcon,
       type: "del",
       child: [
-        {
-          id: DEL_ALL,
-          label: Icon.lineIcon,
-          type: "del-all",
-          text: "모두 지우기"
-        },
-        {
-          id: DEL_MY,
-          label: Icon.lineIcon,
-          type: "del-my",
-          text: "내 도로잉 지우기"
-        },
-        {
-          id: DEL_OTHER,
-          label: Icon.lineIcon,
-          type: "del-other",
-          text: "학생 도로잉 지우기"
-        }
+        // {
+        //   id: DEL_ALL,
+        //   label: Icon.lineIcon,
+        //   type: "del-all",
+        //   text: "모두 지우기"
+        // },
+        // {
+        //   id: DEL_MY,
+        //   label: Icon.lineIcon,
+        //   type: "del-my",
+        //   text: "내 도로잉 지우기"
+        // },
+        // {
+        //   id: DEL_OTHER,
+        //   label: Icon.lineIcon,
+        //   type: "del-other",
+        //   text: "학생 도로잉 지우기"
+        // }
       ],
       text: "지우기"
     },
-    {
-      id: CHECK,
-      label: Icon.checkIcon,
-      type: "check",
-      child: [
-        { id: CHECK_ARROW, label: Icon.checkArrowIcon, type: "check-arrow" },
-        { id: CHECK_CHECK, label: Icon.checkCheckIcon, type: "check-check" },
-        { id: CHECK_X, label: Icon.checkXIcon, type: "check-x" },
-        { id: CHECK_START, label: Icon.checkStartIcon, type: "check-start" },
-        { id: CHECK_HEART, label: Icon.checkHeartIcon, type: "check-heart" },
-        {
-          id: CHECK_QUESTION,
-          label: Icon.checkQuestionIcon,
-          type: "check-question"
-        }
-      ],
-      text: "스탬프"
-    },
-    { id: TAG, label: Icon.tagIcon, type: "tag", child: [], text: "태그" },
+    // {
+    //   id: CHECK,
+    //   label: Icon.checkIcon,
+    //   type: "check",
+    //   child: [
+    //     { id: CHECK_ARROW, label: Icon.checkArrowIcon, type: "check-arrow" },
+    //     { id: CHECK_CHECK, label: Icon.checkCheckIcon, type: "check-check" },
+    //     { id: CHECK_X, label: Icon.checkXIcon, type: "check-x" },
+    //     { id: CHECK_START, label: Icon.checkStartIcon, type: "check-start" },
+    //     { id: CHECK_HEART, label: Icon.checkHeartIcon, type: "check-heart" },
+    //     {
+    //       id: CHECK_QUESTION,
+    //       label: Icon.checkQuestionIcon,
+    //       type: "check-question"
+    //     }
+    //   ],
+    //   text: "스탬프"
+    // },
+    // { id: TAG, label: Icon.tagIcon, type: "tag", child: [], text: "태그" },
     { id: SAVE, label: Icon.saveIcon, type: "save", child: [], text: "저장" },
     {
       id: BOARD_HIDDEN,
@@ -240,7 +240,7 @@ export default function Tools() {
     }
     saveSvgAsPng(
       document.getElementById("whiteBoard"),
-      `${fnCurrentTime()}.png`
+      `${fnCurrentTime()}.png`, {backgroundColor: "#f5f5f5"}
     )
   }
 
@@ -262,22 +262,51 @@ export default function Tools() {
       setHidden(!hidden)
     }
 
-    //재실행
-    if (type === "Reset") {
-      console.log(prevConunt)
-      if (prevConunt.current >= 0) {
-        prevConunt.current--
-        EventBus.emit(EventBus.PICK_VERSION, Number(prevConunt.current))
-      } else {
-      }
+    // //재실행
+    // if (type === "Reset") {
+    //   console.log(prevConunt)
+    //   if (prevConunt.current >= 0) {
+    //     prevConunt.current--
+    //     EventBus.emit(EventBus.PICK_VERSION, Number(prevConunt.current))
+    //   } else {
+    //   }
+    // }
+
+
+//전체 지우기
+    if(type==='Del')
+    {
+      prevConunt.current=0;
+      EventBus.emit(EventBus.PICK_VERSION, Number(prevConunt.current));
     }
 
-    //실행 취소
-    if (type === "Reset-cancel") {
-      prevConunt.current++
-      console.log(prevConunt)
-      EventBus.emit(EventBus.PICK_VERSION, Number(prevConunt.current))
-    }
+       //재실행
+       if( type === 'Reset'){
+        console.log(prevConunt)
+        if(prevConunt.current >= 0){
+          prevConunt.current--;
+          EventBus.emit(EventBus.PICK_VERSION, Number(prevConunt.current));
+        }
+        else{
+  
+        }
+      }
+  
+      //실행 취소
+      if( type === 'Reset_cancel'){
+        prevConunt.current++;
+        console.log(prevConunt)
+        EventBus.emit(EventBus.PICK_VERSION, Number(prevConunt.current));
+      }
+
+    // //실행 취소
+    // if (type === "Reset-cancel") {
+    //   prevConunt.current++
+    //   console.log(prevConunt)
+    //   EventBus.emit(EventBus.PICK_VERSION, Number(prevConunt.current))
+    // }
+
+    if(type==="")
 
     //Color Change Event
     if (type === "Color") {
@@ -317,15 +346,15 @@ export default function Tools() {
             </button>
           </div>
         ) : (
-          tools.map((tool, idx) => (
-            <ToolWrapperCom
-              index={idx}
-              tool={tool}
-              hidden={hidden}
-              handleClickTool={handleClickTool}
-            />
-          ))
-        )}
+            tools.map((tool, idx) => (
+              <ToolWrapperCom
+                index={idx}
+                tool={tool}
+                hidden={hidden}
+                handleClickTool={handleClickTool}
+              />
+            ))
+          )}
       </div>
     </div>
   )
@@ -355,17 +384,17 @@ const ToolWrapperCom = ({ tool, handleClickTool, index }) => {
         <div className={`tool-childs ${tool.type}`}>
           {tool.type === "del"
             ? tool.child.map((child, idx) => (
-                <p
-                  onClick={() => {
-                    handleClickTool(tool.id, idx)
-                    setDisplay(!display)
-                  }}
-                >
-                  {child.text}
-                </p>
-              ))
+              <p
+                onClick={() => {
+                  handleClickTool(tool.id, idx)
+                  setDisplay(!display)
+                }}
+              >
+                {child.text}
+              </p>
+            ))
             : tool.type === "color"
-            ? tool.child.map((child, idx) => (
+              ? tool.child.map((child, idx) => (
                 <button
                   onClick={() => {
                     handleClickTool(tool.id, idx)
@@ -378,7 +407,7 @@ const ToolWrapperCom = ({ tool, handleClickTool, index }) => {
                   }
                 ></button>
               ))
-            : tool.child.map((child, idx) => (
+              : tool.child.map((child, idx) => (
                 <button
                   onClick={() => {
                     handleClickTool(tool.id, idx)

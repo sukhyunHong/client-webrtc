@@ -109,8 +109,8 @@ class MeetingRoom extends Component {
       } else if (error.name === "PermissionDeniedError") {
         console.log(
           "Permissions have not been granted to use your camera and " +
-            "microphone, you need to allow the page access to your devices in " +
-            "order for the demo to work."
+          "microphone, you need to allow the page access to your devices in " +
+          "order for the demo to work."
         )
       }
       console.log(`getUserMedia error: ${error.name}`, error)
@@ -151,7 +151,7 @@ class MeetingRoom extends Component {
         }
       }
 
-      pc.oniceconnectionstatechange = e => {}
+      pc.oniceconnectionstatechange = e => { }
 
       pc.ontrack = e => {
         let _remoteStream = null
@@ -195,7 +195,7 @@ class MeetingRoom extends Component {
         this.setState(prevState => {
           // If we already have a stream in display let it stay the same, otherwise use the latest stream
           // const remoteStream = prevState.remoteStreams.length > 0 ? {} : { remoteStream: e.streams[0] }
-        
+
 
           let selectedVideo = prevState.remoteStreams[0]
             ? prevState.remoteStreams[0]
@@ -205,8 +205,8 @@ class MeetingRoom extends Component {
           selectedVideo = selectedVideo.length
             ? {}
             : {
-                selectedVideo: remoteVideo
-              }
+              selectedVideo: remoteVideo
+            }
 
           return {
             ...selectedVideo,
@@ -234,7 +234,7 @@ class MeetingRoom extends Component {
     }
   }
 
-  componentDidMount(){
+  componentDidMount() {
     window.onunload = window.onbeforeunload = function () {
       getSocket.close()
     }
@@ -267,7 +267,7 @@ class MeetingRoom extends Component {
           )
         }, 1000 * Number(time) * 60)
       }
-      this.props.dispatch(meetingRoomAction.setHostUser({isHostUser: isHost}))
+      this.props.dispatch(meetingRoomAction.setHostUser({ isHostUser: isHost }))
       this.setState({
         // status: status,
         isMainRoom: isHost,
@@ -307,8 +307,8 @@ class MeetingRoom extends Component {
           const selectedVideo =
             prevState.selectedVideo.id === data.socketID && remoteStreams.length
               ? {
-                  selectedVideo: remoteStreams[0]
-                }
+                selectedVideo: remoteStreams[0]
+              }
               : null
 
           return {
@@ -332,7 +332,7 @@ class MeetingRoom extends Component {
         // 2. Create Offer
         if (pc) {
           // Send Channel
-          const handleSendChannelStatusChange = event => {}
+          const handleSendChannelStatusChange = event => { }
 
           const sendChannel = pc.createDataChannel("sendChannel")
           sendChannel.onopen = handleSendChannelStatusChange
@@ -359,7 +359,7 @@ class MeetingRoom extends Component {
             if (this.receiveChannel) {
               console.log(
                 "receive channel's status has changed to " +
-                  this.receiveChannel.readyState
+                this.receiveChannel.readyState
               )
             }
           }
@@ -388,36 +388,36 @@ class MeetingRoom extends Component {
     getSocket().on("offer", data => {
       this.createPeerConnection(data.socketID, pc => {
         try {
-        console.log(this.state.localStream)
-        pc.addStream(this.state.localStream)
+          console.log(this.state.localStream)
+          pc.addStream(this.state.localStream)
 
-        // Send Channel
-        const handleSendChannelStatusChange = event => {
-          // console.log('send channel status: ' + this.state.sendChannels[0].readyState)
-        }
-
-        const sendChannel = pc.createDataChannel("sendChannel")
-        sendChannel.onopen = handleSendChannelStatusChange
-        sendChannel.onclose = handleSendChannelStatusChange
-
-        this.setState(prevState => {
-          return {
-            sendChannels: [...prevState.sendChannels, sendChannel]
+          // Send Channel
+          const handleSendChannelStatusChange = event => {
+            // console.log('send channel status: ' + this.state.sendChannels[0].readyState)
           }
-        })
 
-        pc.setRemoteDescription(new RTCSessionDescription(data.sdp)).then(
-          () => {
-            // 2. Create Answer
-            pc.createAnswer(this.state.sdpConstraints).then(sdp => {
-              pc.setLocalDescription(sdp)
-              console.log("send answer")
-              meetingRoomSocket.sendToPeer("answer", sdp, {
-                local: getSocket().id,
-                remote: data.socketID
+          const sendChannel = pc.createDataChannel("sendChannel")
+          sendChannel.onopen = handleSendChannelStatusChange
+          sendChannel.onclose = handleSendChannelStatusChange
+
+          this.setState(prevState => {
+            return {
+              sendChannels: [...prevState.sendChannels, sendChannel]
+            }
+          })
+
+          pc.setRemoteDescription(new RTCSessionDescription(data.sdp)).then(
+            () => {
+              // 2. Create Answer
+              pc.createAnswer(this.state.sdpConstraints).then(sdp => {
+                pc.setLocalDescription(sdp)
+                console.log("send answer")
+                meetingRoomSocket.sendToPeer("answer", sdp, {
+                  local: getSocket().id,
+                  remote: data.socketID
+                })
               })
-            })
-          }
+            }
           )
         } catch (error) {
           window.location.reload();
@@ -428,7 +428,7 @@ class MeetingRoom extends Component {
       const pc = this.state.peerConnections[data.socketID]
       pc.setRemoteDescription(
         new RTCSessionDescription(data.sdp)
-      ).then(() => {})
+      ).then(() => { })
     })
     getSocket().on("candidate", data => {
       const pc = this.state.peerConnections[data.socketID]
@@ -446,7 +446,7 @@ class MeetingRoom extends Component {
             disconnected: true
           })
         },
-        handleClickReject: () => {} 
+        handleClickReject: () => { }
       })
     } else {
       Alert({
@@ -456,7 +456,7 @@ class MeetingRoom extends Component {
             disconnected: true
           })
         },
-        handleClickReject: () => {} 
+        handleClickReject: () => { }
       })
     }
   }
@@ -536,127 +536,113 @@ class MeetingRoom extends Component {
         type: 'video'
       });
       this.recordVideo.startRecording();
-
-      console.log("record Video", this.recordVideo)
-
+      this.setState({
+        enableRecord: !this.state.enableRecord
+      })
+    } else {
+      let tempVideo = this.recordVideo
+      this.recordVideo.stopRecording(function (url) {
+        alert("녹화 종료되었습니다, 변환하는 시간이 영상의 길에 따가 걸립니다.")
+        videoPreview.src = url;
+        videoPreview.download = 'video.webm';
+        convertStreams(tempVideo.getBlob());
+      });
       this.setState({
         enableRecord: !this.state.enableRecord
       })
 
-    } else {
-      console.log("remoceVideo" , this.recordVideo)
-      let tempVideo = this.recordVideo
-      this.recordVideo.stopRecording(function(url) {
-          alert("bbb")
-          console.log("aa", url)
-          videoPreview.src = url;
-          videoPreview.download = 'video.webm';
-          
-          console.log("this record", tempVideo)
-          convertStreams(tempVideo.getBlob());
-      });
-      this.setState({
-            enableRecord: !this.state.enableRecord
-      })
-      
     }
-
-    
     //! end - event
 
-          var workerPath = 'https://archive.org/download/ffmpeg_asm/ffmpeg_asm.js';
-          // if(document.domain == 'localhost') {
-          //     workerPath = window.location.href.replace(window.location.href.split('/').pop(), '') + 'ffmpeg_asm.js';
-          // }
-          const  processInWebWorker = () => {
-            console.log("pro in web woker")
+    var workerPath = 'https://archive.org/download/ffmpeg_asm/ffmpeg_asm.js';
+    // if(document.domain == 'localhost') {
+    //     workerPath = window.location.href.replace(window.location.href.split('/').pop(), '') + 'ffmpeg_asm.js';
+    // }
+    const processInWebWorker = () => {
+      var blob = URL.createObjectURL(new Blob(['importScripts("' + workerPath + '");var now = Date.now;function print(text) {postMessage({"type" : "stdout","data" : text});};onmessage = function(event) {var message = event.data;if (message.type === "command") {var Module = {print: print,printErr: print,files: message.files || [],arguments: message.arguments || [],TOTAL_MEMORY: message.TOTAL_MEMORY || false};postMessage({"type" : "start","data" : Module.arguments.join(" ")});postMessage({"type" : "stdout","data" : "Received command: " +Module.arguments.join(" ") +((Module.TOTAL_MEMORY) ? ".  Processing with " + Module.TOTAL_MEMORY + " bits." : "")});var time = now();var result = ffmpeg_run(Module);var totalTime = now() - time;postMessage({"type" : "stdout","data" : "Finished processing (took " + totalTime + "ms)"});postMessage({"type" : "done","data" : result,"time" : totalTime});}};postMessage({"type" : "ready"});'], {
+        type: 'application/javascript'
+      }));
 
-            var blob = URL.createObjectURL(new Blob(['importScripts("' + workerPath + '");var now = Date.now;function print(text) {postMessage({"type" : "stdout","data" : text});};onmessage = function(event) {var message = event.data;if (message.type === "command") {var Module = {print: print,printErr: print,files: message.files || [],arguments: message.arguments || [],TOTAL_MEMORY: message.TOTAL_MEMORY || false};postMessage({"type" : "start","data" : Module.arguments.join(" ")});postMessage({"type" : "stdout","data" : "Received command: " +Module.arguments.join(" ") +((Module.TOTAL_MEMORY) ? ".  Processing with " + Module.TOTAL_MEMORY + " bits." : "")});var time = now();var result = ffmpeg_run(Module);var totalTime = now() - time;postMessage({"type" : "stdout","data" : "Finished processing (took " + totalTime + "ms)"});postMessage({"type" : "done","data" : result,"time" : totalTime});}};postMessage({"type" : "ready"});'], {
-                type: 'application/javascript'
-            }));
+      var worker = new Worker(blob);
+      URL.revokeObjectURL(blob);
+      return worker;
+    }
 
-            var worker = new Worker(blob);
-            URL.revokeObjectURL(blob);
-            return worker;
-          }
+    var worker;
+    //!start - convert
+    const convertStreams = (videoBlob) => {
 
-          var worker;
-          //!start - convert
-          const convertStreams = (videoBlob) => {
+      var aab;
+      var buffersReady;
+      var workerReady;
+      var posted;
 
-            console.log("covert", videoBlob)
-            var aab;
-            var buffersReady;
-            var workerReady;
-            var posted;
+      var fileReader = new FileReader();
+      fileReader.onload = function () {
+        aab = this.result;
+        postMessage();
+      };
+      fileReader.readAsArrayBuffer(videoBlob);
 
-            var fileReader = new FileReader();
-            fileReader.onload = function() {
-                aab = this.result;
-                postMessage();
-            };
-            fileReader.readAsArrayBuffer(videoBlob);
+      if (!worker) {
+        worker = processInWebWorker();
+      }
 
-            if (!worker) {
-                worker = processInWebWorker();
-            }
+      console.log("work", worker)
 
-            console.log("work", worker)
+      worker.onmessage = function (event) {
+        console.log("on message")
+        console.log(event)
 
-            worker.onmessage = function(event) {
-                console.log("on message")
-                console.log(event)
+        var message = event.data;
+        if (message.type == "ready") {
 
-                var message = event.data;
-                if (message.type == "ready") {
+          workerReady = true;
+          if (buffersReady)
+            postMessage();
+        } else if (message.type == "stdout") {
+        } else if (message.type == "start") {
+        } else if (message.type == "done") {
 
-                    workerReady = true;
-                    if (buffersReady)
-                        postMessage();
-                } else if (message.type == "stdout") {
-                } else if (message.type == "start") {
-                } else if (message.type == "done") {
+          var result = message.data[0];
 
-                    var result = message.data[0];
-
-                    var blob = new File([result.data], 'test.mp4', {
-                        type: 'video/mp4'
-                    });
+          var blob = new File([result.data], 'test.mp4', {
+            type: 'video/mp4'
+          });
 
 
-                    PostBlob(blob);
-                }
-            };
-            
-            var postMessage = function() {
-                posted = true;
-
-                worker.postMessage({
-                    type: 'command',
-                    arguments: '-i video.webm -c:v mpeg4 -b:v 6400k -strict experimental output.mp4'.split(' '),
-                    files: [
-                        {
-                            data: new Uint8Array(aab),
-                            name: 'video.webm'
-                        }
-                    ]
-                });
-            };
-          }
-           //!end - convert
-          const  PostBlob = (blob) => {
-            alert("aasas")
-            // const blob = new Blob(recordedBlobs, { type: "video/webm" })
-            const url = window.URL.createObjectURL(blob)
-            const a = document.createElement("a")
-            a.style.display = "none"
-            a.href = url
-            a.type = 'video/mp4; codecs=mpeg4';
-            let currentDay = moment().format("l").replace("/", "_")
-            a.download = `${currentDay}.mp4`
-            document.body.appendChild(a)
-            a.click()
+          PostBlob(blob);
         }
+      };
+
+      var postMessage = function () {
+        posted = true;
+
+        worker.postMessage({
+          type: 'command',
+          arguments: '-i video.webm -c:v mpeg4 -b:v 6400k -strict experimental output.mp4'.split(' '),
+          files: [
+            {
+              data: new Uint8Array(aab),
+              name: 'video.webm'
+            }
+          ]
+        });
+      };
+    }
+    //!end - convert
+    const PostBlob = (blob) => {
+      // const blob = new Blob(recordedBlobs, { type: "video/webm" })
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.style.display = "none"
+      a.href = url
+      a.type = 'video/mp4; codecs=mpeg4';
+      let currentDay = moment().format("l").replace("/", "_")
+      a.download = `${currentDay}.mp4`
+      document.body.appendChild(a)
+      a.click()
+    }
   }
   render() {
     const {
@@ -700,50 +686,50 @@ class MeetingRoom extends Component {
 
 
     //! setState 확인필요함
-    if(loading){
-      return(
+    if (loading) {
+      return (
         <WrapperLoading>
           <ReactLoading type="spin" color="#000" />
         </WrapperLoading>
       )
     }
 
-    const windowSize = !fullScream ? "85%" : "100%" 
+    const windowSize = !fullScream ? "85%" : "100%"
     return (
       <div className="meeting-room">
         <div className="left-content" id="left-content-id" style={{ width: windowSize }}>
           <div className="heading-controller">
             {
               isMainRoom ?
-              <HeadingController 
-                handleOutRoom={this.handleOutRoom}
-                handleWindowSize={this.handleWindowSize}
-                handleScreenMode={this.handleScreenMode}
-                handleWhiteBoard={this.handleWhiteBoard}
-                handleScreamRecording={this.handleScreamRecording}
-              /> :
-              <HeadingControllerStudent 
-                handleOutRoom={this.handleOutRoom}
-              />
+                <HeadingController
+                  handleOutRoom={this.handleOutRoom}
+                  handleWindowSize={this.handleWindowSize}
+                  handleScreenMode={this.handleScreenMode}
+                  handleWhiteBoard={this.handleWhiteBoard}
+                  handleScreamRecording={this.handleScreamRecording}
+                /> :
+                <HeadingControllerStudent
+                  handleOutRoom={this.handleOutRoom}
+                />
             }
           </div>
           <div className="remote-stream">
             {
               paintScream ? (
-                <WhiteBoard/>
+                <WhiteBoard />
               ) :
-              (
-                isMainRoom ?
-                <RemoteStreamContainer 
-                  paintScream={!paintScream}
-                  remoteStreams={remoteStreams}
-                  requestUser={requestUser}
-                />
-                :
-                <RemoteStreamContainerStudent 
-                  remoteStreams={remoteStreams}
-                />
-              )
+                (
+                  isMainRoom ?
+                    <RemoteStreamContainer
+                      paintScream={!paintScream}
+                      remoteStreams={remoteStreams}
+                      requestUser={requestUser}
+                    />
+                    :
+                    <RemoteStreamContainerStudent
+                      remoteStreams={remoteStreams}
+                    />
+                )
             }
             {/* <RemoteStreamContainer
               // paintScream={!paintScream}
@@ -773,7 +759,7 @@ class MeetingRoom extends Component {
           !fullScream && (
             <div className="right-content">
               <div className="local-stream">
-                <LocalStreamComponent 
+                <LocalStreamComponent
                   localStream={localStream}
                 />
               </div>

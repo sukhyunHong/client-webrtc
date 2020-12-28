@@ -155,21 +155,17 @@ class RemoteStreamContainer extends Component {
         userroom_id: UserRoomId()
       }
       const resp = await getLectureInfo(params)
+      this.props.dispatch(remoteStreamContainerAction.saveLectureInfo(resp))
       const { test_gap_time } = resp.data
       intervalTime = setInterval(() => {
         var min = 1,
           max = 8;
         var rand = Math.floor(Math.random() * (max - min + 1) + min);
-
-        console.log(rand)
         let payload = {
           number: rand
         }
         remoteStreamContainer.emitTestConcentration(payload)
-        // this.sendToPeer("test-concentration", {
-        //   number: rand
-        // } , null);
-      }, 1000 * Number(test_gap_time) * 60);
+      }, 1000 * 60 * Number(test_gap_time));
     }
     fetchData()
     if (this.props.remoteStreams.length !== 0) {

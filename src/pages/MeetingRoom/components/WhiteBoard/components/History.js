@@ -22,7 +22,7 @@ export default class History extends React.Component {
 
   handleClick(index) {
     return function () {
-      EventBus.emit(EventBus.PICK_VERSION, index)
+      // EventBus.emit(EventBus.PICK_VERSION, index)
     }
   }
 

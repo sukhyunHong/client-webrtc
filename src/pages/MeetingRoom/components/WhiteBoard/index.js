@@ -14,7 +14,7 @@ function WhiteBoardContainer(props) {
       <div className="paint-wrapper__tools">
         <Tools />
       </div>
-      <History />
+      {/* <History /> */}
     </div>
   )
 }

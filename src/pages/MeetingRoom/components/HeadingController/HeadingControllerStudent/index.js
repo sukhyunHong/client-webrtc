@@ -5,6 +5,8 @@ import './style.scss'
 import headingControllerSocket from '../HeadingController.Socket'
 import getSocket from "../../../../rootSocket";
 import headingControllerAction from '../HeadingController.Action'
+import roomSelector from '../../../MeetingRoom.Selector';
+import remoteStreamContainerSelector from '../../RemoteStreamContainer/RemoteStreamContainer.Selector'
 
 function HeadingControllerStudent({handleOutRoom}) {
   
@@ -13,9 +15,17 @@ function HeadingControllerStudent({handleOutRoom}) {
   const [requestLecOutSended, setRequestLecOutSended] = useState(false)
   const [requestLecOutDoing, setRequestLecOutDoing] = useState(false)
 
-
+  const isHostUser = useSelector(roomSelector.selectIsHostUser)
+  const lectureInfo = useSelector(remoteStreamContainerSelector.getLectureInfo)
   const dispatch = useDispatch();
 
+  
+  useEffect(() => {
+
+    if(!isHostUser){
+      dispatch(headingControllerAction.handleChangeMicState())
+    }
+  },[isHostUser])
   useEffect(() => {
     getSocket().on("alert-user-process-req-question", data => {
         if(data){
@@ -62,7 +72,6 @@ function HeadingControllerStudent({handleOutRoom}) {
       setRequestQuestionSended(!requestQuestionSended)
       headingControllerSocket.emitUserCancelRequestQuestion(payload);
     }
-    
   }
 
 
@@ -102,6 +111,8 @@ function HeadingControllerStudent({handleOutRoom}) {
   const TextButtonRequestLecOut = requestLecOutSended ? "자리비움 요청중/취소..." : requestLecOutDoing ? "자리비움 취소" : "자리비움 요청"
 
 
+
+  console.log(lectureInfo)  
   //!버튼 상태를 확인할 필요함
   return <div className="heading-stream__controller">
     <div className="heading-container__small">
@@ -126,7 +137,7 @@ function HeadingControllerStudent({handleOutRoom}) {
       </div>
       <div className="heading-col">
         <ul>
-          <li><p> 수학 강의 </p></li>
+          <li><p>{lectureInfo ? lectureInfo.lecture_nm : ""}</p></li>
         </ul>
       </div>
     </div>

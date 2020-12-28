@@ -13,6 +13,7 @@ const initialState = {
 export const localStreamReducer =(state = initialState, { type, payload })  =>
   produce(state, draft => {
     switch (type) {
+      //반대로
       case constants.CHANGE_SOUND_STATE:
         draft.soundState = !state.soundState;
         break;
@@ -31,6 +32,8 @@ export const localStreamReducer =(state = initialState, { type, payload })  =>
       case constants.CHANGE_CAM_STATE_ERROR:
         draft.camState = null
         break;
+
+
       case constants.REQUEST_QUESTION_STATUS:
         draft.requestQuestionStatus = payload.status
         break;

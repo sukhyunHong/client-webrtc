@@ -11,8 +11,12 @@ import CountDownTime from '../../../../../components/CountDownTime'
 import getSocket from '../../../../rootSocket'
 import headingControllerSocket from '../../HeadingController/HeadingController.Socket'
 import remoteStreamContainerSocket from '../RemoteStreamContainer.Socket'
+import remoteStreamContainerAction from '../RemoteStreamContainer.Action'
+import remoteStreamSelector from '../RemoteStreamContainer.Selector'
 import moment from 'moment'
 import { set } from 'immutable'
+import { bindActionCreators } from 'redux'
+import { connect } from 'react-redux'
 
 let intervalTime = "";
 class RemoteStreamContainerStudent extends Component {
@@ -35,6 +39,7 @@ class RemoteStreamContainerStudent extends Component {
   }
 
   componentDidMount() {
+    
     if (this.props.remoteStreams.length !== 0) {
       const fetchVideos = async() => {
         const { rVideos } = await SetVideo(this.props.remoteStreams[0], this.props)
@@ -77,6 +82,7 @@ class RemoteStreamContainerStudent extends Component {
     getSocket().on("alert-user-test-concentration", data => {
       const time = moment().format('DD/MM/YYYYHH:mm:ss')
       const { remoteStream } = this.state
+      console.log('집중도 테스트')
       let video = <VideoItem 
         videoStream={remoteStream}
         test_concentration_status={true}
@@ -89,7 +95,14 @@ class RemoteStreamContainerStudent extends Component {
     const UserRoomId = () => {
       return JSON.parse(window.localStorage.getItem("usr_id"))
     }
-
+    const fetchData = async() => {
+      let params = {
+        userroom_id: UserRoomId()
+      }
+      const resp = await getLectureInfo(params)
+      this.props.dispatch(remoteStreamContainerAction.saveLectureInfo(resp))
+    }
+    fetchData()
   }
 
   handleResize = () => {
@@ -252,6 +265,7 @@ const VideoItem = ({ videoStream,  req_question_status, time, req_lecOut_status,
   }
 
   const handleCorrectInput = () => {
+    setTestConcentration(!testConcentration)
     let payload = {
       status: true,
       userRoomId: UserRoomId()
@@ -259,7 +273,7 @@ const VideoItem = ({ videoStream,  req_question_status, time, req_lecOut_status,
     postTestConcentration(payload)
   }
   const handleDownAllTime = () => {
-    setTestConcentration(!setTestConcentration)
+    setTestConcentration(!testConcentration)
     const payload = {
       status: false,
       userRoomId: UserRoomId()
@@ -272,7 +286,7 @@ const VideoItem = ({ videoStream,  req_question_status, time, req_lecOut_status,
       status : false,
       userRoomId: UserRoomId()
     }
-    postTestConcentration(payload)
+    headingControllerSocket.emitUserCancelRequestLecOut(payload)
     setLecOutStatus(!reqLecOutStatus)
   }
   return (
@@ -352,10 +366,19 @@ const InputTestConcentration = React.memo(
     } else return ""
   }
 )
+
 const WrapperLoading = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
   height: 100%;
 `
-export default RemoteStreamContainerStudent
+const mapStateToProps = state => ({})
+
+
+function mapDispatchToProps(dispatch) {
+  let actions = bindActionCreators({ RemoteStreamContainerStudent });
+  return { ...actions, dispatch };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(RemoteStreamContainerStudent);

@@ -6,8 +6,14 @@ const getListUser = createSelector(
     [selectRaw],
     (remoteStream) => remoteStream.listUser
 );
+
+const getLectureInfo = createSelector(
+  [selectRaw],
+  (remoteStream) => remoteStream.lectureInfo
+);
 const selectors = {
   getListUser,
+  getLectureInfo
 };
 
 export default selectors;
