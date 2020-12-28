@@ -22,6 +22,7 @@ import HeadingControllerStudent from './components/HeadingController/HeadingCont
 
 import RecordRTCPromisesHandler from 'recordrtc'
 import styled from 'styled-components'
+import {isMobile} from 'react-device-detect';
 
 // const ffmpeg = require("ffmpeg.js/ffmpeg-mp4.js")
 
@@ -683,7 +684,16 @@ class MeetingRoom extends Component {
 
       this.props.history.push("/meetting")
     }
-
+    console.log(isMobile)
+    if(isMobile){
+      return (
+        <div className="chat-component-mobile">
+          <ChatComponent
+            remoteStreams={remoteStreams}
+          />
+        </div>
+      )
+    } 
 
     //! setState 확인필요함
     if (loading) {
@@ -710,6 +720,7 @@ class MeetingRoom extends Component {
                 /> :
                 <HeadingControllerStudent
                   handleOutRoom={this.handleOutRoom}
+                  handleWindowSize={this.handleWindowSize}
                 />
             }
           </div>

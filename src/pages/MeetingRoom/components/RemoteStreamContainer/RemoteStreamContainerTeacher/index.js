@@ -55,7 +55,7 @@ class RemoteStreamContainer extends Component {
               userInfo={userInfo}
               request={requestValue}
               time={time}
-              type="request-lecOut"
+              type="request_lecOut"
             />
         ) : <img src={Icon.boardWarning}></img>
         return video
@@ -80,7 +80,7 @@ class RemoteStreamContainer extends Component {
               userInfo={userInfo}
               request={requestValue}
               time={time}
-              type="request-question"
+              type="request_question"
             />
         ) : <img src={Icon.boardWarning}></img>
         return video
@@ -108,7 +108,7 @@ class RemoteStreamContainer extends Component {
                 userInfo={userInfo}
                 req_question_status={req_question_status}
                 time={time}
-                type="request-question"
+                type="request_question"
               />
           ) : <img src={Icon.boardWarning}></img>
           return video
@@ -136,7 +136,7 @@ class RemoteStreamContainer extends Component {
                 userInfo={userInfo}
                 req_lecOut_status={req_lecOut_status}
                 time={time}
-                type="request-question"
+                type="request_lecOut"
               />
           ) : <img src={Icon.boardWarning}></img>
           return video
@@ -367,7 +367,7 @@ const  SetVideos = (remoteStreams, props) => {
 }
 
 const WrapperUserRequest = ({ type, userInfo, handleClickAccept, handleClickReject }) => {
-  type = type === "request-question" ? "음성질문" : "자리비움";
+  type = type === "request_question" ? "음성질문" : "자리비움";
 
   return (
     <div>

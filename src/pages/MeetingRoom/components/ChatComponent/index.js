@@ -10,9 +10,10 @@ import getSocket from '../../../rootSocket'
 
 import roomSelector from '../../MeetingRoom.Selector'
 import remoteStreamContainerSelector from '../RemoteStreamContainer/RemoteStreamContainer.Selector'
+import remoteStreamContainer from '../RemoteStreamContainer/RemoteStreamContainer.Socket'
 import { useDispatch, useSelector } from 'react-redux'
 import chatAction from './ChatComponent.Action'
-
+import {isMobile} from 'react-device-detect';
 moment.locale()
 function ChatComponent(props) {
 
@@ -209,9 +210,22 @@ function ChatComponent(props) {
     setMessage("")
     scrollToBottom()
   }
+
+  const handleActionRequestUser = (userId, method, type) => {
+    const payload = {
+      type: type,
+      status: method,
+      userId: userId,
+      userRoomId: userRoomId(),
+    }
+    remoteStreamContainer.emitProcessRequestUser(payload)
+}
   const renderMessage = (userType, data) => {
     const message = data.message
     const { type } = data
+
+
+    console.log(data)
     let msgDiv
     if (type === "text") {
       msgDiv = (
@@ -224,9 +238,12 @@ function ChatComponent(props) {
         </div>
       )
     } else if (type === "request") {
+
+
       //강사인 경우에는
       if (isHostUser) {
         const { message } = data;
+        console.log(data)
         // const requestType = message.data.text === "질문 요청" ? "question" : "lecOut"
         const messageInfo = message.data.text === "request_question" ? `${message.sender.username} 학생이 질문을 요청하였습니다.` : `${message.sender.username}학생이 자리비움을 요청하였습니다.`
         msgDiv = (
@@ -235,30 +252,33 @@ function ChatComponent(props) {
               <p>{messageInfo}</p>
               <span>{moment(message.data.time).format("LT")}</span>
             </div>
-            <div className="msg-request__button mobile">
-              <button
-                // onClick={() =>
-                //   handleActionRequestUser(
-                //     message.id,
-                //     "accept",
-                //     requestType
-                //   )
-                // }
-              >
-                수락
-              </button>
-              <button
-                // onClick={() =>
-                //   handleActionRequestUser(
-                //     message.id,
-                //     "reject",
-                //     requestType
-                //   )
-                // }
-              >
-                취소
-              </button>
-            </div>
+            {
+              isMobile &&
+              <div className="msg-request__button mobile">
+                <button
+                  onClick={() =>
+                    handleActionRequestUser(
+                      message.sender.uid,
+                      "accept",
+                      message.data.text
+                    )
+                  }
+                >
+                  수락
+                </button>
+                <button
+                  onClick={() =>
+                    handleActionRequestUser(
+                      message.sender.uid,
+                      "reject",
+                      message.data.text
+                    )
+                  }
+                >
+                  취소
+                </button>
+              </div>
+            }
           </div>
         )
       } else {
@@ -430,8 +450,12 @@ function ChatComponent(props) {
           {
             isHostUser ?
             <>
-              <li><img onClick={() => handleClickCameraOn()} src={Icon.chatCameraOnIcon}></img></li>
-              <li><img onClick={() => handleClickUpFile()} src={Icon.chatFileIcon}></img></li>
+              {
+                isMobile ? 
+                <li><img onClick={() => handleClickCameraOn()} src={Icon.chatCameraOnIcon}></img></li> :
+                <li><img onClick={() => handleClickUpFile()} src={Icon.chatFileIcon}></img></li>
+                
+              }
               <li className="chatting-hidden"><img  onClick={() => setBoxedListUser(!boxedListUser)} src={Icon.chatTalkOnIcon}></img>
                 {
                   boxedListUser &&

@@ -8,12 +8,13 @@ import headingControllerAction from '../HeadingController.Action'
 import roomSelector from '../../../MeetingRoom.Selector';
 import remoteStreamContainerSelector from '../../RemoteStreamContainer/RemoteStreamContainer.Selector'
 
-function HeadingControllerStudent({handleOutRoom}) {
+function HeadingControllerStudent({handleOutRoom, handleWindowSize}) {
   
   const [requestQuestionSended, setRequestQuestionSended] = useState(false)
   const [requestQuestionDoing, setRequestQuestionDoing] = useState(false)
   const [requestLecOutSended, setRequestLecOutSended] = useState(false)
   const [requestLecOutDoing, setRequestLecOutDoing] = useState(false)
+  const [windowSize, setWindowSize] = useState(false)
 
   const isHostUser = useSelector(roomSelector.selectIsHostUser)
   const lectureInfo = useSelector(remoteStreamContainerSelector.getLectureInfo)
@@ -43,6 +44,16 @@ function HeadingControllerStudent({handleOutRoom}) {
     return JSON.parse(window.localStorage.getItem("usr_id"))
   }
 
+  const handleChangeWindowSize = () => {
+    setWindowSize(!windowSize)
+    if(!windowSize){
+      document.documentElement.requestFullscreen();
+    } else{
+      if(document.fullscreenElement !== null)
+          document.exitFullscreen();
+    }
+    handleWindowSize()
+  }
 
   //Cancel 이벤트를 처리해야함
   //state에서 따라서 처리필요함
@@ -104,13 +115,10 @@ function HeadingControllerStudent({handleOutRoom}) {
     }
   }
 
-
   const StyleButtonRequestQuestion = requestQuestionSended ? {backgroundColor: "white", color: "black"} : requestQuestionDoing ? {backgroundColor: "yellow", color: "black"} : {}
   const TextButtonRequestQuestion = requestQuestionSended ? "음성질문 요청중/취소..." : requestQuestionDoing ? "음성질문 취소" : "음성질문 요청"
   const StyleButtonRequestLecOut = requestLecOutSended ? {backgroundColor: "white", color: "black"} : requestLecOutDoing ? {backgroundColor: "yellow", color: "black"} : {}
   const TextButtonRequestLecOut = requestLecOutSended ? "자리비움 요청중/취소..." : requestLecOutDoing ? "자리비움 취소" : "자리비움 요청"
-
-
 
   console.log(lectureInfo)  
   //!버튼 상태를 확인할 필요함
@@ -119,6 +127,7 @@ function HeadingControllerStudent({handleOutRoom}) {
       <div className="heading-col">
         <ul>
           <li><img onClick={() => handleOutRoom()}  src={Icon.lecOutIcon} /></li>
+          <li><img onClick={() => handleChangeWindowSize()} src={windowSize ? Icon.lecWindowSmallIcon : Icon.lecWindowBigIcon} /> </li>
         </ul>
       </div>
       <div className="heading-col">

@@ -143,19 +143,19 @@
     }
 }
 
-// #history{
-//     display: flex;
-// }
-// #history > span{
-//     width: 10px;
-//     height: 10px;
-//     border: 1px solid;
-//     font-size: 30;
-//     justify-content: center;
-//     display: flex;
-//     margin: 2px;
-// }
-// #history > span.selected{
-//     background-color: black;
-//     color: white;
-// }
+#history{
+    display: flex;
+}
+#history > span{
+    width: 10px;
+    height: 10px;
+    border: 1px solid;
+    font-size: 30;
+    justify-content: center;
+    display: flex;
+    margin: 2px;
+}
+#history > span.selected{
+    background-color: black;
+    color: white;
+}

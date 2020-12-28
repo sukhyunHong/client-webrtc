@@ -240,7 +240,7 @@ export default function Tools() {
     }
     saveSvgAsPng(
       document.getElementById("whiteBoard"),
-      `${fnCurrentTime()}.png`, {backgroundColor: "#f5f5f5"}
+      `${fnCurrentTime()}.png`, { backgroundColor: "#f5f5f5" }
     )
   }
 
@@ -273,40 +273,30 @@ export default function Tools() {
     // }
 
 
-//전체 지우기
-    if(type==='Del')
-    {
-      prevConunt.current=0;
+    //전체 지우기
+    if (type === 'Del') {
+      prevConunt.current = 0;
       EventBus.emit(EventBus.PICK_VERSION, Number(prevConunt.current));
     }
 
-       //재실행
-       if( type === 'Reset'){
-        console.log(prevConunt)
-        if(prevConunt.current >= 0){
-          prevConunt.current--;
-          EventBus.emit(EventBus.PICK_VERSION, Number(prevConunt.current));
-        }
-        else{
-  
-        }
-      }
-  
-      //실행 취소
-      if( type === 'Reset_cancel'){
-        prevConunt.current++;
-        console.log(prevConunt)
+    //재실행
+    if (type === 'Reset') {
+      if (prevConunt.current >= 0) {
+        prevConunt.current--;
         EventBus.emit(EventBus.PICK_VERSION, Number(prevConunt.current));
       }
+      else {
 
-    // //실행 취소
-    // if (type === "Reset-cancel") {
-    //   prevConunt.current++
-    //   console.log(prevConunt)
-    //   EventBus.emit(EventBus.PICK_VERSION, Number(prevConunt.current))
-    // }
+      }
+    }
 
-    if(type==="")
+    //실행 취소
+    if (type === 'Reset_cancel') {
+      prevConunt.current++;
+      console.log(prevConunt)
+      EventBus.emit(EventBus.PICK_VERSION, Number(prevConunt.current));
+    }
+
 
     //Color Change Event
     if (type === "Color") {

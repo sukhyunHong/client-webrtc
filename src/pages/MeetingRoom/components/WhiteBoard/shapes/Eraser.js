@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default class Draw extends React.Component {
+export default class Eraser extends React.Component {
   prepareData() {
     let d = [`M ${this.props.path[0].x} ${this.props.path[0].y}`];
 
