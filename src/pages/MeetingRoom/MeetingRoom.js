@@ -526,6 +526,8 @@ class MeetingRoom extends Component {
   }
   //!로컬 stream 작동하지 않으면 안됨
   //!localStream 체크할 필요함
+   //!로컬 stream 작동하지 않으면 안됨
+  //!localStream 체크할 필요함
   handleScreamRecording = () => {
     var videoPreview = document.getElementById('local');
     const { enableRecord } = this.state
@@ -537,31 +539,40 @@ class MeetingRoom extends Component {
         type: 'video'
       });
       this.recordVideo.startRecording();
+
+      console.log("record Video", this.recordVideo)
+
       this.setState({
         enableRecord: !this.state.enableRecord
       })
+
     } else {
+      console.log("remoceVideo" , this.recordVideo)
       let tempVideo = this.recordVideo
-      this.recordVideo.stopRecording(function (url) {
-        alert("녹화 종료되었습니다, 변환하는 시간이 영상의 길에 따가 걸립니다.")
-        videoPreview.src = url;
-        videoPreview.download = 'video.webm';
-        convertStreams(tempVideo.getBlob());
+      this.recordVideo.stopRecording(function(url) {
+          alert("영상길이에 따라 시간이 걸립니다.")
+          videoPreview.src = url;
+          videoPreview.download = 'video.webm';
+          
+          console.log("this record", tempVideo)
+          convertStreams(tempVideo.getBlob());
       });
       this.setState({
-        enableRecord: !this.state.enableRecord
+            enableRecord: !this.state.enableRecord
       })
-
+      
     }
+    
     //! end - event
-
     var workerPath = 'https://archive.org/download/ffmpeg_asm/ffmpeg_asm.js';
     // if(document.domain == 'localhost') {
     //     workerPath = window.location.href.replace(window.location.href.split('/').pop(), '') + 'ffmpeg_asm.js';
     // }
-    const processInWebWorker = () => {
+    const  processInWebWorker = () => {
+      console.log("pro in web woker")
+
       var blob = URL.createObjectURL(new Blob(['importScripts("' + workerPath + '");var now = Date.now;function print(text) {postMessage({"type" : "stdout","data" : text});};onmessage = function(event) {var message = event.data;if (message.type === "command") {var Module = {print: print,printErr: print,files: message.files || [],arguments: message.arguments || [],TOTAL_MEMORY: message.TOTAL_MEMORY || false};postMessage({"type" : "start","data" : Module.arguments.join(" ")});postMessage({"type" : "stdout","data" : "Received command: " +Module.arguments.join(" ") +((Module.TOTAL_MEMORY) ? ".  Processing with " + Module.TOTAL_MEMORY + " bits." : "")});var time = now();var result = ffmpeg_run(Module);var totalTime = now() - time;postMessage({"type" : "stdout","data" : "Finished processing (took " + totalTime + "ms)"});postMessage({"type" : "done","data" : result,"time" : totalTime});}};postMessage({"type" : "ready"});'], {
-        type: 'application/javascript'
+          type: 'application/javascript'
       }));
 
       var worker = new Worker(blob);
@@ -573,66 +584,67 @@ class MeetingRoom extends Component {
     //!start - convert
     const convertStreams = (videoBlob) => {
 
+      console.log("covert", videoBlob)
       var aab;
       var buffersReady;
       var workerReady;
       var posted;
 
       var fileReader = new FileReader();
-      fileReader.onload = function () {
-        aab = this.result;
-        postMessage();
+      fileReader.onload = function() {
+          aab = this.result;
+          postMessage();
       };
       fileReader.readAsArrayBuffer(videoBlob);
 
       if (!worker) {
-        worker = processInWebWorker();
+          worker = processInWebWorker();
       }
 
       console.log("work", worker)
 
-      worker.onmessage = function (event) {
-        console.log("on message")
-        console.log(event)
+      worker.onmessage = function(event) {
+          console.log("on message")
+          console.log(event)
 
-        var message = event.data;
-        if (message.type == "ready") {
+          var message = event.data;
+          if (message.type == "ready") {
 
-          workerReady = true;
-          if (buffersReady)
-            postMessage();
-        } else if (message.type == "stdout") {
-        } else if (message.type == "start") {
-        } else if (message.type == "done") {
+              workerReady = true;
+              if (buffersReady)
+                  postMessage();
+          } else if (message.type == "stdout") {
+          } else if (message.type == "start") {
+          } else if (message.type == "done") {
 
-          var result = message.data[0];
+              var result = message.data[0];
 
-          var blob = new File([result.data], 'test.mp4', {
-            type: 'video/mp4'
-          });
+              var blob = new File([result.data], 'test.mp4', {
+                  type: 'video/mp4'
+              });
 
 
-          PostBlob(blob);
-        }
+              PostBlob(blob);
+          }
       };
+      
+      var postMessage = function() {
+          posted = true;
 
-      var postMessage = function () {
-        posted = true;
-
-        worker.postMessage({
-          type: 'command',
-          arguments: '-i video.webm -c:v mpeg4 -b:v 6400k -strict experimental output.mp4'.split(' '),
-          files: [
-            {
-              data: new Uint8Array(aab),
-              name: 'video.webm'
-            }
-          ]
-        });
+          worker.postMessage({
+              type: 'command',
+              arguments: '-i video.webm -c:v mpeg4 -b:v 6400k -strict experimental output.mp4'.split(' '),
+              files: [
+                  {
+                      data: new Uint8Array(aab),
+                      name: 'video.webm'
+                  }
+              ]
+          });
       };
     }
-    //!end - convert
-    const PostBlob = (blob) => {
+      //!end - convert
+    const  PostBlob = (blob) => {
       // const blob = new Blob(recordedBlobs, { type: "video/webm" })
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement("a")
@@ -643,8 +655,33 @@ class MeetingRoom extends Component {
       a.download = `${currentDay}.mp4`
       document.body.appendChild(a)
       a.click()
-    }
+
+
+
+      // var video = document.createElement('video');
+      // video.controls = true;
+
+      // var source = document.createElement('source');
+      // source.src = URL.createObjectURL(blob);
+      // source.type = 'video/mp4; codecs=mpeg4';
+      // video.appendChild(source);
+
+      // video.download = 'Play mp4 in VLC Player.mp4';
+
+      // var h2 = document.createElement('h2');
+      // h2.innerHTML = '<a href="' + source.src + '" target="_blank" download="Play mp4 in VLC Player.mp4" style="font-size:200%;color:red;">Download Converted mp4 and play in VLC player!</a>';
+      // h2.style.display = 'block';
+
+      // video.tabIndex = 0;
+      // video.focus();
+      // video.play();
+
+      // document.querySelector('#record-video').disabled = false;
   }
+}
+
+
+
   render() {
     const {
       disconnected,

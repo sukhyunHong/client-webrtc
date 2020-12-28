@@ -35,7 +35,7 @@ function LocalStreamComponent({localStream}) {
       localVideoMute={localStreamCamState}
       videoStream={localStream}
       showMuteControls={true}
-      isMainRoom={isHostUser} //!수정필요함
+      isMainRoom={"host"} //!수정필요함
       autoPlay
       muted //local default true
     ></Video>

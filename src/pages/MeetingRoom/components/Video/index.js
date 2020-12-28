@@ -62,13 +62,13 @@ class Video extends Component {
     //   this.mutemic()
     // }
     // //Camera 기능 제어함
-    // if (
-    //   this.props.isMainRoom &&
-    //   this.props.showMuteControls &&
-    //   this.props.localVideoMute !== nextProps.localVideoMute
-    // ) {
-    //   this.mutecamera()
-    // }
+    if (
+      this.props.isMainRoom &&
+      this.props.showMuteControls &&
+      this.props.localVideoMute !== nextProps.localVideoMute
+    ) {
+      this.mutecamera()
+    }
 
     // //!USER mic control
     // //Mic 기능 제어함
