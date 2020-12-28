@@ -9,20 +9,23 @@ import chatComponentService from './ChatComponent.Service'
 import getSocket from '../../../rootSocket'
 
 import roomSelector from '../../MeetingRoom.Selector'
-import { useSelector } from 'react-redux'
+import remoteStreamContainerSelector from '../RemoteStreamContainer/RemoteStreamContainer.Selector'
+import { useDispatch, useSelector } from 'react-redux'
+import chatAction from './ChatComponent.Action'
 
 moment.locale()
 function ChatComponent(props) {
 
-
+  const [disableChatInput, setDisableChatInput] = useState(false)
   const [message, setMessage] = useState("")
   const [messages, setMessages] = useState([])
   const [user, setUser] = useState({ uid: 0 })
   const [boxedListUser, setBoxedListUser] = useState(false)
-  const [listUser, setListUser] = useState([])
+  // const [listUser, setListUser] = useState([])
   
   const isHostUser = useSelector(roomSelector.selectIsHostUser)
-
+  const listUser = useSelector(remoteStreamContainerSelector.getListUser)
+  const dispatch = useDispatch()
 
    //!나중에 추가함
   const [imageZoom, setImageZoom] = useState(false)
@@ -33,6 +36,7 @@ function ChatComponent(props) {
     const chat = document.getElementById("chatList")
     chat.scrollTop = chat.scrollHeight
   }
+  
 
   useEffect(() => {
     scrollToBottom()
@@ -62,12 +66,8 @@ function ChatComponent(props) {
   }, [props])
   
   useEffect(() => {
-
-    console.log("is Host user", isHostUser)
-
     //요청하고 있는거 알려줌
     getSocket().on("alert-all-request-message", data => {
-
         const {id, type, timestamp, user_idx, username } = data
         let message = {
           type: "request",
@@ -84,11 +84,73 @@ function ChatComponent(props) {
           }
         }
         setMessages(prevState => [...prevState, message])
+        scrollToBottom()
+    })
+    getSocket().on("alert-host-test-concentration-fail", data => {
+      const {id, type, timestamp, user_idx, username } = data
+      let message = {
+        type: "test-concentration-fail",
+        message: {
+          id: id,
+          sender: {
+            uid: user_idx, 
+            username: username
+          },
+          data: {
+            text: type,
+            time: timestamp
+          }
+        }
+      }
+      setMessages(prevState => [...prevState, message])
+      scrollToBottom()
+    })
+    getSocket().on("alert-user-warning", data => {
+      const {id, type, timestamp, user_idx, username } = data
+      let message = {
+        type: "user_warning",
+        message: {
+          id: id,
+          sender: {
+            uid: user_idx, 
+            username: username
+          },
+          data: {
+            text: type,
+            time: timestamp
+          }
+        }
+      }
+      setMessages(prevState => [...prevState, message])
+      scrollToBottom()
+    })
+    getSocket().on("alert_user_disable_chat", data => {
+      const {id, type, timestamp, user_idx, username } = data
+      let message = {
+        type: "user_disable_chat",
+        message: {
+          id: id,
+          sender: {
+            uid: user_idx, 
+            username: username
+          },
+          data: {
+            text: type,
+            time: timestamp
+          }
+        }
+      }
+      setMessages(prevState => [...prevState, message])
+      scrollToBottom()
     })
 
+    // getSocket().on("action_user_disable_chat", data => {
+    //   setDisableChatInput(!disableChatInput)
+    // })
 
     getSocket().on("res-sent-message", data => {
         setMessages(prevState => [...prevState, data])  
+        scrollToBottom()
     })
     getSocket().on("res-sent-files", data => {
       const { senderId, senderName, fileHash, originalname, size, mimetype } = data
@@ -111,6 +173,13 @@ function ChatComponent(props) {
       setMessages(prevState => [...prevState, message])
     })
   },[])
+
+  useEffect(() => {
+    getSocket().on("action_user_disable_chat", data => {
+      setDisableChatInput(!disableChatInput)
+      dispatch(chatAction.chattingStateChange(disableChatInput))
+    })
+  },)
 
   const sendMessage = msg => {
     props.sendMessage(msg)
@@ -137,8 +206,8 @@ function ChatComponent(props) {
     }
     chatComponentSocket.emitSentMessage(payload)
     setMessage("")
+    scrollToBottom()
   }
-
   const renderMessage = (userType, data) => {
     const message = data.message
     const { type } = data
@@ -154,8 +223,6 @@ function ChatComponent(props) {
         </div>
       )
     } else if (type === "request") {
-      console.log(isHostUser)
-      console.log(data)
       //강사인 경우에는
       if (isHostUser) {
         const { message } = data;
@@ -210,7 +277,7 @@ function ChatComponent(props) {
         <div className="file-type">
           <div className="file-type__info">
             <span className="file-type__name">{message.sender.username}</span>
-            <span className="file-type__time">{moment().format("LT")}</span>
+            <span className="file-type__time">{moment(message.data.time).format("LT")}</span>
           </div>
           <div className="file-type__message">
             <p>{message.data.text}</p>
@@ -234,11 +301,38 @@ function ChatComponent(props) {
         <div className="msg-request">
           <div className="msg-request__heading">
             <p>{messageInfo}</p>
-            <span>{moment().format("LT")}</span>
+            <span>{moment(message.data.time).format("LT")}</span>
           </div>
         </div>
       )
-    } else {
+    }else if(type === 'test-concentration-fail' || type === 'user_disable_chat' ||
+      type === 'user_warning')
+    {
+      const { data } = message
+      let footerText = " 메시지 전송되었습니다"
+      switch (type) {
+        case "test-concentration-fail":
+          footerText = "집중테스트 실패합니다"
+          break;
+        case "user_disable_chat":
+          footerText = "채팅 금지/허용 되었습니다"
+          break;
+        case "user_warning":
+          footerText = "경고 받았습니다"
+          break;
+        default:
+          break;
+      }
+      const messageInfo = message.sender.username + " " + footerText;
+      msgDiv = (
+        <div className="msg-request">
+          <div className="msg-request__heading">
+            <p>{messageInfo}</p>
+            <span>{moment(message.data.time).format("LT")}</span>
+          </div>
+        </div>
+      )
+    }else {
       msgDiv = (
         <div className="msg-row">
           <p>{message.sender.username}</p>
@@ -273,12 +367,6 @@ function ChatComponent(props) {
       data.append("file", e.target.files[0])
       data.append("params", JSON.stringify(params))
       chatComponentService.upFile(data)
-      
-      // (`${process.env.REACT_APP_SERVER_API}/room/upfile`, data, {
-      //   headers: {
-      //     "Content-Type": "application/json"
-      //   }
-      // })
     } else {
       alert("파일 공유 용량제한이 100MB이하 입니다.")
     }
@@ -319,9 +407,22 @@ function ChatComponent(props) {
     setMessage(event.target.value)
   }
 
-  const handleOffChatForUser = (userId) => {
-
+  const handleOffChatForUser = (userId, socketId) => {
+    setBoxedListUser(!boxedListUser)
+    if(userId === 0){
+      let payload = {
+        remoteSocketId: "all"
+      }
+      chatComponentSocket.emitDisableUserChat(payload)
+    }else{
+      let payload = {
+        remoteSocketId: socketId,
+        userId
+      }
+      chatComponentSocket.emitDisableUserChat(payload)
+    }
   }
+
   return (
     <div className="chatting__component">
       <div className="chatting-tasks">
@@ -331,33 +432,20 @@ function ChatComponent(props) {
             <>
               <li><img onClick={() => handleClickCameraOn()} src={Icon.chatCameraOnIcon}></img></li>
               <li><img onClick={() => handleClickUpFile()} src={Icon.chatFileIcon}></img></li>
-              <li><img  onClick={() => setBoxedListUser(!boxedListUser)} src={Icon.chatTalkOnIcon}></img>
+              <li className="chatting-hidden"><img  onClick={() => setBoxedListUser(!boxedListUser)} src={Icon.chatTalkOnIcon}></img>
                 {
                   boxedListUser &&
                   <div className="list-user-chat">
-                    <ul>
                       {listUser.length !== 0 && (
-                        <>
-                          <li
-                            onClick={() => { 
-                              handleOffChatForUser(0)
-                              setBoxedListUser(!boxedListUser) }}
-                          >
-                            1. 전체
-                          </li>
+                      <ul>
+                          <li onClick={() => handleOffChatForUser(0)}> 1. 전체</li>
                           {listUser.map((user, idx) => (
-                            <li onClick={() => { 
-                                handleOffChatForUser(user.socket_id) 
-                                setBoxedListUser(!boxedListUser)
-                              }}
-                              key={idx}
-                            >
-                              {idx + 2}.{user.username}
+                            <li onClick={() => handleOffChatForUser(user.user_idx, user.socket_id) }key={idx}>
+                              {idx + 2}. {user.user_name}
                             </li>
                           ))}
-                        </>
+                      </ul>
                       )}
-                    </ul>
                   </div>
                 }
               </li>
@@ -387,12 +475,12 @@ function ChatComponent(props) {
                 className="textarea input"
                 type="text"
                 placeholder={
-                  props.normalUserChat ? "채팅 금지 상태입니다 ..." : "채팅 ..."
+                  disableChatInput ? "채팅 금지 상태입니다 ..." : "채팅 ..."
                 }
                 onChange={(event) => setMessage(event.target.value)}
                 value={message}
-                // readOnly={props.normalUserChat}
-                // style={props.normalUserChat ? { border: "2px solid red" } : {}}
+                readOnly={disableChatInput}
+                style={disableChatInput ? { border: "2px solid red" } : {}}
               />
               {/* <button style={{position: "absolute"}}>전송</button> */}
             </form>

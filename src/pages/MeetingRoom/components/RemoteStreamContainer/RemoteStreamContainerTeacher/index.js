@@ -4,8 +4,9 @@ import styled from 'styled-components'
 import qs from 'query-string'
 import Video from '../../Video'
 import ReactLoading from 'react-loading'
-import { getInformationRoom } from '../RemoteStreamContainer.Service'
+import { getInformationRoom, getLectureInfo } from '../RemoteStreamContainer.Service'
 import remoteStreamContainer from '../RemoteStreamContainer.Socket'
+import chatComponentSocket from '../../ChatComponent/ChatComponent.Socket'
 import remoteStreamContainerAction from '../RemoteStreamContainer.Action'
 import remoteStreamSelector from '../RemoteStreamContainer.Selector'
 import getSocket from "../../../../rootSocket"
@@ -13,6 +14,8 @@ import Icon from '../../../../../constants/icons'
 import moment from "moment"
 import './style.scss'
 import { connect, useDispatch } from 'react-redux'
+
+let intervalTime = "";
 class RemoteStreamContainer extends Component {
   constructor(props) {
     super(props)
@@ -144,6 +147,31 @@ class RemoteStreamContainer extends Component {
       }
     })
 
+    const UserRoomId = () => {
+      return JSON.parse(window.localStorage.getItem("usr_id"))
+    }
+    const fetchData = async () => {
+      let params = {
+        userroom_id: UserRoomId()
+      }
+      const resp = await getLectureInfo(params)
+      const { test_gap_time } = resp.data
+      intervalTime = setInterval(() => {
+        var min = 1,
+          max = 8;
+        var rand = Math.floor(Math.random() * (max - min + 1) + min);
+
+        console.log(rand)
+        let payload = {
+          number: rand
+        }
+        remoteStreamContainer.emitTestConcentration(payload)
+        // this.sendToPeer("test-concentration", {
+        //   number: rand
+        // } , null);
+      }, 1000 * Number(test_gap_time) * 60);
+    }
+    fetchData()
     if (this.props.remoteStreams.length !== 0) {
       const { remoteStreams } = this.props
       const fetchVideos = async () => {
@@ -157,7 +185,9 @@ class RemoteStreamContainer extends Component {
       fetchVideos();
     }
   }
-
+  componentWillUnmount(){
+    clearInterval(intervalTime)
+  }
 
   componentWillReceiveProps(nextProps) {
     if (
@@ -331,7 +361,7 @@ const  SetVideos = (remoteStreams, props) => {
         ) : <img src={Icon.boardWarning}></img>
         return video
       })
-      
+
       resolve({
         rVideos: _rVideos,
         filterRemote: _filterRemote,
@@ -359,16 +389,20 @@ const WrapperUserRequest = ({ type, userInfo, handleClickAccept, handleClickReje
 //!일단 여기서 socket만 적용함
 const WrapperTaskVideo = ({ userInfo, socketId }) => {
   const handleClickWarning = () => {
+    let usr_id = localStorage.getItem("usr_id") 
     let payload = {
-      remoteSocketId: socketId
+      userId: userInfo.user_idx,
+      remoteSocketId: socketId,
+      userRoomId: usr_id
     }
     remoteStreamContainer.emitHostWarning(payload)
   }
   const handleDisableChatting = () => {
     let payload = {
-      remoteSocketId: socketId
+      remoteSocketId: socketId,
+      userId: userInfo.user_idx
     }
-    remoteStreamContainer.emitHostDisableChat(payload)
+    chatComponentSocket.emitDisableUserChat(payload)
   }
   return (
     <div>

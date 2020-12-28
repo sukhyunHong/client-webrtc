@@ -1,0 +1,16 @@
+import constants from "./ChatComponent.Constants"
+import Errors from "../../../../components/Error/error";
+
+const actions = {
+  chattingStateChange :  (data) => async(dispatch) => {
+    try {
+      dispatch({
+          type: constants.CHAT_STATE_CHANGE,
+          payload:  { state : data }
+      });
+    } catch (error) {
+        Errors.handle(error);
+    }
+  },
+};
+export default actions;

@@ -10,4 +10,9 @@ export const getLectureInfo = async (params) => {
   return response;
 }
 
+export const postTestConcentration = async (params) => {
+  const response = await axios.post("/room/test-concentration-fail", params);
+  return response;
+}
+
 

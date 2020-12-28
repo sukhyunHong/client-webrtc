@@ -6,10 +6,11 @@ import Axios from "axios"
 import ReactLoading from 'react-loading'
 import CountTime from '../../../../../components/CountTime'
 import './style.scss'
-import { getInformationRoom, getLectureInfo } from '../RemoteStreamContainer.Service'
+import { getInformationRoom, getLectureInfo, postTestConcentration } from '../RemoteStreamContainer.Service'
 import CountDownTime from '../../../../../components/CountDownTime'
 import getSocket from '../../../../rootSocket'
 import headingControllerSocket from '../../HeadingController/HeadingController.Socket'
+import remoteStreamContainerSocket from '../RemoteStreamContainer.Socket'
 import moment from 'moment'
 import { set } from 'immutable'
 
@@ -73,29 +74,22 @@ class RemoteStreamContainerStudent extends Component {
       this.setState({ rVideos : video})
     })
 
+    getSocket().on("alert-user-test-concentration", data => {
+      const time = moment().format('DD/MM/YYYYHH:mm:ss')
+      const { remoteStream } = this.state
+      let video = <VideoItem 
+        videoStream={remoteStream}
+        test_concentration_status={true}
+        test_concentration_number={data.number}
+        time={time}
+      />
+      this.setState({ rVideos : video})
+    })
+
     const UserRoomId = () => {
       return JSON.parse(window.localStorage.getItem("usr_id"))
     }
 
-    let params = {
-      userroom_id: UserRoomId()
-    }
-
-    const fetchData = async () => {
-      const resp = await getLectureInfo(params)
-      const { test_gap } = resp.data
-      let time = test_gap === "01" ? 10 : test_gap === "02" ? 20 : test_gap === "03" ? 30 : 40;
-      
-      intervalTime = setInterval(() => {
-        var min = 1,
-          max = 9;
-        var rand = Math.floor(Math.random() * (max - min + 1) + min);
-        // this.sendToPeer("test-concentration", {
-        //   number: rand
-        // } , null);
-      }, 1000 * Number(time) * 60);
-    }
-    fetchData()
   }
 
   handleResize = () => {
@@ -240,23 +234,37 @@ const SetVideo = (remoteStream, props)=> {
 
 }
 //! 이미 추가해넣었음
-const VideoItem = ({ videoStream,  req_question_status, time, req_lecOut_status }) => {
+const VideoItem = ({ videoStream,  req_question_status, time, req_lecOut_status, test_concentration_status, test_concentration_number }) => {
 
   const [reqQuestionStatus, setReqQuestionStatus] = useState(false)
   const [reqLecOutStatus, setLecOutStatus] = useState(false)
+  const [testConcentration, setTestConcentration] = useState(false)
 
   useEffect(() => {
     setReqQuestionStatus(req_question_status)
     setLecOutStatus(req_lecOut_status)
+    setTestConcentration(test_concentration_status)
   }, [time])
-  const handleCorrectInput = () => {
 
-  }
-  const handleDownAllTime = () => {
-
-  }
+  
   const UserRoomId = () => {
     return JSON.parse(window.localStorage.getItem("usr_id"))
+  }
+
+  const handleCorrectInput = () => {
+    let payload = {
+      status: true,
+      userRoomId: UserRoomId()
+    }
+    postTestConcentration(payload)
+  }
+  const handleDownAllTime = () => {
+    setTestConcentration(!setTestConcentration)
+    const payload = {
+      status: false,
+      userRoomId: UserRoomId()
+    }
+    postTestConcentration(payload)
   }
 
   const handleCancelLecOut = () => {
@@ -264,7 +272,7 @@ const VideoItem = ({ videoStream,  req_question_status, time, req_lecOut_status 
       status : false,
       userRoomId: UserRoomId()
     }
-    headingControllerSocket.emitUserCancelRequestLecOut(payload)
+    postTestConcentration(payload)
     setLecOutStatus(!reqLecOutStatus)
   }
   return (
@@ -283,6 +291,14 @@ const VideoItem = ({ videoStream,  req_question_status, time, req_lecOut_status 
               </button>
             </div>
         </div>
+      }
+      {
+        testConcentration && 
+        <InputTestConcentration
+          testNumber={test_concentration_number}
+          handleCorrectInput={() => handleCorrectInput()}
+          handleDownAllTime={() => handleDownAllTime()}
+        /> 
       }
       
       {/* 
@@ -310,6 +326,7 @@ const InputTestConcentration = React.memo(
         handleCorrectInput()
       }
     }
+    //알림
     const handleDownAllTimeCallback = useCallback(() => {
       setDisplayWrapper(false)
       handleDownAllTime()

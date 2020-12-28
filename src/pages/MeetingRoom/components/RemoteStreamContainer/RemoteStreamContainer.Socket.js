@@ -16,7 +16,12 @@ const remoteStreamContainerSocket = {
   emitProcessRequestUser: (payload) => {
     getSocket().emit("host-send-process-request", payload)
   },
-  
+  emitTestConcentration: (payload) => {
+    getSocket().emit("user-test-concentration", payload)
+  },
+  emitFailTestConcentration: (payload) => {
+    getSocket().emit("user-test-concentration-fail", payload)
+  }
 } 
 
 export default remoteStreamContainerSocket

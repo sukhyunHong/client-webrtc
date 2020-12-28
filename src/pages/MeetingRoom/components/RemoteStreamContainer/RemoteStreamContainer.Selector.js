@@ -6,7 +6,6 @@ const getListUser = createSelector(
     [selectRaw],
     (remoteStream) => remoteStream.listUser
 );
-
 const selectors = {
   getListUser,
 };

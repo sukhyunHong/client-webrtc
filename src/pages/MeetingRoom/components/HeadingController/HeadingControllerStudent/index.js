@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import './style.scss'
 import headingControllerSocket from '../HeadingController.Socket'
 import getSocket from "../../../../rootSocket";
+import headingControllerAction from '../HeadingController.Action'
 
 function HeadingControllerStudent({handleOutRoom}) {
   
@@ -12,10 +13,14 @@ function HeadingControllerStudent({handleOutRoom}) {
   const [requestLecOutSended, setRequestLecOutSended] = useState(false)
   const [requestLecOutDoing, setRequestLecOutDoing] = useState(false)
 
+
   const dispatch = useDispatch();
 
   useEffect(() => {
     getSocket().on("alert-user-process-req-question", data => {
+        if(data){
+          dispatch(headingControllerAction.handleChangeMicState())
+        }
         setRequestQuestionSended(false)
         setRequestQuestionDoing(data)
     })

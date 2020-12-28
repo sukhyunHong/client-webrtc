@@ -1,5 +1,7 @@
 import React, { Component } from "react"
-
+import { connect } from "react-redux"
+import { bindActionCreators } from "redux"
+import headingControllerSelector from '../HeadingController/HeadingController.Selector'
 class Video extends Component {
   constructor(props) {
     super(props)
@@ -149,6 +151,7 @@ class Video extends Component {
       alert("현재 접속한 컴퓨터에서 Audio 지원하지 않습니다")
     }
   }
+
   render() {
     //
     const muteControls = !this.props.showMuteControls &&
@@ -203,10 +206,19 @@ class Video extends Component {
             this.video = ref
           }}
         ></video>
-        {muteControls}
+        {/* {muteControls} */}
       </>
     )
   }
 }
 
-export default Video
+const mapStateToProps = state => ({
+  micState: headingControllerSelector.getLocalStreamMicState(state)
+})
+
+
+function mapDispatchToProps(dispatch) {
+  let actions = bindActionCreators({ Video });
+  return { ...actions, dispatch };
+}
+export default connect(mapStateToProps, mapDispatchToProps)(Video);

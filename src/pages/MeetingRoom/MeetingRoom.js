@@ -77,7 +77,7 @@ class MeetingRoom extends Component {
   //!기계를 체크할 필요함
   getLocalStream = () => {
     const constraints = {
-      audio: false,
+      audio: true,
       video: true,
       options: {
         mirror: true
@@ -85,7 +85,7 @@ class MeetingRoom extends Component {
     }
 
     const handleSuccess = stream => {
-      const video = document.querySelector("video")
+      // const video = document.querySelector("video")
       const videoTracks = stream.getVideoTracks()
       console.log(`Using video device: ${videoTracks[0].label}`)
 
@@ -96,8 +96,8 @@ class MeetingRoom extends Component {
       // this.whoisOnline()
       // this.props.dispatch(meetingRoomAction.doCreateLocalStream(stream))
       this.props.dispatch(meetingRoomAction.whoisOnline())
-      window.stream = stream 
-      video.srcObject = stream
+      // window.stream = stream 
+      // video.srcObject = stream
     }
 
     const handleError = error => {
@@ -274,7 +274,7 @@ class MeetingRoom extends Component {
         timeTestConcentrationAPI: intervalTime,
         messages: data.messages,
         localMicMute: isHost ? false : true,
-        // loading: false,
+        loading: false,
       })
     })
 
@@ -386,9 +386,9 @@ class MeetingRoom extends Component {
     })
 
     getSocket().on("offer", data => {
-
-      console.log("offer")
       this.createPeerConnection(data.socketID, pc => {
+        try {
+        console.log(this.state.localStream)
         pc.addStream(this.state.localStream)
 
         // Send Channel
@@ -406,34 +406,6 @@ class MeetingRoom extends Component {
           }
         })
 
-        // Receive Channels
-        const handleReceiveMessage = event => {
-          const message = JSON.parse(event.data)
-          this.setState(prevState => {
-            return {
-              messages: [...prevState.messages, message]
-            }
-          })
-        }
-
-        const handleReceiveChannelStatusChange = event => {
-          if (this.receiveChannel) {
-            console.log(
-              "receive channel's status has changed to " +
-                this.receiveChannel.readyState
-            )
-          }
-        }
-
-        const receiveChannelCallback = event => {
-          const receiveChannel = event.channel
-          receiveChannel.onmessage = handleReceiveMessage
-          receiveChannel.onopen = handleReceiveChannelStatusChange
-          receiveChannel.onclose = handleReceiveChannelStatusChange
-        }
-
-        pc.ondatachannel = receiveChannelCallback
-
         pc.setRemoteDescription(new RTCSessionDescription(data.sdp)).then(
           () => {
             // 2. Create Answer
@@ -446,11 +418,13 @@ class MeetingRoom extends Component {
               })
             })
           }
-        )
+          )
+        } catch (error) {
+          window.location.reload();
+        }
       })
     })
     getSocket().on("answer", data => {
-      console.log("answer")
       const pc = this.state.peerConnections[data.socketID]
       pc.setRemoteDescription(
         new RTCSessionDescription(data.sdp)
@@ -460,34 +434,6 @@ class MeetingRoom extends Component {
       const pc = this.state.peerConnections[data.socketID]
       if (pc) pc.addIceCandidate(new RTCIceCandidate(data.candidate))
     })
-    /************** Peer connect - end */
-
-    // //redux에다가 저장할 필요없는 socket.on 이벤트
-    // getSocket().on("alert-host-question", data => {
-    //   const { remoteSocketId, remoteUsername } = data
-    //   let value = {
-    //     type: "request-question",
-    //     remoteId: remoteSocketId,
-    //     state: false,
-    //     remoteUsername: remoteUsername
-    //   }
-    //   this.setState({
-    //     requestUser: [...this.state.requestUser, value]
-    //   })
-    // })
-    // getSocket().on("alert-host-lecOut", data => {
-    //   const { remoteSocketId, remoteUserName } = data
-    //   let value = {
-    //     type: "request-lecOut",
-    //     remoteId: remoteSocketId,
-    //     state: false,
-    //     remoteUserName: remoteUserName
-    //   }
-    //   this.setState({
-    //     requestUser: [...this.state.requestUser, value]
-    //   })
-    // })
-
   }
   handleOutRoom = () => {
     const { remoteStreams } = this.state
@@ -618,7 +564,6 @@ class MeetingRoom extends Component {
     
     //! end - event
 
-
           var workerPath = 'https://archive.org/download/ffmpeg_asm/ffmpeg_asm.js';
           // if(document.domain == 'localhost') {
           //     workerPath = window.location.href.replace(window.location.href.split('/').pop(), '') + 'ffmpeg_asm.js';
@@ -711,33 +656,10 @@ class MeetingRoom extends Component {
             a.download = `${currentDay}.mp4`
             document.body.appendChild(a)
             a.click()
-
-
-
-            // var video = document.createElement('video');
-            // video.controls = true;
-
-            // var source = document.createElement('source');
-            // source.src = URL.createObjectURL(blob);
-            // source.type = 'video/mp4; codecs=mpeg4';
-            // video.appendChild(source);
-
-            // video.download = 'Play mp4 in VLC Player.mp4';
-
-            // var h2 = document.createElement('h2');
-            // h2.innerHTML = '<a href="' + source.src + '" target="_blank" download="Play mp4 in VLC Player.mp4" style="font-size:200%;color:red;">Download Converted mp4 and play in VLC player!</a>';
-            // h2.style.display = 'block';
-
-            // video.tabIndex = 0;
-            // video.focus();
-            // video.play();
-
-            // document.querySelector('#record-video').disabled = false;
         }
   }
   render() {
     const {
-      messages,
       disconnected,
       localStream,
       peerConnections,
