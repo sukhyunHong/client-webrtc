@@ -85,8 +85,9 @@ class MeetingRoom extends Component {
       }
     }
 
+
+    //!refactory해야함
     const handleSuccess = stream => {
-      // const video = document.querySelector("video")
       const videoTracks = stream.getVideoTracks()
       console.log(`Using video device: ${videoTracks[0].label}`)
 
@@ -94,11 +95,7 @@ class MeetingRoom extends Component {
         localStream: stream,
         loading: false
       })
-      // this.whoisOnline()
-      // this.props.dispatch(meetingRoomAction.doCreateLocalStream(stream))
       this.props.dispatch(meetingRoomAction.whoisOnline())
-      // window.stream = stream 
-      // video.srcObject = stream
     }
 
     const handleError = error => {
@@ -127,10 +124,12 @@ class MeetingRoom extends Component {
     }
     init()
   }
+
+  //!PeerConnection 
   createPeerConnection = (socketID, callback) => {
     try {
       let pc = new RTCPeerConnection(this.state.pc_config)
-      // add pc to peerConnections object
+
       const peerConnections = {
         ...this.state.peerConnections,
         [socketID]: pc
@@ -138,17 +137,12 @@ class MeetingRoom extends Component {
       this.setState({
         peerConnections
       })
-
       pc.onicecandidate = e => {
         if (e.candidate) {
           meetingRoomSocket.sendToPeer("candidate", e.candidate, {
             local: getSocket().id,
             remote: socketID
           })
-          // this.sendToPeer("candidate", e.candidate, {
-          //   local: this.socket.id,
-          //   remote: socketID
-          // })
         }
       }
 
@@ -160,9 +154,7 @@ class MeetingRoom extends Component {
         let remoteVideo = {}
 
         // 1. check if stream already exists in remoteStreams
-        const rVideos = this.state.remoteStreams.filter(
-          stream => stream.id === socketID
-        )
+        const rVideos = this.state.remoteStreams.filter(stream => stream.id === socketID )
         // 2. if it does exist then add track
         if (rVideos.length) {
           _remoteStream = rVideos[0].stream
@@ -175,8 +167,7 @@ class MeetingRoom extends Component {
           }
           remoteStreams = this.state.remoteStreams.map(_remoteVideo => {
             return (
-              (_remoteVideo.id === remoteVideo.id && remoteVideo) ||
-              _remoteVideo
+              (_remoteVideo.id === remoteVideo.id && remoteVideo) || _remoteVideo
             )
           })
         } else {
@@ -194,21 +185,8 @@ class MeetingRoom extends Component {
         }
 
         this.setState(prevState => {
-          // If we already have a stream in display let it stay the same, otherwise use the latest stream
-          // const remoteStream = prevState.remoteStreams.length > 0 ? {} : { remoteStream: e.streams[0] }
-
-
-          let selectedVideo = prevState.remoteStreams[0]
-            ? prevState.remoteStreams[0]
-            : []
-
-          // if the video is still in the list, then do nothing, otherwise set to new video stream
-          selectedVideo = selectedVideo.length
-            ? {}
-            : {
-              selectedVideo: remoteVideo
-            }
-
+          let selectedVideo = prevState.remoteStreams[0] ? prevState.remoteStreams[0] : []
+          selectedVideo = selectedVideo.length  ? {} : { selectedVideo: remoteVideo }
           return {
             ...selectedVideo,
             remoteStreams,
@@ -222,15 +200,12 @@ class MeetingRoom extends Component {
       }
 
       if (this.state.localStream)
-        // pc.addStream(this.state.localStream)
         this.state.localStream.getTracks().forEach(track => {
           pc.addTrack(track, this.state.localStream)
         })
-      // return pc
       callback(pc)
     } catch (e) {
       console.log("Something went wrong! pc not created!!", e)
-      // return;
       callback(null)
     }
   }
@@ -243,36 +218,13 @@ class MeetingRoom extends Component {
     //! Redux 저장할 필요없나?
     /************** Peer connect */
     getSocket().on("connection-success", data => {
-      console.log("connetion-sucess", data)
       this.getLocalStream()
       const { isHost } = data
 
-      //집중도 테스트함
-      let intervalTime = ""
-
-      //default 1분
-      if (isHost) {
-        const time = localStorage.getItem("time")
-          ? localStorage.getItem("time")
-          : 1
-        intervalTime = setInterval(() => {
-          var min = 0,
-            max = 10
-          var rand = Math.floor(Math.random() * (max - min + 1) + min)
-          meetingRoomSocket.sendToPeer(
-            "test-concentration",
-            {
-              number: rand
-            },
-            null
-          )
-        }, 1000 * Number(time) * 60)
-      }
       this.props.dispatch(meetingRoomAction.setHostUser({ isHostUser: isHost }))
       this.setState({
         // status: status,
         isMainRoom: isHost,
-        timeTestConcentrationAPI: intervalTime,
         messages: data.messages,
         localMicMute: isHost ? false : true,
         loading: false,
@@ -287,31 +239,19 @@ class MeetingRoom extends Component {
     //         : "기다리는 중.."
     //   })
     // })
-
     getSocket().on("peer-disconnected", data => {
       try {
-        // close peer-connection with this peer
         this.state.peerConnections[data.socketID].close()
-
-        // get and stop remote audio and video tracks of the disconnected peer
         const rVideo = this.state.remoteStreams.filter(
           stream => stream.id === data.socketID
         )
         rVideo && this.stopTracks(rVideo[0].stream)
 
-        // filter out the disconnected peer stream
         const remoteStreams = this.state.remoteStreams.filter(
           stream => stream.id !== data.socketID
         )
         this.setState(prevState => {
-          // check if disconnected peer is the selected video and if there still connected peers, then select the first
-          const selectedVideo =
-            prevState.selectedVideo.id === data.socketID && remoteStreams.length
-              ? {
-                selectedVideo: remoteStreams[0]
-              }
-              : null
-
+          const selectedVideo =  prevState.selectedVideo.id === data.socketID && remoteStreams.length ? { selectedVideo: remoteStreams[0] } : null
           return {
             // remoteStream: remoteStreams.length > 0 && remoteStreams[0].stream || null,
             remoteStreams,
