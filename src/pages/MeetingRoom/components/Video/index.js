@@ -164,7 +164,7 @@ class Video extends Component {
     const muteControls = !this.props.showMuteControls &&
       this.props.viewStateMicAndCam && (
         <div className="stream-info">
-          <i
+          {/* <i
             style={{
               cursor: "pointer",
               padding: 5,
@@ -196,7 +196,7 @@ class Video extends Component {
             class="material-icons"
           >
             {this.state.chat ? "chat" : "chat_off"}
-          </i>
+          </i> */}
         </div>
       )
     return (

@@ -23,12 +23,22 @@
   }
 
   .heading-col ul{
-    display: flex;
+    // display: flex;
     li{
       margin: 0 10px;
-      display: flex;
+      text-align: center;
       img{
         cursor: pointer;
+      }
+      span{
+        display: block;
+        color: #ffffff;
+        font-size: 10px;
+        font-weight: normal;
+        font-stretch: normal;
+        font-style: normal;
+        line-height: normal;
+        letter-spacing: -0.5px;
       }
     }
   }

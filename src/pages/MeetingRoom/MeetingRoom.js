@@ -524,9 +524,10 @@ class MeetingRoom extends Component {
       })
     }
   }
+  
   //!로컬 stream 작동하지 않으면 안됨
   //!localStream 체크할 필요함
-   //!로컬 stream 작동하지 않으면 안됨
+  //!로컬 stream 작동하지 않으면 안됨
   //!localStream 체크할 필요함
   handleScreamRecording = () => {
     var videoPreview = document.getElementById('local');
@@ -601,15 +602,12 @@ class MeetingRoom extends Component {
           worker = processInWebWorker();
       }
 
-      console.log("work", worker)
-
       worker.onmessage = function(event) {
           console.log("on message")
           console.log(event)
 
           var message = event.data;
           if (message.type == "ready") {
-
               workerReady = true;
               if (buffersReady)
                   postMessage();

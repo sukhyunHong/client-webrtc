@@ -127,7 +127,7 @@ function HeadingControllerStudent({handleOutRoom, handleWindowSize}) {
       <div className="heading-col">
         <ul>
           <li><img onClick={() => handleOutRoom()}  src={Icon.lecOutIcon} /></li>
-          <li><img onClick={() => handleChangeWindowSize()} src={windowSize ? Icon.lecWindowSmallIcon : Icon.lecWindowBigIcon} /> </li>
+          <li><img onClick={() => handleChangeWindowSize()} src={windowSize ? Icon.lecWindowBigIcon : Icon.lecWindowSmallIcon} /> </li>
         </ul>
       </div>
       <div className="heading-col">

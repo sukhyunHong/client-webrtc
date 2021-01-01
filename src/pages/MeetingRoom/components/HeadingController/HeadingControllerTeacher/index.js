@@ -48,17 +48,36 @@ function HeadingController({handleOutRoom, handleWindowSize, handleScreenMode, h
     <div className={windowSize ? "heading-container__big" : "heading-container__small"}>
       <div className="heading-col">
         <ul>
-          <li><img onClick={() => handleOutRoom()}  src={Icon.lecOutIcon} /></li>
-          <li><img onClick={() => handleChangeWindowSize()} src={windowSize ? Icon.lecWindowSmallIcon : Icon.lecWindowBigIcon} /> </li>
+          <li>
+            <img onClick={() => handleOutRoom()}  src={Icon.lecOutIcon} />
+            <span>나가기</span>
+          </li>
+          <li>
+            <img onClick={() => handleChangeWindowSize()} src={windowSize ? Icon.lecWindowBigIcon : Icon.lecWindowSmallIcon} /> 
+            <span>전체호면</span>  
+          </li>
         </ul>
       </div>
       <div className="heading-col">
         <ul>
-          <li><img onClick={() => handleSoundState()} src={soundState ? Icon.lecSoundOffIcon : Icon.lecSoundOnIcon} /></li>
-          <li><img onClick={() => handleMicState()} src={micState ? Icon.lecMicOffIcon : Icon.lecMicOnIcon}  /></li>
-          <li><img onClick={() => handleCamState()} src={camState ? Icon.lecCamOffIcon : Icon.lecCamOnIcon} /></li>
-          <li><img onClick={() => handleRecording()} src={recording ? Icon.lecPauseIcon : Icon.lecRecodingIcon} /></li>
+          <li>
+            <img onClick={() => handleSoundState()} src={soundState ? Icon.lecStudentSoundOffIcon : Icon.lecStudentSoundOnIcon} />
+            <span>학생 마이크</span>
+          </li>
+          <li>
+            <img onClick={() => handleMicState()} src={micState ? Icon.lecMicOffIcon : Icon.lecMicOnIcon}  />
+            <span>내마이크</span>
+          </li>
+          <li>
+            <img onClick={() => handleCamState()} src={camState ? Icon.lecCamOffIcon : Icon.lecCamOnIcon} />
+            <span>내 웹캡</span>
+          </li>
+          <li>
+            <img onClick={() => handleRecording()} src={recording ? Icon.lecRecodingIcon : Icon.lecRecodingIcon} />
+            <span>기록</span>
+          </li>
           {
+            //!refactory
             recording &&
             <li className="record-time"><CountTime /></li>
           }
@@ -66,8 +85,13 @@ function HeadingController({handleOutRoom, handleWindowSize, handleScreenMode, h
       </div>
       <div className="heading-col">
         <ul>
-          <li><img onClick={() => handleScreenMode()} src={Icon.lecScreenMode} /></li>
-          <li><img onClick={() => handleWhiteBoard()} src={Icon.lecScreenMode} /> </li>
+          <li>
+            <img onClick={() => handleWhiteBoard()} src={Icon.lecScreenWhiteBoard} />
+            <span>화이트보드</span>
+          </li>
+          <li><img onClick={() => handleScreenMode()} src={Icon.lecScreenShare} />
+          <span>화면공유</span>
+          </li>
         </ul>
       </div>
     </div>

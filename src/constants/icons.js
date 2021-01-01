@@ -1,16 +1,17 @@
 //Stream 아이콘
-import lecOutIcon from '../assets/room-icon/icon_lec_out.svg'
-import lecWindowBigIcon from '../assets/room-icon/icon_lec_window_big.svg'
-import lecWindowSmallIcon from '../assets/room-icon/icon_lec_window_small.svg'
-import lecSoundOnIcon from '../assets/room-icon/icon_lec_sound_on.svg'
-import lecSoundOffIcon from '../assets/room-icon/icon_lec_sound_off.svg'
-import lecMicOnIcon from '../assets/room-icon/icon_lec_mic_on.svg'
-import lecMicOffIcon from '../assets/room-icon/icon_lec_mic_off.svg'
-import lecCamOnIcon from '../assets/room-icon/icon_lec_cam_on.svg'
-import lecCamOffIcon from '../assets/room-icon/icon_lec_cam_off.svg'
-import lecRecodingIcon from '../assets/room-icon/icon_lec_recoding.svg'
-import lecPauseIcon from '../assets/room-icon/icon_lec_pause.svg'
-import lecScreenMode from '../assets/room-icon/icon_lec_screenMode.svg'
+import lecOutIcon from '../assets/room-icon/out.png'
+import lecWindowBigIcon from '../assets/room-icon/window_big.png'
+import lecWindowSmallIcon from '../assets/room-icon/window_small.png'
+import lecStudentSoundOnIcon from '../assets/room-icon/mic__on_stu.png'
+import lecStudentSoundOffIcon from '../assets/room-icon/mic__off_stu.png'
+import lecMicOnIcon from '../assets/room-icon/mic_on.png'
+import lecMicOffIcon from '../assets/room-icon/mic_off.png'
+import lecCamOnIcon from '../assets/room-icon/cam_on.png'
+import lecCamOffIcon from '../assets/room-icon/cam_off.png'
+import lecRecodingIcon from '../assets/room-icon/recoding.png'
+// import lecPauseIcon from '../assets/room-icon/icon_lec_pause.svg'
+import lecScreenWhiteBoard from '../assets/room-icon/screenWhiteboard.png'
+import lecScreenShare from '../assets/room-icon/screenShare.png'
 
 //화이트보드 아이콘
 import selectIcon from "../assets/whiteboard-icon/icon_board_select.svg"
@@ -57,20 +58,24 @@ import chatFileIcon from '../assets/chat-icon/icon_chat_file.svg'
 import chatTalkOnIcon from '../assets/chat-icon/icon_chat_talk_on.svg'
 import chatTalkOffIcon from '../assets/chat-icon/icon_chat_talk_off.svg'
 
+
+import smallLoading from '../assets/loading.gif'
+
 const Icon = {
   //Lecture
   lecOutIcon, 
   lecWindowBigIcon, 
   lecWindowSmallIcon, 
-  lecSoundOnIcon,
-  lecSoundOffIcon,
+  lecStudentSoundOnIcon,
+  lecStudentSoundOffIcon,
   lecMicOnIcon,
   lecMicOffIcon,
   lecCamOnIcon, 
   lecCamOffIcon,
   lecRecodingIcon,
-  lecPauseIcon,
-  lecScreenMode,
+  // lecPauseIcon,
+  lecScreenWhiteBoard,
+  lecScreenShare,
 
   //Whiteboard Icon
   selectIcon,
@@ -114,7 +119,9 @@ const Icon = {
   chatCameraOffIcon,
   chatFileIcon,
   chatTalkOnIcon,
-  chatTalkOffIcon
+  chatTalkOffIcon,
+
+  smallLoading
 }
 
 export default Icon
