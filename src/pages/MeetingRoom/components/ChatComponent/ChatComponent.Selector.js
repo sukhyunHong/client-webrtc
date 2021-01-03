@@ -8,8 +8,14 @@ const selectCurrentChattingState = createSelector(
     (chat) => chat.chattingState
 );
 
+
+const selectDisableAllChat = createSelector(
+    [selectRaw],
+    (chat) => chat.disableAllChat
+)
 const selectors = {
-    selectCurrentChattingState
+    selectCurrentChattingState,
+    selectDisableAllChat
 };
 
 export default selectors;

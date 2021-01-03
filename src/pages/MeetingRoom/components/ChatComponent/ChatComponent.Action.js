@@ -12,5 +12,15 @@ const actions = {
         Errors.handle(error);
     }
   },
+  disableAllChatting: (data) => async(dispatch) => {
+    try {
+      dispatch({
+          type: constants.DISABLE_ALL_CHAT,
+          payload:  { state : data }
+      });
+    } catch (error) {
+        Errors.handle(error);
+    }
+  }
 };
 export default actions;

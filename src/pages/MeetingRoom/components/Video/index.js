@@ -2,7 +2,9 @@ import React, { Component } from "react"
 import { connect } from "react-redux"
 import { bindActionCreators } from "redux"
 import headingControllerSelector from '../HeadingController/HeadingController.Selector'
+import chatComponentSelector from '../ChatComponent/ChatComponent.Selector'
 import roomSelector from '../../MeetingRoom.Selector'
+import Icon from "../../../../constants/icons"
 class Video extends Component {
   constructor(props) {
     super(props)
@@ -34,7 +36,6 @@ class Video extends Component {
     ) {
       this.video.srcObject = nextProps.videoStream
       if(!this.props.isHostUser && nextProps.videoStream){
-        console.log("off mic")
         this.mutemic()
       }
 
@@ -46,7 +47,6 @@ class Video extends Component {
       // }
     }
     if(nextProps.micState !== this.props.micState && nextProps.videoStream){
-      console.log("on mic")
       this.mutemic()
     }
 
@@ -164,6 +164,17 @@ class Video extends Component {
     const muteControls = !this.props.showMuteControls &&
       this.props.viewStateMicAndCam && (
         <div className="stream-info">
+            <ul>
+              <li>
+                <img src={Icon.lecCamOnIcon} />
+              </li>
+              <li>
+                <img src={this.props.req_question_status ? Icon.lecMicOnIcon : Icon.lecMicOffIcon}  />
+              </li>
+              <li>
+                <img src={this.props.disableAllChat ? Icon.chatTalkOffIcon : Icon.chatTalkOnIcon} />
+              </li>
+          </ul>
           {/* <i
             style={{
               cursor: "pointer",
@@ -221,7 +232,8 @@ class Video extends Component {
 
 const mapStateToProps = state => ({
   micState: headingControllerSelector.getLocalStreamMicState(state),
-  isHostUser: roomSelector.selectIsHostUser(state)
+  isHostUser: roomSelector.selectIsHostUser(state),
+  disableAllChat: chatComponentSelector.selectDisableAllChat(state)
 })
 
 

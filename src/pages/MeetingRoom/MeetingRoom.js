@@ -18,12 +18,13 @@ import ChatComponent from './components/ChatComponent'
 import WhiteBoard from './components/WhiteBoard'
 
 import moment from 'moment'
+import meetingRoomSelect from './MeetingRoom.Selector'
 import HeadingControllerStudent from './components/HeadingController/HeadingControllerStudent/index'
 
 import RecordRTCPromisesHandler from 'recordrtc'
 import styled from 'styled-components'
 import {isMobile} from 'react-device-detect';
-
+// import adapter from 'webrtc-adapter'
 // const ffmpeg = require("ffmpeg.js/ffmpeg-mp4.js")
 
 
@@ -59,7 +60,6 @@ class MeetingRoom extends Component {
 
       isMainRoom: false,
 
-      sendChannels: [],
       requestUser: [],
       recordedBlobs: [],
       disconnected: false,
@@ -67,8 +67,7 @@ class MeetingRoom extends Component {
       fullScream: false,
       paintScream: false,
       enableRecord: false,
-      loading: true
-
+      loading: true,
     }
 
     this.recordVideo = null;
@@ -84,13 +83,10 @@ class MeetingRoom extends Component {
         mirror: true
       }
     }
-
-
     //!refactory해야함
     const handleSuccess = stream => {
       const videoTracks = stream.getVideoTracks()
       console.log(`Using video device: ${videoTracks[0].label}`)
-
       this.setState({
         localStream: stream,
         loading: false
@@ -114,10 +110,31 @@ class MeetingRoom extends Component {
       console.log(`getUserMedia error: ${error.name}`, error)
     }
 
+    //Check list devices
     async function init(e) {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia(constraints)
-        handleSuccess(stream)
+        const  gotDevices = (deviceInfos) => {
+          for (let i = 0; i !== deviceInfos.length; ++i) {
+            const deviceInfo = deviceInfos[i];
+            if (deviceInfo.kind === "audioinput") {
+              console.log(deviceInfo.label)
+            } else if (deviceInfo.kind === "videoinput") {
+              console.log(deviceInfo.label)
+            } else {
+              console.log("Found another kind of device: ", deviceInfo);
+            }
+          }
+        } 
+        const  getStream = async() => {
+          const stream = await navigator.mediaDevices.getUserMedia(constraints)
+          handleSuccess(stream)
+        }
+
+        navigator.mediaDevices
+        .enumerateDevices()
+        .then(gotDevices)
+        .then(getStream)
+        .catch(handleError);
       } catch (e) {
         handleError(e)
       }
@@ -211,10 +228,10 @@ class MeetingRoom extends Component {
   }
 
   componentDidMount() {
+    // console.log("adapete", adapter.browserDetails.browser)
     window.onunload = window.onbeforeunload = function () {
       getSocket.close()
     }
-
     //! Redux 저장할 필요없나?
     /************** Peer connect */
     getSocket().on("connection-success", data => {
@@ -264,96 +281,46 @@ class MeetingRoom extends Component {
       }
     })
 
+    //!Create Local Peer
+    //!pc1
     getSocket().on("online-peer", socketID => {
-      console.log('connected peers ...', socketID)
-
-      // create and send offer to the peer (data.socketID)
       // 1. Create new pc
       this.createPeerConnection(socketID, pc => {
         // 2. Create Offer
         if (pc) {
-          // Send Channel
-          const handleSendChannelStatusChange = event => { }
-
-          const sendChannel = pc.createDataChannel("sendChannel")
-          sendChannel.onopen = handleSendChannelStatusChange
-          sendChannel.onclose = handleSendChannelStatusChange
-
-          this.setState(prevState => {
-            return {
-              sendChannels: [...prevState.sendChannels, sendChannel]
-            }
-          })
-
-          // Receive Channels
-          const handleReceiveMessage = event => {
-            const message = JSON.parse(event.data)
-            console.log("handleReceiveMessage", message)
-            this.setState(prevState => {
-              return {
-                messages: [...prevState.messages, message]
-              }
-            })
-          }
-
-          const handleReceiveChannelStatusChange = event => {
-            if (this.receiveChannel) {
-              console.log(
-                "receive channel's status has changed to " +
-                this.receiveChannel.readyState
-              )
-            }
-          }
-
-          //online peer
-          const receiveChannelCallback = event => {
-            const receiveChannel = event.channel
-            receiveChannel.onmessage = handleReceiveMessage
-            receiveChannel.onopen = handleReceiveChannelStatusChange
-            receiveChannel.onclose = handleReceiveChannelStatusChange
-          }
-
-          pc.ondatachannel = receiveChannelCallback
-
           pc.createOffer(this.state.sdpConstraints).then(sdp => {
             pc.setLocalDescription(sdp)
             meetingRoomSocket.sendToPeer("offer", sdp, {
               local: getSocket().id,
               remote: socketID
             })
-          })
+
+          }).then(() => {
+              
+          }).catch((error) => console.log('Failed to set session description: ' + error.toString()))
         }
       })
     })
 
+    //!pc2
     getSocket().on("offer", data => {
       this.createPeerConnection(data.socketID, pc => {
         try {
-          console.log(this.state.localStream)
           pc.addStream(this.state.localStream)
-
-          // Send Channel
-          const handleSendChannelStatusChange = event => {
-            // console.log('send channel status: ' + this.state.sendChannels[0].readyState)
-          }
-
-          const sendChannel = pc.createDataChannel("sendChannel")
-          sendChannel.onopen = handleSendChannelStatusChange
-          sendChannel.onclose = handleSendChannelStatusChange
-
-          this.setState(prevState => {
-            return {
-              sendChannels: [...prevState.sendChannels, sendChannel]
-            }
-          })
-
           pc.setRemoteDescription(new RTCSessionDescription(data.sdp)).then(
             () => {
               // 2. Create Answer
-              pc.createAnswer(this.state.sdpConstraints).then(sdp => {
+              pc.createAnswer(this.state.sdpConstraints).then( async sdp => {
                 pc.setLocalDescription(sdp)
                 console.log("send answer")
-                meetingRoomSocket.sendToPeer("answer", sdp, {
+                let tempSdp = await updateBandwidthRestriction(sdp.sdp, 30)
+                let answerSdp = {
+                  sdp: tempSdp,
+                  type: sdp.type
+                }
+
+                console.log('send ',answerSdp)
+                meetingRoomSocket.sendToPeer("answer", answerSdp, {
                   local: getSocket().id,
                   remote: data.socketID
                 })
@@ -365,11 +332,31 @@ class MeetingRoom extends Component {
         }
       })
     })
+    const  updateBandwidthRestriction = async (sdp, bandwidth) => {
+      console.log(sdp)
+      let modifier = 'AS';
+      // if (adapter.browserDetails.browser === 'firefox') {
+      //   bandwidth = (bandwidth >>> 0) * 1000;
+      //   modifier = 'TIAS';
+      // }
+      if (sdp.indexOf('b=' + modifier + ':') === -1) {
+        // insert b= after c= line.
+        sdp = sdp.replace(/c=IN (.*)\r\n/, 'c=IN $1\r\nb=' + modifier + ':' + bandwidth + '\r\n');
+      } else {
+        sdp = sdp.replace(new RegExp('b=' + modifier + ':.*\r\n'), 'b=' + modifier + ':' + bandwidth + '\r\n');
+      }
+      console.log("return", sdp)
+      return sdp;
+    }
+
+    //! pc1 setRemote
     getSocket().on("answer", data => {
       const pc = this.state.peerConnections[data.socketID]
-      pc.setRemoteDescription(
-        new RTCSessionDescription(data.sdp)
-      ).then(() => { })
+      console.log(data)
+      // pc.setRemoteDescription(
+      //   new RTCSessionDescription(data.sdp)
+      // ).then(() => { })
+      pc.setRemoteDescription({type: data.sdp.type, sdp: data.sdp.sdp}).then(() => { })
     })
     getSocket().on("candidate", data => {
       const pc = this.state.peerConnections[data.socketID]
@@ -626,16 +613,12 @@ class MeetingRoom extends Component {
       localStream,
       peerConnections,
       remoteStreams,
-      localMicMute,
-      localVideoMute,
       isMainRoom,
       fullScream,
       allMuted,
       requestUser,
       outEnable,
       paintScream,
-      enableChat,
-      normalUserChat,
       shareScream,
       enableRecord,
       testConcentration,
@@ -671,15 +654,17 @@ class MeetingRoom extends Component {
     } 
 
     //! setState 확인필요함
-    if (loading) {
-      return (
-        <WrapperLoading>
-          <ReactLoading type="spin" color="#000" />
-        </WrapperLoading>
-      )
-    }
+    // if (loading) {
+    //   return (
+    //     <WrapperLoading>
+    //       <ReactLoading type="spin" color="#000" />
+    //     </WrapperLoading>
+    //   )
+    // }
 
     const windowSize = !fullScream ? "85%" : "100%"
+
+    console.log(localStream)
     return (
       <div className="meeting-room">
         <div className="left-content" id="left-content-id" style={{ width: windowSize }}>
@@ -717,28 +702,6 @@ class MeetingRoom extends Component {
                     />
                 )
             }
-            {/* <RemoteStreamContainer
-              // paintScream={!paintScream}
-              switchVideo={this.switchVideo}
-              remoteStreams={remoteStreams}
-              // isMainRoom={isMainRoom}
-              // requestUser={requestUser}
-              // handleActionRequestUser={this.handleActionRequestUser}
-              // handleUserWarning={this.handleUserWarning}
-              // handleDisableChattingToUser={this.handleDisableChattingToUser}
-              // //handle for normal user
-              // handleUserOutRoom={this.handleUserOutRoom}
-              // handleRequestQuestion={this.handleRequestQuestion}
-              // handleRequestGoOut={this.handleRequestGoOut}
-              // videoStream={
-              //   this.state.selectedVideo && this.state.selectedVideo.stream
-              // }
-              // handleCancelOut={this.handleCancelOut}
-              // outEnable={outEnable}
-              // testConcentration={testConcentration}
-              // handleDownAllTime={this.handleDownAllTime}
-              // handleCorrectInput={this.handleCorrectInput}
-            /> */}
           </div>
         </div>
         {
@@ -768,7 +731,9 @@ const WrapperLoading = styled.div`
   height: 100vh;
 `
 
-const mapStateToProps = state => ({})
+const mapStateToProps = state => ({
+  // listUser: remoteStreamSelector.getListUser(state)
+})
 
 
 function mapDispatchToProps(dispatch) {

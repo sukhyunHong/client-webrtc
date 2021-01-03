@@ -52,11 +52,11 @@ import boardHidden from "../assets/whiteboard-icon/icon_Del.svg"
 import boardDisplay from "../assets/whiteboard-icon/icon_board_display.svg"
 
 //채팅 아이콘
-import chatCameraOnIcon from '../assets/chat-icon/icon_chat_camera_on.svg'
-import chatCameraOffIcon from '../assets/chat-icon/icon_chat_camera_off.svg'
-import chatFileIcon from '../assets/chat-icon/icon_chat_file.svg'
-import chatTalkOnIcon from '../assets/chat-icon/icon_chat_talk_on.svg'
-import chatTalkOffIcon from '../assets/chat-icon/icon_chat_talk_off.svg'
+import chatCameraOnIcon from '../assets/chat-icon/camera_on.png'
+// import chatCameraOffIcon from '../assets/chat-icon/icon_chat_camera_off.svg'
+import chatFileIcon from '../assets/chat-icon/Svg/icon_chat_file.svg'
+import chatTalkOnIcon from '../assets/chat-icon/Svg/icon_chat_talk_on.svg'
+import chatTalkOffIcon from '../assets/chat-icon/Svg/icon_chat_talk_off.svg'
 
 
 import smallLoading from '../assets/loading.gif'
@@ -116,7 +116,7 @@ const Icon = {
 
   //Chatting
   chatCameraOnIcon,
-  chatCameraOffIcon,
+  // chatCameraOffIcon,
   chatFileIcon,
   chatTalkOnIcon,
   chatTalkOffIcon,

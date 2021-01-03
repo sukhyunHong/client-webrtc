@@ -69,6 +69,16 @@
                     // color: white;
                 }
             }
+
+            .btn-cancel{
+                margin: 15px 0;
+                color: white;
+                padding: 10px 40px;
+                border-radius: 4px;
+                background-color: #5199ff;
+                cursor: pointer;
+                border: none;
+            }
         }
 
         video {
@@ -287,7 +297,6 @@
 
         .video-item {
             position: relative;
-
             .stream-info {
                 position: absolute;
                 top: 0px;
@@ -295,9 +304,8 @@
                 right: 0px;
                 background: #5199ff;
                 border-radius: 0px 0px 0px 5px;
-
-                i {
-                    color: white;
+                ul{
+                    display: flex;
                 }
             }
 

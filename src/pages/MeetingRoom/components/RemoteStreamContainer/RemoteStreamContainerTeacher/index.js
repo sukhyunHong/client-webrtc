@@ -14,6 +14,7 @@ import Icon from '../../../../../constants/icons'
 import moment from "moment"
 import './style.scss'
 import { connect, useDispatch } from 'react-redux'
+import CountTime from '../../../../../components/CountTime'
 
 let intervalTime = "";
 class RemoteStreamContainer extends Component {
@@ -41,7 +42,6 @@ class RemoteStreamContainer extends Component {
       
       const { filterRemote } = this.state;
       const { remoteSocketId, status, userInfo} = data;
-      console.log(filterRemote)
 
       //요청한 유저의 Video를 수정
       let _rVideos = filterRemote.map(rVideo => {
@@ -119,9 +119,13 @@ class RemoteStreamContainer extends Component {
       }
     })
 
+
+    //!오류
     getSocket().on("alert-host-process-req-lecOut", data => {
       const { filterRemote } = this.state;
-      const { remoteSocketId, type } = data;
+      const { remoteSocketId, type, listUserOut } = data;
+      
+      console.log(listUserOut)
       const { req_status, timestamp } = data.data;
       if(Number(req_status)){
         const time = moment().format('DD/MM/YYYYHH:mm:ss')
@@ -129,11 +133,21 @@ class RemoteStreamContainer extends Component {
         //요청한 유저의 Video를 수정
         let _rVideos = filterRemote.map(rVideo => {
           const _videoTrack = rVideo.stream.getTracks().filter(track => track.kind === "video")
-          const req_lecOut_status = rVideo.name === remoteSocketId ? Number(req_status) : false;
+
+          const  userRequestExists = (arr, socketId) =>  {
+            return arr.filter(element => element.socket_id === socketId)
+          }
+          let result = userRequestExists(listUserOut, rVideo.name)
+          result = result.length !== 0 ? result[result.length - 1] : null
+
+          const req_lecOut_status = Number(result.req_status);
+          const requestValue = result.req_status === 'waiting' ? true : false
+
           let video = _videoTrack ? (
               <VideoItem 
                 rVideo={rVideo}
                 userInfo={userInfo}
+                request={requestValue}
                 req_lecOut_status={req_lecOut_status}
                 time={time}
                 type="request_lecOut"
@@ -238,10 +252,12 @@ class RemoteStreamContainer extends Component {
 //!rVideo.id = socket.id
 const VideoItem = ({rVideo, userInfo, request, type ,time, req_question_status, req_lecOut_status}) => {
   const[req, setReq] = useState()
-  const[reqQuestionStatus, setReqQuestionStaus] = useState()
+  const[reqQuestionStatus, setReqQuestionStatus] = useState()
+  const[reqLecOutStatus, setLecOutStatus] = useState()
   //!체크필요함
   useEffect(() => {
-    setReqQuestionStaus(req_question_status)
+    setReqQuestionStatus(req_question_status)
+    setLecOutStatus(req_lecOut_status)
     setReq(request)
   }, [time])
   // useEffect(() => {
@@ -271,6 +287,9 @@ const VideoItem = ({rVideo, userInfo, request, type ,time, req_question_status, 
       remoteSocketId: rVideo.id
     }
     remoteStreamContainer.emitProcessRequestUser(payload)
+    if(reqQuestionStatus){
+      setReqQuestionStatus(!reqQuestionStatus)
+    }
   }
 
   const handleClickAccept = () => {
@@ -292,6 +311,7 @@ const VideoItem = ({rVideo, userInfo, request, type ,time, req_question_status, 
         // videoMuted={this.videoMuted}
         videoType="remoteVideo"
         videoStream={rVideo.stream}
+        req_question_status={req_question_status}
       />
       <div className="btn-wrapper" style={req ? { display: "none" } : {}} >
         <WrapperTaskVideo
@@ -313,15 +333,24 @@ const VideoItem = ({rVideo, userInfo, request, type ,time, req_question_status, 
         </div>
       }
       {
-        req_question_status && 
+        reqQuestionStatus && 
         <div className="wrapper-request">
-          질문 요청중...
+          <div>
+              <h3>음성질문 중</h3>
+              {/* <CountTime /> */}
+              <button className="btn-cancel" onClick={() => handleClickReject()}>
+                음성질문 취소
+              </button>
+          </div>
         </div>
       }
       {
-        req_lecOut_status && 
+        reqLecOutStatus && 
         <div className="wrapper-request">
-          자리비움 요청중...
+          <div>
+              <h3>자리비움 중</h3>
+              <CountTime />
+          </div>
         </div>
       }
     </div>

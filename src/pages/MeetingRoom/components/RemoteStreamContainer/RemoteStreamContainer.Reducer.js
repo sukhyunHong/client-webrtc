@@ -2,7 +2,7 @@ import produce from 'immer'
 import constants from './RemoteStreamContainer.Constants'
 
 const initialState = {
-  listUser: null,
+  listUser: [],
   lectureInfo: null
 }
 

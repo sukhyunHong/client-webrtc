@@ -3,7 +3,8 @@ import produce from "immer";
 
 
 const initialState = {
-  chattingState: false
+  chattingState: false,
+  disableAllChat: false,
 };
 
 const chatReducer = (state = initialState, { type, payload }) =>
@@ -11,6 +12,9 @@ const chatReducer = (state = initialState, { type, payload }) =>
     switch (type) {
       case constants.CHAT_STATE_CHANGE:
         draft.chattingState = payload.state
+        break;
+      case constants.DISABLE_ALL_CHAT:
+        draft.disableAllChat = !draft.disableAllChat
         break;
       default:
         break;

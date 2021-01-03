@@ -41,6 +41,17 @@ function ChatComponent(props) {
     chat.scrollTop = chat.scrollHeight
   }
 
+  useEffect(() => {
+    let fetchData =  async() => {
+      let params = {
+        userRoomId: userRoomId()
+      }
+      const listMessage = await chatComponentService.getListMessageByUserId(params)
+    
+      setMessages(listMessage.data)
+    }
+    fetchData()
+  },[])
 
   useEffect(() => {
     scrollToBottom()
@@ -169,7 +180,7 @@ function ChatComponent(props) {
         msgDiv = WarningMessComponent(userType, data)
         break;
       default: //!Error
-        msgDiv = ImageComponent(userType, data)
+        // msgDiv = ImageComponent(userType, data)
         break;
     }
 
@@ -224,6 +235,7 @@ function ChatComponent(props) {
       let payload = {
         remoteSocketId: "all"
       }
+      dispatch(chatAction.disableAllChatting(true))
       chatComponentSocket.emitDisableUserChat(payload)
     } else {
       let payload = {
@@ -451,13 +463,13 @@ const RequestComponent = (isHostUser, type, resData) => {
       </div>
     )
   } else {
-    const messageInfo = requestType === "request_question" ? `음성질문을 요청 중입니다` : `자리비움을 요청 중입니다`;
+    const messageInfo = requestType === "request_question" ? `음성질문을 요청하였습니다.` : `자리비움을 요청하였습니다.`;
     msgDiv = (
       <div className="msg-request">
         <div className="msg-request__heading">
           <div className="msg-request__content">
             <p>{messageInfo}</p>
-            <img src={Icon.smallLoading} alt="loading" />
+            {/* <img src={Icon.smallLoading} alt="loading" /> */}
             <span>{moment(data.timestamp).format("LT")}</span>
           </div>
         </div>
@@ -472,8 +484,6 @@ const WarningMessComponent = (type, resData) => {
   console.log("warning", type, resData)
   let { type : requestType, sender, data } = resData
   let footerText = " 메시지 전송되었습니다"
-
-  console.log(requestType)
   switch (requestType.trim()) {
     case "test-concentration-fail":
       footerText = "집중테스트 실패합니다."
