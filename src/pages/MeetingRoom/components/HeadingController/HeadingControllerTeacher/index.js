@@ -54,7 +54,7 @@ function HeadingController({handleOutRoom, handleWindowSize, handleScreenMode, h
           </li>
           <li>
             <img onClick={() => handleChangeWindowSize()} src={windowSize ? Icon.lecWindowBigIcon : Icon.lecWindowSmallIcon} /> 
-            <span>전체호면</span>  
+            <span>전체화면</span>  
           </li>
         </ul>
       </div>

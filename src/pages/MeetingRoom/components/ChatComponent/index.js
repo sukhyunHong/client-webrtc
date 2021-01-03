@@ -306,7 +306,7 @@ function ChatComponent(props) {
                     <li><img onClick={() => handleClickUpFile()} src={Icon.chatFileIcon}></img></li>
 
                 }
-                <li className="chatting-hidden"><img onClick={() => setBoxedListUser(!boxedListUser)} src={Icon.chatTalkOnIcon}></img>
+                <li className="chatting-hidden"><img onClick={() => setBoxedListUser(!boxedListUser)} src={Icon.chatTalkOffIcon}></img>
                   {
                     boxedListUser &&
                     <div className="list-user-chat">
